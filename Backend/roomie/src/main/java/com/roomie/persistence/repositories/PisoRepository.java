@@ -1,5 +1,9 @@
 package com.roomie.persistence.repositories;
 
-public class PisoRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.roomie.persistence.entities.Usuario;
+
+public interface PisoRepository extends JpaRepository<Usuario, Integer>{
 
 }

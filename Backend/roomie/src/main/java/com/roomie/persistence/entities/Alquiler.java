@@ -1,5 +1,48 @@
 package com.roomie.persistence.entities;
 
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "alquiler")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Alquiler {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    // Mapea la relación "pide": El Usuario que solicita
+    @ManyToOne
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private Usuario usuario; 
+
+    // Mapea la relación "se pone": El Piso solicitado
+    @ManyToOne
+    @JoinColumn(name = "id_piso", nullable = false)
+    private Piso piso;
+
+    @Column(name = "f_inicio", nullable = false)
+    private LocalDate fInicio; 
+
+    @Column(name = "f_fin", nullable = false)
+    private LocalDate fFin; 
+
+    @Column(name = "estado_solicitud", length = 20, nullable = false)
+    private String estadoSolicitud; 
+
+    private boolean favorito;
 }
