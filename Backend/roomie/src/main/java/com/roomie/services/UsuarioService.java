@@ -22,7 +22,7 @@ public class UsuarioService {
 		return this.usuarioRepository.findAll();
 	}
 	
-	// find por nombre
+	// find id
 	public Usuario findById(int idUsuario) {
 		if(!this.usuarioRepository.existsById(idUsuario)) {
 			throw new UsuarioNotFoundException("El ID indicado no existe. ");
@@ -31,5 +31,23 @@ public class UsuarioService {
 		return this.usuarioRepository.findById(idUsuario).get();
 	}
 	
+	//Buscar por nombreUsuario
+    public Usuario findByNombreUsuario(String nombreUsuario) {
+        Usuario usuario = this.usuarioRepository.findByNombreUsuario(nombreUsuario);
+
+        if (usuario == null) {
+            throw new UsuarioNotFoundException("No existe el usuario con nombreUsuario: " + nombreUsuario);
+        }
+
+        return usuario;
+    }
+    
+    //registrar
+    
+    //iniciar sesion
+    
+    //Actualizar perfil (información)
+    
+    //ver mi perfil (mostrar mi información)
 	
 }

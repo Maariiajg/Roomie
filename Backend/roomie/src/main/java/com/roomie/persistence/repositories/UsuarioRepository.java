@@ -6,8 +6,10 @@ import com.roomie.persistence.entities.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     Usuario findByNombreUsuario(String nombreUsuario); 
+    boolean existsByNombreUsuario(String nombreUsuario);
+    
     boolean existsByDni(String dni);
     boolean existsByEmail(String email);
-    boolean existsByNombreUsuario(String nombreUsuario);
+    
 
 }
