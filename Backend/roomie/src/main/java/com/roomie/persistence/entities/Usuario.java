@@ -67,6 +67,7 @@ public class Usuario {
 	private String mensajePresentacion;
 	
 	private String foto;
+	
 	@Column(nullable = false)
 	private boolean bloqueado;
 	

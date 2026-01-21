@@ -56,7 +56,7 @@ public class Piso {
     private boolean wifi;
     private boolean tabaco; 
 
-    // CORRECCIÓN: Atributo multivaluado 'fotos' mapeado a entidad Foto
+    // Puede haber michas fotos de un piso
     @OneToMany(mappedBy = "piso")
     private List<Foto> fotos;
 
