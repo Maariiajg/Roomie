@@ -12,6 +12,7 @@ import com.roomie.persistence.repositories.PisoRepository;
 import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.piso.PisoException;
 import com.roomie.services.exceptions.piso.PisoNotFoundException;
+import com.roomie.services.exceptions.usuario.UsuarioException;
 
 @Service
 public class PisoService {
@@ -42,7 +43,7 @@ public class PisoService {
        }
        piso.setId(0);
        piso.setUsuarioDueno(dueno);
-       piso.setNumOcupantesActual(0);
+       piso.setNumOcupantesActual(1);
        piso.setFPublicacion(LocalDate.now());
        return this.pisoRepository.save(piso);
    }
@@ -53,16 +54,50 @@ public class PisoService {
                    String.format("El id del body (%d) y el id del path (%d) no coinciden",
                            piso.getId(), idPiso));
        }
+       
+       if(piso.getUsuarioDueno() != null) {
+    	   throw new PisoException("No se puede modigficar el dueño del piso, eso se hará en el endpoint correspondiente");
+       }
+       
+       if(piso.getFPublicacion() != null) {
+    	   throw new PisoException("No se puede modificar la fecha de publicación");
+       }
+       
+       
        Piso pisoBD = this.findById(idPiso);
        pisoBD.setDireccion(piso.getDireccion());
        pisoBD.setPrecioMes(piso.getPrecioMes());
        pisoBD.setDescripcion(piso.getDescripcion());
+       pisoBD.setNumTotalHabitaciones(piso.getNumTotalHabitaciones());
+       //no se como contar el numero de ocupantes de un piso
        pisoBD.setGaraje(piso.isGaraje());
        pisoBD.setAnimales(piso.isAnimales());
        pisoBD.setWifi(piso.isWifi());
        pisoBD.setTabaco(piso.isTabaco());
        return this.pisoRepository.save(pisoBD);
    }
+   
+   public Piso cambiarDueno(Piso piso, int idPiso) {
+	   if (piso.getId() != idPiso) {
+			throw new PisoException(
+					String.format("El id del body (%d) y el id del path (%d) no coinciden", piso.getId(), idTarea));
+		}
+	   
+	   
+	   //TODO
+	   
+	   
+	   if (piso.getDireccion() != null ||
+			   piso.getPrecioMes() != null ||
+			   piso.getDescripcion() != null ||
+			   piso.getNumTotalHabitaciones() != null ||
+			   piso.getFPublicacion()) {
+
+	            throw new UsuarioException(
+	                "Este endpoint solo permite bloquear o desbloquear al usuario");
+	        }
+   }
+   
    // borrar piso
    public void delete(int idPiso) {
        if (!this.pisoRepository.existsById(idPiso)) {

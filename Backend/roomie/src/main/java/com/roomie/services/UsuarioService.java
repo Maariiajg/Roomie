@@ -43,6 +43,12 @@ public class UsuarioService {
     }
     
     //registrar create
+    /*public Usuario registrar(Usuario usuario) {
+    	
+    	
+    	
+    	return this.usuarioRepository.save(usuario);
+    }*/
     
     //iniciar sesion
     
