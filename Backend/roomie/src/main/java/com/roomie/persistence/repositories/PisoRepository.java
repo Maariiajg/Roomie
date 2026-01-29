@@ -9,4 +9,12 @@ import com.roomie.persistence.entities.Piso;
 public interface PisoRepository extends JpaRepository<Piso, Integer>{
 	 
 	List<Piso> findByUsuarioDuenoId(int idUsuario);
+	
+	//filtrar por caracteristicas
+	List<Piso> findByGarajeAndAnimalesAndWifiAndTabaco(
+        boolean garaje,
+        boolean animales,
+        boolean wifi,
+        boolean tabaco
+    );
 }

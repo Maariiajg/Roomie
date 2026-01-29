@@ -31,6 +31,8 @@ public class PisoService {
        }
        return this.pisoRepository.findById(idPiso).get();
    }
+   
+   //----------------------------------------
    // crear piso
    public Piso create(Piso piso, int idUsuarioDueno) {
        Usuario dueno = this.usuarioRepository.findById(idUsuarioDueno)
@@ -47,6 +49,8 @@ public class PisoService {
        piso.setFPublicacion(LocalDate.now());
        return this.pisoRepository.save(piso);
    }
+   
+   //-------------------------------------------
    // actualizar piso (datos básicos)
    public Piso update(Piso piso, int idPiso) {
        if (piso.getId() != idPiso) {
@@ -77,26 +81,59 @@ public class PisoService {
        return this.pisoRepository.save(pisoBD);
    }
    
+   //------------------------------------------
+   //cambiar dueño, ceder piso
    public Piso cambiarDueno(Piso piso, int idPiso) {
-	   if (piso.getId() != idPiso) {
-			throw new PisoException(
-					String.format("El id del body (%d) y el id del path (%d) no coinciden", piso.getId(), idTarea));
-		}
-	   
-	   
-	   //TODO
-	   
-	   
-	   if (piso.getDireccion() != null ||
-			   piso.getPrecioMes() != null ||
-			   piso.getDescripcion() != null ||
-			   piso.getNumTotalHabitaciones() != null ||
-			   piso.getFPublicacion()) {
 
-	            throw new UsuarioException(
-	                "Este endpoint solo permite bloquear o desbloquear al usuario");
-	        }
-   }
+	    // Validación de IDs
+	    if (piso.getId() != idPiso) {
+	        throw new PisoException(
+	            String.format(
+	                "El id del body (%d) y el id del path (%d) no coinciden",
+	                piso.getId(), idPiso
+	            )
+	        );
+	    }
+
+	    if (!this.pisoRepository.existsById(idPiso)) {
+	        throw new PisoException("El piso con id " + idPiso + " no existe.");
+	    }
+
+	    Piso pisoBD = this.findById(idPiso);
+
+	    // Protección: solo se permite tocar 'usuarioDueno'
+	    if (
+	        piso.getDireccion() != null ||
+	        piso.getDescripcion() != null ||
+	        piso.getFPublicacion() != null ||
+	        piso.getFotos() != null ||
+	        piso.getAlquileresSolicitados() != null ||
+
+	        // Comparaciones contra BD para primitivos
+	        piso.getPrecioMes() != pisoBD.getPrecioMes() ||
+	        piso.getNumTotalHabitaciones() != pisoBD.getNumTotalHabitaciones() ||
+	        piso.getNumOcupantesActual() != pisoBD.getNumOcupantesActual() ||
+	        piso.isGaraje() != pisoBD.isGaraje() ||
+	        piso.isAnimales() != pisoBD.isAnimales() ||
+	        piso.isWifi() != pisoBD.isWifi() ||
+	        piso.isTabaco() != pisoBD.isTabaco()
+	    ) {
+	        throw new PisoException(
+	            "Este endpoint solo permite cambiar el usuario dueño del piso"
+	        );
+	    }
+
+	 
+	    if (piso.getUsuarioDueno() == null) {
+	        throw new PisoException("Debe indicarse el nuevo usuario dueño del piso");
+	    }
+
+	    pisoBD.setUsuarioDueno(piso.getUsuarioDueno());
+	    
+	    return this.pisoRepository.save(pisoBD);
+	}
+   
+   //-----------------------------------------
    
    // borrar piso
    public void delete(int idPiso) {
@@ -108,6 +145,19 @@ public class PisoService {
    // pisos por dueño
    public List<Piso> findByUsuarioDueno(int idUsuario) {
        return this.pisoRepository.findByUsuarioDuenoId(idUsuario);
+   }
+   
+   
+   //filtrar por coracteristicas
+   public List<Piso> filtrarPorCaracteristicas(
+           boolean garaje,
+           boolean animales,
+           boolean wifi,
+           boolean tabaco
+   ) {
+       return pisoRepository.findByGarajeAndAnimalesAndWifiAndTabaco(
+           garaje, animales, wifi, tabaco
+       );
    }
 
 

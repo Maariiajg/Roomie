@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.roomie.persistence.entities.Piso;
@@ -71,6 +72,20 @@ public class PisoController {
    @GetMapping("/usuario/{idUsuario}")
    public ResponseEntity<List<Piso>> findByUsuario(@PathVariable int idUsuario) {
        return ResponseEntity.ok(this.pisoService.findByUsuarioDueno(idUsuario));
+   }
+   
+   
+   //filtrar
+   @GetMapping("/filtrar")
+   public List<Piso> filtrarPisos(
+           @RequestParam boolean garaje,
+           @RequestParam boolean animales,
+           @RequestParam boolean wifi,
+           @RequestParam boolean tabaco
+   ) {
+       return pisoService.filtrarPorCaracteristicas(
+           garaje, animales, wifi, tabaco
+       );
    }
 
 }
