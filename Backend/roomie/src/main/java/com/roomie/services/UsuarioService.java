@@ -10,180 +10,191 @@ import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.usuario.UsuarioException;
 import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
 
-import jakarta.transaction.Transactional;
-
 @Service
 public class UsuarioService {
-	@Autowired
-	private UsuarioRepository usuarioRepository;
-	
-	//find All
-	public List<Usuario> findAll(){
-		return this.usuarioRepository.findAll();
-	}
-	
-	// find id
-	public Usuario findById(int idUsuario) {
-		if(!this.usuarioRepository.existsById(idUsuario)) {
-			throw new UsuarioNotFoundException("El ID indicado no existe. ");
-		}
-		
-		return this.usuarioRepository.findById(idUsuario).get();
-	}
-	
-	//Buscar por nombreUsuario (tambien se puede usar para ver mi perfil
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    /* =====================================================
+       1. LISTAR TODOS
+       ===================================================== */
+    public List<Usuario> findAll() {
+        return usuarioRepository.findAll();
+    }
+
+    /* =====================================================
+       2. VER PERFIL POR ID (ADMIN)
+       ===================================================== */
+    public Usuario findById(int idUsuario) {
+        return usuarioRepository.findById(idUsuario)
+                .orElseThrow(() ->
+                        new UsuarioNotFoundException("El usuario con id " + idUsuario + " no existe"));
+    }
+
+    /* =====================================================
+       3. VER MI PERFIL / PERFIL POR NOMBRE USUARIO
+       ===================================================== */
     public Usuario findByNombreUsuario(String nombreUsuario) {
-        Usuario usuario = this.usuarioRepository.findByNombreUsuario(nombreUsuario);
+
+        Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario);
 
         if (usuario == null) {
-            throw new UsuarioNotFoundException("No existe el usuario con nombreUsuario: " + nombreUsuario);
+            throw new UsuarioNotFoundException(
+                    "No existe el usuario con nombreUsuario: " + nombreUsuario);
+        }
+
+        if (usuario.isBloqueado()) {
+            throw new UsuarioException("El usuario está bloqueado");
         }
 
         return usuario;
     }
-    
-    //registrar create
-    /*public Usuario registrar(Usuario usuario) {
-    	
-    	
-    	
-    	return this.usuarioRepository.save(usuario);
-    }*/
-    
-    //iniciar sesion
-    
-    //Actualizar perfil (información) update
-    
-    public Usuario update(Usuario usuario, int idUsuario) {
-    	if(usuario.getId() != idUsuario) {
-    		throw new UsuarioException(
-    				String.format("El id del body (%d) y el id del path (%d) no coinciden", usuario.getId(), idUsuario));
-    	
-    	}
-    	if(!this.usuarioRepository.existsById(idUsuario)) {
-    		throw new UsuarioException("El usuario con id " + idUsuario + " no existe.");
-    	}
-    	
-    	if (usuario.getPassword() != null) {
-			throw new UsuarioException("No se puede modificar la contraseña, eso se hará en el endpoint correspondiente");
-		}
-    	if (usuario.getNombreUsuario() != null) {
-			throw new UsuarioException("No se puede modificar el nombre de usuario, eso se hará en el endpoint correspondiente");
-		}
-    	if (usuario.getDni() != null) { //hay que asegurarse en el de crear de que el DNI sea correcto, si es correcto ya no se cambia xq eso no cambia
-			throw new UsuarioException("No se puede modificar el DNI");
-		}
-    	
-    	Usuario usuarioBD = this.findById(idUsuario);
-    	
-    	if (usuario.isBloqueado() != usuarioBD.isBloqueado()) {
-            throw new UsuarioException(
-                "No se puede modificar el estado de bloqueo desde este endpoint");
+
+    /* =====================================================
+       4. REGISTRAR USUARIO
+       ===================================================== */
+    public Usuario registrar(Usuario usuario) {
+
+        if (usuarioRepository.existsByDni(usuario.getDni())) {
+            throw new UsuarioException("El DNI ya está registrado");
         }
-    	
-    	usuarioBD.setNombre(usuario.getNombre());
-    	usuarioBD.setApellido1(usuario.getApellido1());
-    	usuarioBD.setApellido2(usuario.getApellido2());
-    	usuarioBD.setAnioNacimiento(usuario.getAnioNacimiento());
-    	usuarioBD.setGenero(usuario.getGenero());
-    	usuarioBD.setTelefono(usuario.getTelefono());
-    	usuarioBD.setEmail(usuario.getEmail());
-    	usuarioBD.setMensajePresentacion(usuario.getMensajePresentacion());
-    	usuarioBD.setFoto(usuario.getFoto());
-    	
-    	return this.usuarioRepository.save(usuarioBD);
-    	
+
+        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+            throw new UsuarioException("El email ya está registrado");
+        }
+
+        if (usuarioRepository.existsByNombreUsuario(usuario.getNombreUsuario())) {
+            throw new UsuarioException("El nombre de usuario ya existe");
+        }
+
+        if (!usuario.getPassword().equals(usuario.getRepetirPassword())) {
+            throw new UsuarioException("Las contraseñas no coinciden");
+        }
+
+        usuario.setId(0);
+        usuario.setBloqueado(false);
+
+        return usuarioRepository.save(usuario);
     }
-    
-    //bloquear/desbloquear
-    public Usuario desbloquear(Usuario usuario, int idUsuario) {
-    	
-    	if(usuario.getId() != idUsuario) {
-    		throw new UsuarioException(
-    				String.format("El id del body (%d) y el id del path (%d) no coinciden", usuario.getId(), idUsuario));
-    	
-    	}
-    	if(!this.usuarioRepository.existsById(idUsuario)) {
-    		throw new UsuarioException("El usuario con id " + idUsuario + " no existe.");
-    	}
-    	
-    	// Protección: solo se permite tocar 'bloqueado'
+
+    /* =====================================================
+       5. INICIAR SESIÓN
+       ===================================================== */
+    public Usuario iniciarSesion(String nombreUsuario, String password) {
+
+        Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario);
+
+        if (usuario == null) {
+            throw new UsuarioException("Credenciales incorrectas");
+        }
+
+        if (usuario.isBloqueado()) {
+            throw new UsuarioException("El usuario está bloqueado por un administrador");
+        }
+
+        if (!usuario.getPassword().equals(password)) {
+            throw new UsuarioException("Credenciales incorrectas");
+        }
+
+        return usuario;
+    }
+
+    /* =====================================================
+       6. ACTUALIZAR PERFIL (DATOS PERSONALES)
+       ===================================================== */
+    public Usuario update(Usuario usuario, int idUsuario) {
+
+        if (usuario.getId() != idUsuario) {
+            throw new UsuarioException(
+                    String.format("El id del body (%d) y el id del path (%d) no coinciden",
+                            usuario.getId(), idUsuario));
+        }
+
+        Usuario usuarioBD = findById(idUsuario);
+
         if (usuario.getPassword() != null ||
             usuario.getNombreUsuario() != null ||
             usuario.getDni() != null ||
-            usuario.getNombre() != null ||
+            usuario.isBloqueado() != usuarioBD.isBloqueado()) {
+
+            throw new UsuarioException(
+                    "No se pueden modificar contraseña, nombreUsuario, DNI ni bloqueo desde este endpoint");
+        }
+
+        usuarioBD.setNombre(usuario.getNombre());
+        usuarioBD.setApellido1(usuario.getApellido1());
+        usuarioBD.setApellido2(usuario.getApellido2());
+        usuarioBD.setAnioNacimiento(usuario.getAnioNacimiento());
+        usuarioBD.setGenero(usuario.getGenero());
+        usuarioBD.setTelefono(usuario.getTelefono());
+        usuarioBD.setEmail(usuario.getEmail());
+        usuarioBD.setMensajePresentacion(usuario.getMensajePresentacion());
+        usuarioBD.setFoto(usuario.getFoto());
+
+        return usuarioRepository.save(usuarioBD);
+    }
+
+    /* =====================================================
+       7. BLOQUEAR / DESBLOQUEAR (ADMIN)
+       ===================================================== */
+    public Usuario toggleBloqueo(Usuario usuario, int idUsuario) {
+
+        if (usuario.getId() != idUsuario) {
+            throw new UsuarioException("IDs no coinciden");
+        }
+
+        Usuario usuarioBD = findById(idUsuario);
+
+        if (usuario.getNombre() != null ||
             usuario.getApellido1() != null ||
             usuario.getApellido2() != null ||
-            usuario.getAnioNacimiento() != null ||
-            usuario.getGenero() != null ||
-            usuario.getTelefono() != null ||
             usuario.getEmail() != null ||
+            usuario.getPassword() != null ||
+            usuario.getNombreUsuario() != null) {
+
+            throw new UsuarioException(
+                    "Este endpoint solo permite bloquear o desbloquear");
+        }
+
+        usuarioBD.setBloqueado(!usuarioBD.isBloqueado());
+
+        return usuarioRepository.save(usuarioBD);
+    }
+
+    /* =====================================================
+       8. CAMBIAR CONTRASEÑA Y NOMBRE USUARIO
+       ===================================================== */
+    public Usuario cambiarCredenciales(Usuario usuario, int idUsuario) {
+
+        if (usuario.getId() != idUsuario) {
+            throw new UsuarioException("IDs no coinciden");
+        }
+
+        Usuario usuarioBD = findById(idUsuario);
+
+        if (usuario.getNombre() != null ||
+            usuario.getApellido1() != null ||
+            usuario.getEmail() != null ||
+            usuario.getDni() != null ||
             usuario.getMensajePresentacion() != null ||
             usuario.getFoto() != null) {
 
             throw new UsuarioException(
-                "Este endpoint solo permite bloquear o desbloquear al usuario");
+                    "Este endpoint solo permite cambiar nombreUsuario y contraseña");
         }
-    	
-    	
-    	Usuario usuarioBD = this.findById(idUsuario);
-    	
-    	String mensaje;
-    	if (usuarioBD.isBloqueado()) {
-            usuarioBD.setBloqueado(false);
-            mensaje = "Usuario desbloqueado";
-        } else {
-            usuarioBD.setBloqueado(true);
-            mensaje = "Usuario bloqueado";
-        }
-    	
-    	
-    	this.usuarioRepository.save(usuarioBD);
-        System.out.println(mensaje);
 
-        return usuarioBD;
-    }
-    
-    //Cambiar nombre de usuario y contraseña
-    
-    public Usuario cambiarContraseñaYNombreUsuario(Usuario usuario, int idUsuario) {
-    	if(usuario.getId() != idUsuario) {
-    		throw new UsuarioException(
-    				String.format("El id del body (%d) y el id del path (%d) no coinciden", usuario.getId(), idUsuario));
-    	
-    	}
-    	if(!this.usuarioRepository.existsById(idUsuario)) {
-    		throw new UsuarioException("El usuario con id " + idUsuario + " no existe.");
-    	}
-    	
-    	// Protección: solo se permite tocar 'bloqueado'
-        if (usuario.getDni() != null ||
-            usuario.getNombre() != null ||
-            usuario.getApellido1() != null ||
-            usuario.getApellido2() != null ||
-            usuario.getAnioNacimiento() != null ||
-            usuario.getGenero() != null ||
-            usuario.getTelefono() != null ||
-            usuario.getEmail() != null ||
-            usuario.getMensajePresentacion() != null ||
-            usuario.getFoto() != null) {
+        if (!usuario.getPassword().equals(usuario.getRepetirPassword())) {
+            throw new UsuarioException("Las contraseñas no coinciden");
+        }
 
-            throw new UsuarioException(
-                "Este endpoint solo permite cambiar la contraseña o el nombre de usuario al usuario");
-        
+        if (usuarioRepository.existsByNombreUsuario(usuario.getNombreUsuario())) {
+            throw new UsuarioException("El nombre de usuario ya existe");
         }
-        
-        Usuario usuarioBD = this.findById(idUsuario);
-    	
-    	if (usuario.isBloqueado() != usuarioBD.isBloqueado()) {
-            throw new UsuarioException(
-                "No se puede modificar el estado de bloqueo desde este endpoint");
-        }
-    	
-    	usuarioBD.setPassword(usuario.getPassword());
-    	usuarioBD.setNombreUsuario(usuario.getNombreUsuario());
-    	
-    	return this.usuarioRepository.save(usuarioBD);
+
+        usuarioBD.setNombreUsuario(usuario.getNombreUsuario());
+        usuarioBD.setPassword(usuario.getPassword());
+
+        return usuarioRepository.save(usuarioBD);
     }
-	
 }

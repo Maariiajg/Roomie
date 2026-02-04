@@ -42,4 +42,7 @@ public class Feedback {
     @Column(length = 500)
     private String descripcion;
     
+    @Column(nullable = false)
+    private boolean visible = true;
+    
 }
