@@ -71,7 +71,7 @@ public class AlquilerController {
 
         try {
             return ResponseEntity.ok(
-                    alquilerService.resolver(
+                    alquilerService.aceptarORechazar(
                             idAlquiler, idDueno, aceptar));
         } catch (AlquilerException ex) {
             return ResponseEntity.status(HttpStatus.CONFLICT)

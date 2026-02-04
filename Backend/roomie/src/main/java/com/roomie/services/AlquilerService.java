@@ -84,7 +84,7 @@ public class AlquilerService {
     /* =====================================================
        3. ACEPTAR / RECHAZAR SOLICITUD
        ===================================================== */
-    public Alquiler resolver(
+    public Alquiler aceptarORechazar(
             int idAlquiler, int idDueno, boolean aceptar) {
 
         Alquiler alquiler = alquilerRepository.findById(idAlquiler)
