@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,74 +17,88 @@ import org.springframework.web.bind.annotation.RestController;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.services.PisoService;
 import com.roomie.services.exceptions.piso.PisoException;
-import com.roomie.services.exceptions.piso.PisoNotFoundException;
+import com.roomie.services.exceptions.usuario.UsuarioException;
 
 @RestController
-@RequestMapping("/piso")
+@RequestMapping("/pisos")
 public class PisoController {
 
-	@Autowired
-	   private PisoService pisoService;
-	
-   @GetMapping
-   public ResponseEntity<List<Piso>> findAll() {
-       return ResponseEntity.ok(this.pisoService.findAll());
-   }
-   @GetMapping("/{idPiso}")
-   public ResponseEntity<?> findById(@PathVariable int idPiso) {
-       try {
-           return ResponseEntity.ok(this.pisoService.findById(idPiso));
-       } catch (PisoNotFoundException ex) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-       }
-   }
-   @PostMapping("/usuario/{idUsuario}")
-   public ResponseEntity<?> create(@PathVariable int idUsuario, @RequestBody Piso piso) {
-       try {
-           return ResponseEntity.status(HttpStatus.CREATED)
-                   .body(this.pisoService.create(piso, idUsuario));
-       } catch (PisoException ex) {
-           return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-       }
-   }
-   @PutMapping("/{idPiso}")
-   public ResponseEntity<?> update(
-           @PathVariable int idPiso,
-           @RequestBody Piso piso) {
-       try {
-           return ResponseEntity.ok(this.pisoService.update(piso, idPiso));
-       } catch (PisoNotFoundException ex) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-       } catch (PisoException ex) {
-           return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-       }
-   }
-   @DeleteMapping("/{idPiso}")
-   public ResponseEntity<?> delete(@PathVariable int idPiso) {
-       try {
-           this.pisoService.delete(idPiso);
-           return ResponseEntity.ok().build();
-       } catch (PisoNotFoundException ex) {
-           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-       }
-   }
-   @GetMapping("/usuario/{idUsuario}")
-   public ResponseEntity<List<Piso>> findByUsuario(@PathVariable int idUsuario) {
-       return ResponseEntity.ok(this.pisoService.findByUsuarioDueno(idUsuario));
-   }
-   
-   
-   //filtrar
-   @GetMapping("/filtrar")
-   public List<Piso> filtrarPisos(
-           @RequestParam boolean garaje,
-           @RequestParam boolean animales,
-           @RequestParam boolean wifi,
-           @RequestParam boolean tabaco
-   ) {
-       return pisoService.filtrarPorCaracteristicas(
-           garaje, animales, wifi, tabaco
-       );
-   }
+    @Autowired
+    private PisoService pisoService;
 
+    /* =========================
+       CREAR PISO
+       ========================= */
+    @PostMapping
+    public ResponseEntity<?> crear(
+            @RequestParam int idUsuario,
+            @RequestBody Piso piso) {
+
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(pisoService.crear(piso, idUsuario));
+        } catch (UsuarioException | PisoException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
+        }
+    }
+
+    /* =========================
+       LISTAR TODOS
+       ========================= */
+    @GetMapping
+    public ResponseEntity<List<Piso>> listar() {
+        return ResponseEntity.ok(pisoService.listarTodos());
+    }
+
+    /* =========================
+       PISOS DE LOS QUE SOY DUEÑO
+       ========================= */
+    @GetMapping("/dueno/{idUsuario}")
+    public ResponseEntity<List<Piso>> pisosDueno(
+            @PathVariable int idUsuario) {
+
+        return ResponseEntity.ok(
+                pisoService.pisosDeDueno(idUsuario));
+    }
+
+    /* =========================
+       FILTRAR
+       ========================= */
+    @GetMapping("/filtrar")
+    public ResponseEntity<?> filtrar(
+            @RequestParam double precioMin,
+            @RequestParam double precioMax,
+            @RequestParam boolean garaje,
+            @RequestParam boolean animales,
+            @RequestParam boolean wifi,
+            @RequestParam boolean tabaco) {
+
+        try {
+            return ResponseEntity.ok(
+                    pisoService.filtrar(
+                            precioMin, precioMax,
+                            garaje, animales, wifi, tabaco));
+        } catch (PisoException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ex.getMessage());
+        }
+    }
+
+    /* =========================
+       CAMBIAR DUEÑO
+       ========================= */
+    @PutMapping("/{idPiso}/dueno")
+    public ResponseEntity<?> cambiarDueno(
+            @PathVariable int idPiso,
+            @RequestParam int idNuevoDueno) {
+
+        try {
+            return ResponseEntity.ok(
+                    pisoService.cambiarDueno(idPiso, idNuevoDueno));
+        } catch (PisoException | UsuarioException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ex.getMessage());
+        }
+    }
 }

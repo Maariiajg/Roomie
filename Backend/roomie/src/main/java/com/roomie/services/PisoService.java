@@ -8,157 +8,111 @@ import org.springframework.stereotype.Service;
 
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
+import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
 import com.roomie.persistence.repositories.PisoRepository;
 import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.piso.PisoException;
-import com.roomie.services.exceptions.piso.PisoNotFoundException;
 import com.roomie.services.exceptions.usuario.UsuarioException;
 
 @Service
 public class PisoService {
-	@Autowired
-	private PisoRepository pisoRepository;
-   @Autowired
-   private UsuarioRepository usuarioRepository;
-   // findAll
-   public List<Piso> findAll() {
-       return this.pisoRepository.findAll();
-   }
-   // findById
-   public Piso findById(int idPiso) {
-       if (!this.pisoRepository.existsById(idPiso)) {
-           throw new PisoNotFoundException("El piso con id " + idPiso + " no existe");
-       }
-       return this.pisoRepository.findById(idPiso).get();
-   }
-   
-   //----------------------------------------
-   // crear piso
-   public Piso create(Piso piso, int idUsuarioDueno) {
-       Usuario dueno = this.usuarioRepository.findById(idUsuarioDueno)
-               .orElseThrow(() -> new PisoNotFoundException("El usuario no existe"));
-       if (piso.getPrecioMes() <= 0) {
-           throw new PisoException("El precio mensual debe ser mayor que 0");
-       }
-       if (piso.getNumTotalHabitaciones() <= 0) {
-           throw new PisoException("El número de habitaciones debe ser mayor que 0");
-       }
-       piso.setId(0);
-       piso.setUsuarioDueno(dueno);
-       piso.setNumOcupantesActual(1);
-       piso.setFPublicacion(LocalDate.now());
-       return this.pisoRepository.save(piso);
-   }
-   
-   //-------------------------------------------
-   // actualizar piso (datos básicos)
-   public Piso update(Piso piso, int idPiso) {
-       if (piso.getId() != idPiso) {
-           throw new PisoException(
-                   String.format("El id del body (%d) y el id del path (%d) no coinciden",
-                           piso.getId(), idPiso));
-       }
-       
-       if(piso.getUsuarioDueno() != null) {
-    	   throw new PisoException("No se puede modigficar el dueño del piso, eso se hará en el endpoint correspondiente");
-       }
-       
-       if(piso.getFPublicacion() != null) {
-    	   throw new PisoException("No se puede modificar la fecha de publicación");
-       }
-       
-       
-       Piso pisoBD = this.findById(idPiso);
-       pisoBD.setDireccion(piso.getDireccion());
-       pisoBD.setPrecioMes(piso.getPrecioMes());
-       pisoBD.setDescripcion(piso.getDescripcion());
-       pisoBD.setNumTotalHabitaciones(piso.getNumTotalHabitaciones());
-       //no se como contar el numero de ocupantes de un piso
-       pisoBD.setGaraje(piso.isGaraje());
-       pisoBD.setAnimales(piso.isAnimales());
-       pisoBD.setWifi(piso.isWifi());
-       pisoBD.setTabaco(piso.isTabaco());
-       return this.pisoRepository.save(pisoBD);
-   }
-   
-   //------------------------------------------
-   //cambiar dueño, ceder piso
-   public Piso cambiarDueno(Piso piso, int idPiso) {
 
-	    // Validación de IDs
-	    if (piso.getId() != idPiso) {
-	        throw new PisoException(
-	            String.format(
-	                "El id del body (%d) y el id del path (%d) no coinciden",
-	                piso.getId(), idPiso
-	            )
-	        );
-	    }
+    @Autowired
+    private PisoRepository pisoRepository;
 
-	    if (!this.pisoRepository.existsById(idPiso)) {
-	        throw new PisoException("El piso con id " + idPiso + " no existe.");
-	    }
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
-	    Piso pisoBD = this.findById(idPiso);
+    /* =====================================================
+       1. CREAR PISO
+       ===================================================== */
+    public Piso crear(Piso piso, int idUsuario) {
 
-	    // Protección: solo se permite tocar 'usuarioDueno'
-	    if (
-	        piso.getDireccion() != null ||
-	        piso.getDescripcion() != null ||
-	        piso.getFPublicacion() != null ||
-	        piso.getFotos() != null ||
-	        piso.getAlquileresSolicitados() != null ||
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() ->
+                        new UsuarioException("El usuario no existe"));
 
-	        // Comparaciones contra BD para primitivos
-	        piso.getPrecioMes() != pisoBD.getPrecioMes() ||
-	        piso.getNumTotalHabitaciones() != pisoBD.getNumTotalHabitaciones() ||
-	        piso.getNumOcupantesActual() != pisoBD.getNumOcupantesActual() ||
-	        piso.isGaraje() != pisoBD.isGaraje() ||
-	        piso.isAnimales() != pisoBD.isAnimales() ||
-	        piso.isWifi() != pisoBD.isWifi() ||
-	        piso.isTabaco() != pisoBD.isTabaco()
-	    ) {
-	        throw new PisoException(
-	            "Este endpoint solo permite cambiar el usuario dueño del piso"
-	        );
-	    }
+        if (piso.getNumTotalHabitaciones() < 1) {
+            throw new PisoException(
+                    "El piso debe tener al menos una habitación");
+        }
 
-	 
-	    if (piso.getUsuarioDueno() == null) {
-	        throw new PisoException("Debe indicarse el nuevo usuario dueño del piso");
-	    }
+        piso.setId(0);
+        piso.setUsuarioDueno(usuario);
+        piso.setFPublicacion(LocalDate.now());
 
-	    pisoBD.setUsuarioDueno(piso.getUsuarioDueno());
-	    
-	    return this.pisoRepository.save(pisoBD);
-	}
-   
-   //-----------------------------------------
-   
-   // borrar piso
-   public void delete(int idPiso) {
-       if (!this.pisoRepository.existsById(idPiso)) {
-           throw new PisoNotFoundException("El piso no existe");
-       }
-       this.pisoRepository.deleteById(idPiso);
-   }
-   // pisos por dueño
-   public List<Piso> findByUsuarioDueno(int idUsuario) {
-       return this.pisoRepository.findByUsuarioDuenoId(idUsuario);
-   }
-   
-   
-   //filtrar por coracteristicas
-   public List<Piso> filtrarPorCaracteristicas(
-           boolean garaje,
-           boolean animales,
-           boolean wifi,
-           boolean tabaco
-   ) {
-       return pisoRepository.findByGarajeAndAnimalesAndWifiAndTabaco(
-           garaje, animales, wifi, tabaco
-       );
-   }
+        // El dueño vive en el piso
+        piso.setNumOcupantesActual(1);
 
+        return pisoRepository.save(piso);
+    }
 
+    /* =====================================================
+       2. LISTAR TODOS LOS PISOS
+       ===================================================== */
+    public List<Piso> listarTodos() {
+        return pisoRepository.findAll();
+    }
+
+    /* =====================================================
+       3. PISOS DE LOS QUE SOY DUEÑO
+       ===================================================== */
+    public List<Piso> pisosDeDueno(int idUsuario) {
+        return pisoRepository.findByUsuarioDuenoId(idUsuario);
+    }
+
+    /* =====================================================
+       4. FILTRAR PISOS
+       ===================================================== */
+    public List<Piso> filtrar(
+            double precioMin,
+            double precioMax,
+            boolean garaje,
+            boolean animales,
+            boolean wifi,
+            boolean tabaco) {
+
+        if (precioMin < 0 || precioMax < precioMin) {
+            throw new PisoException("Rango de precios inválido");
+        }
+
+        return pisoRepository
+                .findByGarajeAndAnimalesAndWifiAndTabaco(
+                        garaje, animales, wifi, tabaco)
+                .stream()
+                .filter(p ->
+                        p.getPrecioMes() >= precioMin &&
+                        p.getPrecioMes() <= precioMax)
+                .toList();
+    }
+
+    /* =====================================================
+       5. CAMBIAR DUEÑO DEL PISO
+       ===================================================== */
+    public Piso cambiarDueno(int idPiso, int idNuevoDueno) {
+
+        Piso piso = pisoRepository.findById(idPiso)
+                .orElseThrow(() ->
+                        new PisoException("El piso no existe"));
+
+        Usuario nuevoDueno = usuarioRepository.findById(idNuevoDueno)
+                .orElseThrow(() ->
+                        new UsuarioException("El usuario no existe"));
+
+        // Validación clave del enunciado:
+        // el nuevo dueño debe vivir en el piso
+        boolean viveEnPiso = piso.getAlquileresSolicitados().stream()
+                .anyMatch(a ->
+                        a.getUsuario().getId() == idNuevoDueno &&
+                        a.getEstadoSolicitud()
+                                .equals(AlquilerEstadoSolicitud.ACEPTADA));
+
+        if (!viveEnPiso) {
+            throw new PisoException(
+                    "El nuevo dueño debe vivir actualmente en el piso");
+        }
+
+        piso.setUsuarioDueno(nuevoDueno);
+        return pisoRepository.save(piso);
+    }
 }

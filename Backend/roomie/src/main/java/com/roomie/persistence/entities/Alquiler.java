@@ -2,8 +2,12 @@ package com.roomie.persistence.entities;
 
 import java.time.LocalDate;
 
+import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,8 +45,10 @@ public class Alquiler {
     @Column(name = "f_fin", nullable = false)
     private LocalDate fFin; 
 
-    @Column(name = "estado_solicitud", length = 20, nullable = false)
-    private String estadoSolicitud; 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AlquilerEstadoSolicitud estadoSolicitud;
 
-    private boolean favorito;
+    @Column(nullable = false)
+    private boolean favorito = false;
 }

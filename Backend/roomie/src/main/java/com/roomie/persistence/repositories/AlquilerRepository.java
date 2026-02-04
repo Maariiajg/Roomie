@@ -5,12 +5,14 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.roomie.persistence.entities.Alquiler;
+import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
 
 public interface AlquilerRepository extends JpaRepository<Alquiler, Integer> {
 
-    // Solicitudes de un piso por estado
-    List<Alquiler> findByPisoIdAndEstadoSolicitud(int idPiso, String estadoSolicitud);
+	List<Alquiler> findByPisoIdAndEstadoSolicitud(int idPiso, AlquilerEstadoSolicitud estado);
 
-    // Alquileres de un usuario
     List<Alquiler> findByUsuarioId(int idUsuario);
+
+    boolean existsByUsuarioIdAndEstadoSolicitud(
+            int idUsuario, AlquilerEstadoSolicitud estado);
 }
