@@ -1,6 +1,7 @@
 package com.roomie.services;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import com.roomie.persistence.repositories.AlquilerRepository;
 import com.roomie.persistence.repositories.PisoRepository;
 import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
+import com.roomie.services.exceptions.alquiler.AlquilerNotFoundException;
 import com.roomie.services.exceptions.piso.PisoException;
 import com.roomie.services.exceptions.usuario.UsuarioException;
 
@@ -28,34 +30,61 @@ public class AlquilerService {
 
     @Autowired
     private PisoRepository pisoRepository;
+    
+    
+ // findAll
+ 	public List<Alquiler> findAll() {
+ 		return this.alquilerRepository.findAll();
+ 	}
+
+ 	// findById
+ 	public Alquiler findById(int idTarea) {
+ 		if (!this.alquilerRepository.existsById(idTarea)) {
+ 			throw new AlquilerNotFoundException("La tarea con id " + idTarea + " no existe. ");
+ 		} 
+
+ 		return this.alquilerRepository.findById(idTarea).get();
+ 	}
+
 
     /* =====================================================
-       1. SOLICITAR ALQUILER
+       1. SOLICITAR ALQUILER (con fechas)
        ===================================================== */
-    public Alquiler solicitar(int idUsuario, int idPiso) {
+    public Alquiler solicitar(
+            int idUsuario,
+            int idPiso,
+            LocalDate fInicio,
+            LocalDate fFin) {
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() ->
-                        new UsuarioException("El usuario no existe"));
+                .orElseThrow(() -> new UsuarioException("El usuario no existe"));
 
         Piso piso = pisoRepository.findById(idPiso)
-                .orElseThrow(() ->
-                        new PisoException("El piso no existe"));
+                .orElseThrow(() -> new PisoException("El piso no existe"));
 
-        // Regla del enunciado:
-        // un usuario solo puede vivir en un piso
+        if (fInicio == null) {
+            throw new AlquilerException("La fecha de inicio es obligatoria");
+        }
+
+        if (fFin != null) {
+            long meses = ChronoUnit.MONTHS.between(fInicio, fFin);
+            if (meses < 1) {
+                throw new AlquilerException(
+                        "La estancia mínima es de un mes");
+            }
+        }
+
         if (alquilerRepository.existsByUsuarioIdAndEstadoSolicitud(
                 idUsuario, AlquilerEstadoSolicitud.ACEPTADA)) {
-
-            throw new AlquilerException(
-                    "Ya estás viviendo en un piso");
+            throw new AlquilerException("Ya estás viviendo en un piso");
         }
 
         Alquiler alquiler = new Alquiler();
         alquiler.setId(0);
         alquiler.setUsuario(usuario);
         alquiler.setPiso(piso);
-        alquiler.setFInicio(LocalDate.now());
+        alquiler.setFInicio(fInicio);
+        alquiler.setFFin(fFin);
         alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.PENDIENTE);
         alquiler.setFavorito(false);
 
@@ -65,16 +94,13 @@ public class AlquilerService {
     /* =====================================================
        2. VER SOLICITUDES DE UN PISO (DUEÑO)
        ===================================================== */
-    public List<Alquiler> solicitudesPendientes(
-            int idPiso, int idDueno) {
+    public List<Alquiler> solicitudesPendientes(int idPiso, int idDueno) {
 
         Piso piso = pisoRepository.findById(idPiso)
-                .orElseThrow(() ->
-                        new PisoException("El piso no existe"));
+                .orElseThrow(() -> new PisoException("El piso no existe"));
 
         if (piso.getUsuarioDueno().getId() != idDueno) {
-            throw new AlquilerException(
-                    "Solo el dueño puede ver las solicitudes");
+            throw new AlquilerException("Solo el dueño puede ver solicitudes");
         }
 
         return alquilerRepository.findByPisoIdAndEstadoSolicitud(
@@ -84,97 +110,121 @@ public class AlquilerService {
     /* =====================================================
        3. ACEPTAR / RECHAZAR SOLICITUD
        ===================================================== */
-    public Alquiler aceptarORechazar(
-            int idAlquiler, int idDueno, boolean aceptar) {
+    public Alquiler resolverSolicitud(
+            int idAlquiler,
+            int idDueno,
+            boolean aceptar) {
 
         Alquiler alquiler = alquilerRepository.findById(idAlquiler)
-                .orElseThrow(() ->
-                        new AlquilerException("La solicitud no existe"));
+                .orElseThrow(() -> new AlquilerException("La solicitud no existe"));
 
         Piso piso = alquiler.getPiso();
 
         if (piso.getUsuarioDueno().getId() != idDueno) {
-            throw new AlquilerException(
-                    "No eres el dueño del piso");
+            throw new AlquilerException("No eres el dueño del piso");
         }
 
-        if (alquiler.getEstadoSolicitud()
-                != AlquilerEstadoSolicitud.PENDIENTE) {
-
-            throw new AlquilerException(
-                    "La solicitud ya ha sido resuelta");
+        if (alquiler.getEstadoSolicitud() != AlquilerEstadoSolicitud.PENDIENTE) {
+            throw new AlquilerException("La solicitud ya fue resuelta");
         }
 
         if (aceptar) {
-            // Capacidad del piso
-            if (piso.getNumOcupantesActual()
-                    >= piso.getNumTotalHabitaciones()) {
 
-                throw new AlquilerException(
-                        "El piso está completo");
+            if (piso.getNumOcupantesActual() >= piso.getNumTotalHabitaciones()) {
+                throw new AlquilerException("El piso está completo");
             }
 
-            alquiler.setEstadoSolicitud(
-                    AlquilerEstadoSolicitud.ACEPTADA);
-
-            piso.setNumOcupantesActual(
-                    piso.getNumOcupantesActual() + 1);
-
+            alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.ACEPTADA);
+            piso.setNumOcupantesActual(piso.getNumOcupantesActual() + 1);
             pisoRepository.save(piso);
 
+            // CANCELAR OTRAS SOLICITUDES DEL USUARIO
+            List<Alquiler> otras =
+                    alquilerRepository.findByUsuarioIdAndEstadoSolicitud(
+                            alquiler.getUsuario().getId(),
+                            AlquilerEstadoSolicitud.PENDIENTE);
+
+            otras.forEach(a -> {
+                if (a.getId() != alquiler.getId()) {
+                    a.setEstadoSolicitud(AlquilerEstadoSolicitud.CANCELADA);
+                    alquilerRepository.save(a);
+                }
+            });
+
         } else {
-            alquiler.setEstadoSolicitud(
-                    AlquilerEstadoSolicitud.RECHAZADA);
+            alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.RECHAZADA);
         }
 
         return alquilerRepository.save(alquiler);
     }
 
     /* =====================================================
-       4. SALIR DEL PISO
+       4. SALIR DEL PISO (MANUAL)
        ===================================================== */
     public void salir(int idAlquiler, int idUsuario) {
 
         Alquiler alquiler = alquilerRepository.findById(idAlquiler)
-                .orElseThrow(() ->
-                        new AlquilerException("El alquiler no existe"));
+                .orElseThrow(() -> new AlquilerException("El alquiler no existe"));
 
         if (alquiler.getUsuario().getId() != idUsuario) {
-            throw new AlquilerException(
-                    "No es tu alquiler");
+            throw new AlquilerException("No es tu alquiler");
         }
 
-        if (alquiler.getEstadoSolicitud()
-                != AlquilerEstadoSolicitud.ACEPTADA) {
-
-            throw new AlquilerException(
-                    "No estás viviendo en ese piso");
+        if (alquiler.getEstadoSolicitud() != AlquilerEstadoSolicitud.ACEPTADA) {
+            throw new AlquilerException("No estás viviendo en ese piso");
         }
 
-        alquiler.setEstadoSolicitud(
-                AlquilerEstadoSolicitud.CANCELADA);
-
+        alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.CANCELADA);
         alquiler.setFFin(LocalDate.now());
 
         Piso piso = alquiler.getPiso();
-        piso.setNumOcupantesActual(
-                piso.getNumOcupantesActual() - 1);
+        piso.setNumOcupantesActual(piso.getNumOcupantesActual() - 1);
 
         pisoRepository.save(piso);
         alquilerRepository.save(alquiler);
     }
 
     /* =====================================================
-       5. MARCAR / DESMARCAR FAVORITO
+       5. AÑADIR / QUITAR FAVORITO
        ===================================================== */
-    public Alquiler toggleFavorito(int idAlquiler) {
+    public Alquiler toggleFavorito(int idUsuario, int idPiso) {
 
-        Alquiler alquiler = alquilerRepository.findById(idAlquiler)
-                .orElseThrow(() ->
-                        new AlquilerException("El alquiler no existe"));
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new UsuarioException("El usuario no existe"));
+
+        Piso piso = pisoRepository.findById(idPiso)
+                .orElseThrow(() -> new PisoException("El piso no existe"));
+
+        Alquiler alquiler = alquilerRepository
+                .findByUsuarioIdAndPisoId(idUsuario, idPiso)
+                .orElseGet(() -> {
+                    Alquiler nuevo = new Alquiler();
+                    nuevo.setUsuario(usuario);
+                    nuevo.setPiso(piso);
+                    nuevo.setFInicio(LocalDate.now());
+                    nuevo.setEstadoSolicitud(null);
+                    nuevo.setFavorito(false);
+                    return nuevo;
+                });
 
         alquiler.setFavorito(!alquiler.isFavorito());
         return alquilerRepository.save(alquiler);
     }
+    
+    
+    /*======================================
+     * 6. CANCELAR SOLICITUD
+     * =====================================*/
+    
+     public Alquiler cancelar(Alquiler alquiler, int idAlquiler) {
+    	 if (alquiler.getId() != idAlquiler) {
+ 			throw new AlquilerException(
+ 					String.format("El id del body (%d) y el id del path (%d) no coinciden", alquiler.getId(), idAlquiler));
+ 		}
+    	
+    	Alquiler alquilerBD = this.findById(idAlquiler);
+    	alquilerBD.setEstadoSolicitud(AlquilerEstadoSolicitud.CANCELADA);
+    	
+    	return this.alquilerRepository.save(alquilerBD);
+     }
 }
-

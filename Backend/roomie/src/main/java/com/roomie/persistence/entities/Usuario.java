@@ -73,7 +73,7 @@ public class Usuario {
 	private String foto;
 	
 	@Column(nullable = false)
-	private boolean bloqueado;
+	private boolean bloqueado = false;
 	
 	// Relación 1:N Feedback puesto 
     @OneToMany(mappedBy = "usuarioPone")

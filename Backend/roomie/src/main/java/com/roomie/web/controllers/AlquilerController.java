@@ -1,5 +1,6 @@
 package com.roomie.web.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +25,16 @@ public class AlquilerController {
 
     @Autowired
     private AlquilerService alquilerService;
+    
+    @GetMapping
+	public ResponseEntity<List<Alquiler>> list() {
+		return ResponseEntity.ok(this.alquilerService.findAll());
+	}
+
+	@GetMapping("/{idAlquiler}")
+	public ResponseEntity<?> findById(@PathVariable int idAlquiler) {
+		return ResponseEntity.ok(this.alquilerService.findById(idAlquiler));
+	}
 
     /* =========================
        SOLICITAR ALQUILER
@@ -30,14 +42,16 @@ public class AlquilerController {
     @PostMapping
     public ResponseEntity<?> solicitar(
             @RequestParam int idUsuario,
-            @RequestParam int idPiso) {
+            @RequestParam int idPiso,
+            @RequestParam LocalDate fInicio,
+            @RequestParam(required = false) LocalDate fFin) {
 
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(alquilerService.solicitar(idUsuario, idPiso));
+                    .body(alquilerService.solicitar(
+                            idUsuario, idPiso, fInicio, fFin));
         } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ex.getMessage());
+            return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
 
@@ -51,12 +65,10 @@ public class AlquilerController {
 
         try {
             List<Alquiler> solicitudes =
-                    alquilerService.solicitudesPendientes(
-                            idPiso, idDueno);
+                    alquilerService.solicitudesPendientes(idPiso, idDueno);
             return ResponseEntity.ok(solicitudes);
         } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
         }
     }
 
@@ -71,11 +83,10 @@ public class AlquilerController {
 
         try {
             return ResponseEntity.ok(
-                    alquilerService.aceptarORechazar(
+                    alquilerService.resolverSolicitud(
                             idAlquiler, idDueno, aceptar));
         } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
         }
     }
 
@@ -91,24 +102,33 @@ public class AlquilerController {
             alquilerService.salir(idAlquiler, idUsuario);
             return ResponseEntity.ok("Has salido del piso");
         } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
         }
     }
 
     /* =========================
        FAVORITO
        ========================= */
-    @PutMapping("/{idAlquiler}/favorito")
+    @PutMapping("/favorito")
     public ResponseEntity<?> favorito(
-            @PathVariable int idAlquiler) {
+            @RequestParam int idUsuario,
+            @RequestParam int idPiso) {
 
         try {
             return ResponseEntity.ok(
-                    alquilerService.toggleFavorito(idAlquiler));
+                    alquilerService.toggleFavorito(idUsuario, idPiso));
         } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
         }
     }
+    
+    
+    /*====================
+     * Cancelar solicitud
+     * =====================*/
+    @PutMapping("/{idAlquiler}/cancelar")
+    public ResponseEntity<?> canceladar(@PathVariable int idAlquiler, @RequestBody Alquiler alquiler){
+    	return ResponseEntity.ok(this.alquilerService.cancelar(alquiler, idAlquiler));
+    }
+     
 }
