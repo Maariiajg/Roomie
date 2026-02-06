@@ -48,7 +48,7 @@ public class AlquilerService {
 
 
     /* =====================================================
-       1. SOLICITAR ALQUILER (con fechas)
+       1. SOLICITAR ALQUILER (con fechas)  cambiar enteroooooo
        ===================================================== */
     public Alquiler solicitar(
             int idUsuario,
@@ -86,7 +86,6 @@ public class AlquilerService {
         alquiler.setFInicio(fInicio);
         alquiler.setFFin(fFin);
         alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.PENDIENTE);
-        alquiler.setFavorito(false);
 
         return alquilerRepository.save(alquiler);
     }
@@ -184,32 +183,6 @@ public class AlquilerService {
         alquilerRepository.save(alquiler);
     }
 
-    /* =====================================================
-       5. AÑADIR / QUITAR FAVORITO
-       ===================================================== */
-    public Alquiler toggleFavorito(int idUsuario, int idPiso) {
-
-        Usuario usuario = usuarioRepository.findById(idUsuario)
-                .orElseThrow(() -> new UsuarioException("El usuario no existe"));
-
-        Piso piso = pisoRepository.findById(idPiso)
-                .orElseThrow(() -> new PisoException("El piso no existe"));
-
-        Alquiler alquiler = alquilerRepository
-                .findByUsuarioIdAndPisoId(idUsuario, idPiso)
-                .orElseGet(() -> {
-                    Alquiler nuevo = new Alquiler();
-                    nuevo.setUsuario(usuario);
-                    nuevo.setPiso(piso);
-                    nuevo.setFInicio(LocalDate.now());
-                    nuevo.setEstadoSolicitud(null);
-                    nuevo.setFavorito(false);
-                    return nuevo;
-                });
-
-        alquiler.setFavorito(!alquiler.isFavorito());
-        return alquilerRepository.save(alquiler);
-    }
     
     
     /*======================================

@@ -106,21 +106,7 @@ public class AlquilerController {
         }
     }
 
-    /* =========================
-       FAVORITO
-       ========================= */
-    @PutMapping("/favorito")
-    public ResponseEntity<?> favorito(
-            @RequestParam int idUsuario,
-            @RequestParam int idPiso) {
-
-        try {
-            return ResponseEntity.ok(
-                    alquilerService.toggleFavorito(idUsuario, idPiso));
-        } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        }
-    }
+   
     
     
     /*====================

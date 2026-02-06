@@ -68,9 +68,9 @@ public class UsuarioService {
             throw new UsuarioException("El nombre de usuario ya existe");
         }
 
-        if (!usuario.getPassword().equals(usuario.getRepetirPassword())) {
+        /*if (!usuario.getPassword().equals(usuario.getRepetirPassword())) {
             throw new UsuarioException("Las contraseñas no coinciden");
-        }
+        }*///Para cuando meta DTO
 
         usuario.setId(0);
         usuario.setBloqueado(false);
@@ -184,9 +184,9 @@ public class UsuarioService {
                     "Este endpoint solo permite cambiar nombreUsuario y contraseña");
         }
 
-        if (!usuario.getPassword().equals(usuario.getRepetirPassword())) {
+        /*if (!usuario.getPassword().equals(usuario.getRepetirPassword())) {
             throw new UsuarioException("Las contraseñas no coinciden");
-        }
+        }*/
 
         if (usuarioRepository.existsByNombreUsuario(usuario.getNombreUsuario())) {
             throw new UsuarioException("El nombre de usuario ya existe");

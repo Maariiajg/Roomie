@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.roomie.persistence.entities.Administrador;
-import com.roomie.persistence.repositories.AdministradorRepository;
+import com.roomie.persistence.entities.Usuario;
+import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.administrador.AdministradorException;
 import com.roomie.services.exceptions.administrador.AdministradorNotFoundException;
 
@@ -14,12 +14,12 @@ import com.roomie.services.exceptions.administrador.AdministradorNotFoundExcepti
 public class AdministradorService {
 
     @Autowired
-    private AdministradorRepository administradorRepository;
+    private UsuarioRepository administradorRepository;
 
     /* =====================================================
        1. REGISTRAR ADMINISTRADOR (SOLICITUD)
-       ===================================================== */
-    public Administrador registrar(Administrador admin) {
+       ===================================================== 
+    public Usuario registrar(Usuario admin) {
 
         if (administradorRepository.existsByDni(admin.getDni())) {
             throw new AdministradorException("El DNI ya está registrado");
@@ -39,10 +39,10 @@ public class AdministradorService {
         return administradorRepository.save(admin);
     }
 
-    /* =====================================================
+    =====================================================
        2. LOGIN ADMINISTRADOR
-       ===================================================== */
-    public Administrador iniciarSesion(String nombreUsuario, String password) {
+       ===================================================== 
+    public Usua iniciarSesion(String nombreUsuario, String password) {
 
         Administrador admin = administradorRepository.findByNombreUsuario(nombreUsuario);
 
@@ -59,12 +59,12 @@ public class AdministradorService {
         }
 
         return admin;
-    }
+    }*/
 
     /* =====================================================
        3. VER SOLICITUDES DE ADMIN PENDIENTES
        ===================================================== */
-    public List<Administrador> solicitudesPendientes() {
+    public List<Usuario> solicitudesPendientes() {
         return administradorRepository.findAll()
                 .stream()
                 .filter(a -> !a.isAceptado())
@@ -74,9 +74,9 @@ public class AdministradorService {
     /* =====================================================
        4. ACEPTAR ADMINISTRADOR
        ===================================================== */
-    public Administrador aceptarAdmin(int idAdmin) {
+    public Usuario aceptarAdmin(int idAdmin) {
 
-        Administrador admin = administradorRepository.findById(idAdmin)
+        Usuario admin = administradorRepository.findById(idAdmin)
                 .orElseThrow(() ->
                         new AdministradorNotFoundException("El administrador no existe"));
 
@@ -104,16 +104,16 @@ public class AdministradorService {
     /* =====================================================
        6. VER ADMIN POR ID
        ===================================================== */
-    public Administrador findById(int idAdmin) {
+    public Usuario findById(int idAdmin) {
         return administradorRepository.findById(idAdmin)
                 .orElseThrow(() ->
                         new AdministradorNotFoundException("El administrador no existe"));
     }
 
     /* =====================================================
-       7. LISTAR TODOS
+       7. LISTAR TODOS los administradores
        ===================================================== */
-    public List<Administrador> findAll() {
+    public List<Usuario> findAll() {
         return administradorRepository.findAll();
     }
 }

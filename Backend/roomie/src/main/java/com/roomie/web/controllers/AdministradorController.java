@@ -8,14 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.roomie.persistence.entities.Administrador;
+import com.roomie.persistence.entities.Usuario;
 import com.roomie.services.AdministradorService;
 import com.roomie.services.exceptions.administrador.AdministradorException;
 import com.roomie.services.exceptions.administrador.AdministradorNotFoundException;
@@ -29,7 +26,7 @@ public class AdministradorController {
 
     /* =========================
        REGISTRO ADMIN
-       ========================= */
+       ========================= 
     @PostMapping("/registro")
     public ResponseEntity<?> registrar(@RequestBody Administrador admin) {
         try {
@@ -40,9 +37,9 @@ public class AdministradorController {
         }
     }
 
-    /* =========================
+     =========================
        LOGIN ADMIN
-       ========================= */
+       ========================= 
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestParam String nombreUsuario,
@@ -54,13 +51,13 @@ public class AdministradorController {
         } catch (AdministradorException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
         }
-    }
+    }*/
 
     /* =========================
        VER SOLICITUDES PENDIENTES
        ========================= */
     @GetMapping("/solicitudes")
-    public List<Administrador> solicitudesPendientes() {
+    public List<Usuario> solicitudesPendientes() {
         return administradorService.solicitudesPendientes();
     }
 
@@ -107,7 +104,7 @@ public class AdministradorController {
        GET ALL
        ========================= */
     @GetMapping
-    public List<Administrador> findAll() {
+    public List<Usuario> findAll() {
         return administradorService.findAll();
     }
 }

@@ -1,10 +1,13 @@
 package com.roomie.persistence.entities;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.roomie.persistence.entities.enums.Genero;
+import com.roomie.persistence.entities.enums.Roles;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -63,10 +66,6 @@ public class Usuario {
 	@Size(min = 8, max = 60, message = "La contraseña debe tener entre 8 y 60 caracteres") // CORRECCIÓN: Tamaño mínimo 8 y máximo 60
 	private String password;
 	
-	@Column(nullable = false, length = 60) 
-	@Size(min = 8, max = 60, message = "La contraseña debe tener entre 8 y 60 caracteres") // CORRECCIÓN: Tamaño mínimo 8 y máximo 60
-	private String repetirPassword;
-	
 	@Column(name = "mensaje_presentacion", length = 70)
 	private String mensajePresentacion;
 	
@@ -74,6 +73,15 @@ public class Usuario {
 	
 	@Column(nullable = false)
 	private boolean bloqueado = false;
+	
+	@Column(nullable = false)
+	private boolean aceptado = false;
+	
+	@Column
+	private Roles rol;
+	
+	
+	//MAPEOS
 	
 	// Relación 1:N Feedback puesto 
     @OneToMany(mappedBy = "usuarioPone")
@@ -90,6 +98,9 @@ public class Usuario {
     //Piso (pone)
     @OneToMany(mappedBy = "usuarioDueno")
     private List<Piso> pisosPuestos;
+    
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorito> favoritos = new ArrayList<>();
     
     
 }
