@@ -1,8 +1,10 @@
 package com.roomie.persistence.entities;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,20 +29,18 @@ public class Piso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // Relación N:1 con Usuario (dueño del piso - relación "pone")
-    @ManyToOne 
-    @JoinColumn(name = "id_usuario_dueno", nullable = false) 
-    private Usuario usuarioDueno;
-
     @Column(length = 150, nullable = false)
     private String direccion;
+    
+    @Column(length = 500)
+    private String descripcion;
+    
+    @Column(name = "tamanio_piso")
+    private int tamanio; 
     
     @Column(name = "precio_mes", nullable = false)
     private double precioMes;
 
-    @Column(length = 500)
-    private String descripcion;
-    
     @Column(name = "num_total_habitaciones", nullable = false)
     private int numTotalHabitaciones;
     
@@ -57,10 +57,19 @@ public class Piso {
     private boolean tabaco; 
 
     // Puede haber michas fotos de un piso
-    @OneToMany(mappedBy = "piso")
+    @OneToMany(mappedBy = "piso", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Foto> fotos;
 
     // Relación 1:N con Alquiler (Solicitudes recibidas - relación "se pone" y "pide")
     @OneToMany(mappedBy = "piso") 
     private List<Alquiler> alquileresSolicitados;
+    
+    // Relación N:1 con Usuario (dueño del piso - relación "pone")
+    @ManyToOne 
+    @JoinColumn(name = "id_owner", nullable = false) 
+    private Usuario owner;
+    
+    // relación con favorito
+    @OneToMany(mappedBy = "piso", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Favorito> marcadoPorUsuarios = new ArrayList<>();
 }

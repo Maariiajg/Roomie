@@ -1,5 +1,7 @@
 package com.roomie.persistence.entities;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,6 +43,9 @@ public class Feedback {
 
     @Column(length = 500)
     private String descripcion;
+    
+    @Column(name = "fecha")
+	private LocalDate fecha; //fecha en la que se pone el feedback
     
     @Column(nullable = false)
     private boolean visible = true;

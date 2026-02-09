@@ -38,12 +38,12 @@ public class AlquilerService {
  	}
 
  	// findById
- 	public Alquiler findById(int idTarea) {
- 		if (!this.alquilerRepository.existsById(idTarea)) {
- 			throw new AlquilerNotFoundException("La tarea con id " + idTarea + " no existe. ");
+ 	public Alquiler findById(int idAlquiler) {
+ 		if (!this.alquilerRepository.existsById(idAlquiler)) {
+ 			throw new AlquilerNotFoundException("La tarea con id " + idAlquiler + " no existe. ");
  		} 
 
- 		return this.alquilerRepository.findById(idTarea).get();
+ 		return this.alquilerRepository.findById(idAlquiler).get();
  	}
 
 
@@ -98,7 +98,7 @@ public class AlquilerService {
         Piso piso = pisoRepository.findById(idPiso)
                 .orElseThrow(() -> new PisoException("El piso no existe"));
 
-        if (piso.getUsuarioDueno().getId() != idDueno) {
+        if (piso.getOwner().getId() != idDueno) {
             throw new AlquilerException("Solo el dueño puede ver solicitudes");
         }
 
@@ -119,7 +119,7 @@ public class AlquilerService {
 
         Piso piso = alquiler.getPiso();
 
-        if (piso.getUsuarioDueno().getId() != idDueno) {
+        if (piso.getOwner().getId() != idDueno) {
             throw new AlquilerException("No eres el dueño del piso");
         }
 

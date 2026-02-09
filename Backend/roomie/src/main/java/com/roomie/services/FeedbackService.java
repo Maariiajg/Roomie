@@ -48,8 +48,7 @@ public class FeedbackService {
         boolean hanConvivido = alquilerRepository
                 .findByUsuarioId(idUsuarioPone)
                 .stream()
-                .filter(a -> a.getEstadoSolicitud()
-                        .equals(AlquilerEstadoSolicitud.ACEPTADA.name()))
+                .filter(a -> a.getEstadoSolicitud() == AlquilerEstadoSolicitud.ACEPTADA)
                 .anyMatch(a -> a.getPiso().getAlquileresSolicitados()
                         .stream()
                         .anyMatch(b ->

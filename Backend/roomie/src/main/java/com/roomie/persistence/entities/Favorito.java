@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "foto")
+@Table(name = "favorito")
 @Getter
 @Setter
 @NoArgsConstructor

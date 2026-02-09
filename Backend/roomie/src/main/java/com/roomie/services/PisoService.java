@@ -38,7 +38,7 @@ public class PisoService {
         }
 
         piso.setId(0);
-        piso.setUsuarioDueno(usuario);
+        piso.setOwner(usuario);
         piso.setFPublicacion(LocalDate.now());
 
         // El dueño vive en el piso
@@ -58,7 +58,7 @@ public class PisoService {
        3. PISOS DE LOS QUE SOY DUEÑO
        ===================================================== */
     public List<Piso> pisosDeDueno(int idUsuario) {
-        return pisoRepository.findByUsuarioDuenoId(idUsuario);
+        return pisoRepository.findByOwnerId(idUsuario);
     }
 
     /* =====================================================
@@ -112,7 +112,7 @@ public class PisoService {
                     "El nuevo dueño debe vivir actualmente en el piso");
         }
 
-        piso.setUsuarioDueno(nuevoDueno);
+        piso.setOwner(nuevoDueno);
         return pisoRepository.save(piso);
     }
 }

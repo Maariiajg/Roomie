@@ -29,16 +29,6 @@ public class Alquiler {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // Usuario que solicita o marca favorito
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
-
-    // Piso solicitado o marcado como favorito
-    @ManyToOne
-    @JoinColumn(name = "id_piso", nullable = false)
-    private Piso piso;
-
     // Fecha elegida por el usuario
     @Column(name = "f_inicio", nullable = false)
     private LocalDate fInicio;
@@ -51,5 +41,14 @@ public class Alquiler {
     @Column(name = "estado_solicitud")
     private AlquilerEstadoSolicitud estadoSolicitud;
 
+ // Usuario que solicita 
+    @ManyToOne
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private Usuario usuario;
+
+    // Piso solicitado 
+    @ManyToOne
+    @JoinColumn(name = "id_piso", nullable = false)
+    private Piso piso;
     
 }

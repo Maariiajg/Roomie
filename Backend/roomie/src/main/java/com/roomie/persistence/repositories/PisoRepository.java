@@ -8,7 +8,7 @@ import com.roomie.persistence.entities.Piso;
 
 public interface PisoRepository extends JpaRepository<Piso, Integer>{
 	 
-	List<Piso> findByUsuarioDuenoId(int idUsuario);
+	List<Piso> findByOwnerId(int idUsuario);
 
     List<Piso> findByPrecioMesBetween(double min, double max);
 

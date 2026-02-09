@@ -69,6 +69,8 @@ public class Usuario {
 	@Column(name = "mensaje_presentacion", length = 70)
 	private String mensajePresentacion;
 	
+	//historial de valoraciones está calculada en el UsuarioRepository
+	
 	private String foto;
 	
 	@Column(nullable = false)
@@ -96,7 +98,7 @@ public class Usuario {
     private List<Alquiler> alquileresEnviados;
     
     //Piso (pone)
-    @OneToMany(mappedBy = "usuarioDueno")
+    @OneToMany(mappedBy = "owner")
     private List<Piso> pisosPuestos;
     
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
