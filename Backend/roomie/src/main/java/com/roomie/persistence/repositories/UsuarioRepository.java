@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.Roles;
-
+@Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     
 	Usuario findByNombreUsuario(String nombreUsuario); 

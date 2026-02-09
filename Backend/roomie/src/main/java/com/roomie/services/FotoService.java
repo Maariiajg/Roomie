@@ -28,7 +28,7 @@ public class FotoService {
  	// findById
  	public Foto findById(int idFoto) {
  		if (!this.fotoRepository.existsById(idFoto)) {
- 			throw new AlquilerNotFoundException("La tarea con id " + idFoto + " no existe. ");
+ 			throw new AlquilerNotFoundException("La foto con id " + idFoto + " no existe. ");
  		} 
 
  		return this.fotoRepository.findById(idFoto).get();

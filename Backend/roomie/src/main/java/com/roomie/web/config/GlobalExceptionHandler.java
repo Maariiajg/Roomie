@@ -8,8 +8,12 @@ import com.roomie.services.exceptions.administrador.AdministradorException;
 import com.roomie.services.exceptions.administrador.AdministradorNotFoundException;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
 import com.roomie.services.exceptions.alquiler.AlquilerNotFoundException;
+import com.roomie.services.exceptions.favorito.FavoritoException;
+import com.roomie.services.exceptions.favorito.FavoritoNotFoundException;
 import com.roomie.services.exceptions.feedback.FeedbackException;
 import com.roomie.services.exceptions.feedback.FeedbackNotFoundException;
+import com.roomie.services.exceptions.foto.FotoException;
+import com.roomie.services.exceptions.foto.FotoNotFoundException;
 import com.roomie.services.exceptions.piso.PisoException;
 import com.roomie.services.exceptions.piso.PisoNotFoundException;
 import com.roomie.services.exceptions.usuario.UsuarioException;
@@ -64,6 +68,26 @@ public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(UsuarioException.class)
     public ResponseEntity<String> handleNotFound(UsuarioException ex) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+	
+	@ExceptionHandler(FotoNotFoundException.class)
+    public ResponseEntity<String> handleNotFound(FotoNotFoundException ex) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+	
+	@ExceptionHandler(FotoException.class)
+    public ResponseEntity<String> handleNotFound(FotoException ex) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+	
+	@ExceptionHandler(FavoritoNotFoundException.class)
+    public ResponseEntity<String> handleNotFound(FavoritoNotFoundException ex) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+	
+	@ExceptionHandler(FavoritoException.class) 
+    public ResponseEntity<String> handleNotFound(FavoritoException ex) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
