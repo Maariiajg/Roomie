@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -62,6 +64,7 @@ public class Piso {
 
     // Relación 1:N con Alquiler (Solicitudes recibidas - relación "se pone" y "pide")
     @OneToMany(mappedBy = "piso") 
+    @JsonIgnore
     private List<Alquiler> alquileresSolicitados;
     
     // Relación N:1 con Usuario (dueño del piso - relación "pone")
@@ -71,5 +74,6 @@ public class Piso {
     
     // relación con favorito
     @OneToMany(mappedBy = "piso", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Favorito> marcadoPorUsuarios = new ArrayList<>();
 }

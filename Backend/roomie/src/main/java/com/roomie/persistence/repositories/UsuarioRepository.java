@@ -1,6 +1,7 @@
 package com.roomie.persistence.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +12,7 @@ import com.roomie.persistence.entities.enums.Roles;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     
-	Usuario findByNombreUsuario(String nombreUsuario); 
+	Optional<Usuario> findByNombreUsuario(String nombreUsuario); 
     
     boolean existsByNombreUsuario(String nombreUsuario);
     

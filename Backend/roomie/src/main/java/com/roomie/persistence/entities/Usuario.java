@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.roomie.persistence.entities.enums.Genero;
 import com.roomie.persistence.entities.enums.Roles;
 
@@ -79,7 +80,7 @@ public class Usuario {
 	@Column(nullable = false)
 	private boolean aceptado = false;
 	
-	@Column
+	@Enumerated(EnumType.STRING)
 	private Roles rol;
 	
 	
@@ -87,21 +88,26 @@ public class Usuario {
 	
 	// Relación 1:N Feedback puesto 
     @OneToMany(mappedBy = "usuarioPone")
+    @JsonIgnore
     private List<Feedback> feedbackPuesto;
 
     //Feedback recibido
     @OneToMany(mappedBy = "usuarioRecibe")
+    @JsonIgnore
     private List<Feedback> feedbackRecibido;
     
     // Relación 1:N Alquiler (pide)
     @OneToMany(mappedBy = "usuario") 
+    @JsonIgnore
     private List<Alquiler> alquileresEnviados;
     
     //Piso (pone)
     @OneToMany(mappedBy = "owner")
+    @JsonIgnore
     private List<Piso> pisosPuestos;
     
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Favorito> favoritos = new ArrayList<>();
     
     

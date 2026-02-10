@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,91 +17,37 @@ import com.roomie.persistence.entities.Usuario;
 import com.roomie.services.UsuarioService;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/usuario")
 public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
 
-    /* =========================
-       GET ALL (ADMIN)
-       ========================= */
+ // Endpoint para listar todos los usuarios y owners
     @GetMapping
-    public ResponseEntity<List<Usuario>> list() {
-		return ResponseEntity.ok(this.usuarioService.findAll());
-	}
-
-    /* =========================
-       GET BY ID (ADMIN)
-       ========================= */
+    public ResponseEntity<List<Usuario>> findAll() {
+        List<Usuario> usuarios = usuarioService.findAllUsuariosYOwners();
+        return ResponseEntity.ok(usuarios);
+    }
+    
+ // Endpoint para encontrar un usuario por ID
     @GetMapping("/{idUsuario}")
-    public ResponseEntity<?> findById(@PathVariable int idUsuario) {
-        return ResponseEntity.ok(usuarioService.findById(idUsuario));
-    } 
-
-    /* =========================
-       VER MI PERFIL
-       ========================= */
-    @GetMapping("/perfil/{nombreUsuario}")
-    public ResponseEntity<?> miPerfil(@PathVariable String nombreUsuario) {    
-        return ResponseEntity.ok(usuarioService.findByNombreUsuario(nombreUsuario));
+    public ResponseEntity<Usuario> findById(@PathVariable int idUsuario) {
+        Usuario usuario = usuarioService.findById(idUsuario);
+        return ResponseEntity.ok(usuario);
     }
-
-    /* =========================
-       REGISTRO
-       ========================= */
-    @PostMapping("/registro")
-    public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(usuarioService.registrar(usuario));
-        
-    }
-
-    /* =========================
-       LOGIN
-       ========================= */
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String nombreUsuario, @RequestParam String password) {
-        return ResponseEntity.ok(
-            usuarioService.iniciarSesion(nombreUsuario, password));
-    }
-
-    /* =========================
-       ACTUALIZAR PERFIL
-       ========================= */
-    @PutMapping("/{idUsuario}")
-    public ResponseEntity<?> update(
-            @PathVariable int idUsuario,
-            @RequestBody Usuario usuario) {
-
-        return ResponseEntity.ok(
-                usuarioService.update(usuario, idUsuario));
     
+ // Endpoint para registrar un nuevo usuario
+    @PostMapping("/registrar")
+    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
+        Usuario nuevoUsuario = usuarioService.registrar(usuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
     }
 
-    /* =========================
-       BLOQUEAR / DESBLOQUEAR (ADMIN)
-       ========================= */
-    @PutMapping("/{idUsuario}/bloqueo")
-    public ResponseEntity<?> toggleBloqueo(
-            @PathVariable int idUsuario,
-            @RequestBody Usuario usuario) {
-
-        return ResponseEntity.ok(
-                usuarioService.toggleBloqueo(usuario, idUsuario));
-    
-    }
-
-    /* =========================
-       CAMBIAR CREDENCIALES
-       ========================= */
-    @PutMapping("/{idUsuario}/credenciales")
-    public ResponseEntity<?> cambiarCredenciales(
-            @PathVariable int idUsuario,
-            @RequestBody Usuario usuario) {
-
-        return ResponseEntity.ok(
-                usuarioService.cambiarCredenciales(usuario, idUsuario));
-        
+    // Endpoint para iniciar sesión
+    @PostMapping("/iniciar-sesion")
+    public ResponseEntity<Usuario> iniciarSesion(@RequestParam String nombreUsuario, @RequestParam String password) {
+        Usuario usuario = usuarioService.iniciarSesion(nombreUsuario, password);
+        return ResponseEntity.ok(usuario);
     }
 }
