@@ -43,34 +43,69 @@ public class UsuarioService {
     
  // Método para registrar un nuevo usuario
     public Usuario registrar(Usuario usuario) {
-        // Validar que el rol sea USUARIO
-        if (usuario.getRol() != Roles.USUARIO) {
-            throw new UsuarioException("Solo se pueden registrar usuarios con rol USUARIO.");
+
+        if (usuario.getRol() != null) {
+            throw new UsuarioException(
+                "No puedes introducir el rol; por defecto será USUARIO."
+            );
+        }
+
+        if (usuario.getId() != 0) {
+            throw new UsuarioException(
+                "No puedes introducir el id; se genera automáticamente."
+            );
+        }
+
+        if (usuario.isBloqueado()) {
+            throw new UsuarioException(
+                "No puedes introducir el estado 'bloqueado'."
+            );
+        }
+
+        if (usuario.isAceptado()) {
+            throw new UsuarioException(
+                "No puedes introducir el estado 'aceptado'."
+            );
         }
 
         // Validar campos obligatorios
-        if (usuario.getNombre() == null || usuario.getApellido1() == null || usuario.getAnioNacimiento() == null ||
-            usuario.getGenero() == null || usuario.getTelefono() == null || usuario.getEmail() == null ||
-            usuario.getNombreUsuario() == null || usuario.getPassword() == null) {
-            throw new UsuarioException("Todos los campos obligatorios deben ser completados.");
+        if (usuario.getNombre() == null ||
+            usuario.getApellido1() == null ||
+            usuario.getAnioNacimiento() == null ||
+            usuario.getGenero() == null ||
+            usuario.getTelefono() == null ||
+            usuario.getEmail() == null ||
+            usuario.getNombreUsuario() == null ||
+            usuario.getPassword() == null) {
+
+            throw new UsuarioException(
+                "Todos los campos obligatorios deben ser completados."
+            );
         }
 
-        // Validar que el nombre de usuario y el email sean únicos
+        // Validar unicidad
         if (usuarioRepository.existsByNombreUsuario(usuario.getNombreUsuario())) {
             throw new UsuarioException("El nombre de usuario ya está en uso.");
         }
+
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
             throw new UsuarioException("El email ya está en uso.");
         }
+        
+        if (usuarioRepository.existsByDni(usuario.getDni())) {
+            throw new UsuarioException("El DNI ya existe en la base de datos.");
+        }
 
-        // Inicializar valores por defecto
-        usuario.setId(0); // Asegurarse de que es un nuevo registro
-        usuario.setBloqueado(false);
-        usuario.setAceptado(true); // Automáticamente aceptado como usuario
+        usuario.setRol(Roles.USUARIO);
+        usuario.setId(0);              // nuevo registro
+        usuario.setBloqueado(false);   // por defecto
+        usuario.setAceptado(true);     // por defecto
 
-        // Guardar el usuario
         return usuarioRepository.save(usuario);
     }
+    
+    
+    
     
     // Método para iniciar sesión
     public Usuario iniciarSesion(String nombreUsuario, String password) {

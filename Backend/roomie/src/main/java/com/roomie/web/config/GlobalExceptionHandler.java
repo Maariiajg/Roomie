@@ -3,6 +3,7 @@ package com.roomie.web.config;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.roomie.services.exceptions.administrador.AdministradorException;
 import com.roomie.services.exceptions.administrador.AdministradorNotFoundException;
@@ -19,6 +20,7 @@ import com.roomie.services.exceptions.piso.PisoNotFoundException;
 import com.roomie.services.exceptions.usuario.UsuarioException;
 import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
 
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 	
 	@ExceptionHandler(AdministradorNotFoundException.class)
