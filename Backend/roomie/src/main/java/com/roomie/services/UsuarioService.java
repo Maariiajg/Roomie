@@ -109,14 +109,163 @@ public class UsuarioService {
     
     // Método para iniciar sesión
     public Usuario iniciarSesion(String nombreUsuario, String password) {
+
         Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario)
-                .orElseThrow(() -> new UsuarioException("Nombre de usuario o contraseña incorrectos."));
+                .orElseThrow(() -> new UsuarioException(
+                    "Nombre de usuario o contraseña incorrectos."
+                ));
 
         if (!usuario.getPassword().equals(password)) {
-            throw new UsuarioException("Nombre de usuario o contraseña incorrectos.");
+            throw new UsuarioException(
+                "Nombre de usuario o contraseña incorrectos."
+            );
         }
 
-        return usuario; // Retornamos el usuario autenticado
+        if (usuario.isBloqueado()) {
+            throw new UsuarioException(
+                "Tu cuenta está bloqueada. Contacta con un administrador."
+            );
+        }
+
+        if (!usuario.isAceptado()) {
+            throw new UsuarioException(
+                "Tu cuenta aún no ha sido aceptada."
+            );
+        }
+
+        return usuario;
     }
+
+    
+    
+    
+    
+    public void cerrarSesion() {
+        // No hay sesión que cerrar en backend
+        // Método intencionadamente vacío por ahora, este método hay q completarlo bien al meter springSecurity con JWT
+    }
+
+    
+    public Usuario actualizarPerfil(int idUsuario, Usuario datos) {
+    	
+    	if (datos.getId() != idUsuario) {
+			throw new UsuarioException(
+					String.format("El id del body (%d) y el id del path (%d) no coinciden", datos.getId(), idUsuario));
+		}
+    	
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+
+        
+        // Validar campos NO permitidos
+        if (datos.getNombreUsuario() != null ||
+            datos.getPassword() != null ||
+            datos.isBloqueado() ||
+            datos.isAceptado() ||
+            datos.getRol() != null) {
+
+            throw new UsuarioException("No puedes modificar alguno de los campos introducidos.");
+        }
+
+        // Actualizar solo campos permitidos
+        usuario.setDni(datos.getDni());
+        usuario.setNombre(datos.getNombre());
+        usuario.setApellido1(datos.getApellido1());
+        usuario.setApellido2(datos.getApellido2());
+        usuario.setAnioNacimiento(datos.getAnioNacimiento());
+        usuario.setGenero(datos.getGenero());
+        usuario.setTelefono(datos.getTelefono());
+        usuario.setEmail(datos.getEmail());
+        usuario.setFoto(datos.getFoto());
+        usuario.setMensajePresentacion(datos.getMensajePresentacion());
+
+        return usuarioRepository.save(usuario);
+    }
+
+    
+    public Usuario cambiarEstadoBloqueo(int idUsuario, Usuario datos, boolean bloquear) {
+
+        // 🔐 Validación ID path vs body
+        if (datos.getId() != idUsuario) {
+            throw new UsuarioException(
+                    String.format(
+                            "El id del body (%d) y el id del path (%d) no coinciden",
+                            datos.getId(),
+                            idUsuario
+                    )
+            );
+        }
+
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+
+        // 🔒 Validar que NO venga ningún otro campo
+        if (datos.getNombre() != null ||
+            datos.getApellido1() != null ||
+            datos.getApellido2() != null ||
+            datos.getDni() != null ||
+            datos.getEmail() != null ||
+            datos.getTelefono() != null ||
+            datos.getGenero() != null ||
+            datos.getAnioNacimiento() != null ||
+            datos.getNombreUsuario() != null ||
+            datos.getPassword() != null ||
+            datos.getRol() != null ||
+            datos.isAceptado()) {
+
+            throw new UsuarioException("Solo se puede modificar el estado de bloqueo del usuario.");
+        }
+
+        usuario.setBloqueado(bloquear);
+        return usuarioRepository.save(usuario);
+    }
+
+    
+    
+    public Usuario cambiarCredenciales(int idUsuario, Usuario datos) {
+
+    	if (datos.getId() != idUsuario) {
+			throw new UsuarioException(
+					String.format("El id del body (%d) y el id del path (%d) no coinciden", datos.getId(), idUsuario));
+		}
+    	
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+
+        // Validar campos NO permitidos
+        if (datos.getDni() != null ||
+            datos.getNombre() != null ||
+            datos.getApellido1() != null ||
+            datos.getApellido2() != null ||
+            datos.getAnioNacimiento() != null ||
+            datos.getGenero() != null ||
+            datos.getTelefono() != null ||
+            datos.getEmail() != null ||
+            datos.getMensajePresentacion() != null ||
+            datos.getFoto() != null ||
+            datos.isBloqueado() ||
+            datos.isAceptado() ||
+            datos.getRol() != null) {
+
+            throw new UsuarioException("Solo puedes modificar el nombre de usuario y/o la contraseña.");
+        }
+
+        // Cambiar nombreUsuario si viene
+        if (datos.getNombreUsuario() != null) {
+            if (usuarioRepository.existsByNombreUsuario(datos.getNombreUsuario())) {
+                throw new UsuarioException("El nombre de usuario ya está en uso.");
+            }
+            usuario.setNombreUsuario(datos.getNombreUsuario());
+        }
+
+        // Cambiar password si viene
+        if (datos.getPassword() != null) {
+            usuario.setPassword(datos.getPassword());
+        }
+
+        return usuarioRepository.save(usuario);
+    }
+
+
 
 }

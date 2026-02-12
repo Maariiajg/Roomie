@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,8 +47,61 @@ public class UsuarioController {
 
     // Endpoint para iniciar sesión
     @PostMapping("/iniciar-sesion")
-    public ResponseEntity<Usuario> iniciarSesion(@RequestParam String nombreUsuario, @RequestParam String password) {
+    public ResponseEntity<Usuario> iniciarSesion(
+            @RequestParam String nombreUsuario,
+            @RequestParam String password) {
+
         Usuario usuario = usuarioService.iniciarSesion(nombreUsuario, password);
         return ResponseEntity.ok(usuario);
     }
+    
+    
+    @PostMapping("/cerrar-sesion")
+    public ResponseEntity<String> cerrarSesion() {
+        usuarioService.cerrarSesion();
+        return ResponseEntity.ok("Sesión cerrada correctamente.");
+    }
+
+    
+    @PutMapping("/{idUsuario}/actualizar-perfil")
+    public ResponseEntity<Usuario> actualizarPerfil(
+            @PathVariable int idUsuario,
+            @RequestBody Usuario usuario) {
+
+        return ResponseEntity.ok(usuarioService.actualizarPerfil(idUsuario, usuario));
+    }
+
+    
+    @PutMapping("/{idUsuario}/bloquear")
+    public ResponseEntity<Usuario> bloquear(
+            @PathVariable int idUsuario,
+            @RequestBody Usuario usuario) {
+
+        return ResponseEntity.ok(
+                usuarioService.cambiarEstadoBloqueo(idUsuario, usuario, true)
+        );
+    }
+
+    @PutMapping("/{idUsuario}/desbloquear")
+    public ResponseEntity<Usuario> desbloquear(
+            @PathVariable int idUsuario,
+            @RequestBody Usuario usuario) {
+
+        return ResponseEntity.ok(
+                usuarioService.cambiarEstadoBloqueo(idUsuario, usuario, false)
+        );
+    }
+
+    
+    
+    @PutMapping("/{idUsuario}/credenciales")
+    public ResponseEntity<Usuario> cambiarCredenciales(
+            @PathVariable int idUsuario,
+            @RequestBody Usuario usuario) {
+
+        return ResponseEntity.ok(usuarioService.cambiarCredenciales(idUsuario, usuario));
+    }
+
+
+
 }
