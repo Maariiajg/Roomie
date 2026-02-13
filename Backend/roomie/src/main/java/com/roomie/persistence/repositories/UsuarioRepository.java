@@ -24,6 +24,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     
     List<Usuario> findByRol(Roles rol); //para buscar todos los administradores
     
+    Optional<Usuario> findByIdAndRol(int id, Roles rol);
+    
     //calcular media de calificaciones del feedback
     @Query("SELECT AVG(f.calificacion) FROM Feedback f WHERE f.usuarioRecibe.id = :idUsuario")
     Double getCalificacionMedia(int idUsuario);

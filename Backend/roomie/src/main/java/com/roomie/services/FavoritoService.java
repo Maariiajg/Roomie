@@ -17,6 +17,8 @@ import com.roomie.services.exceptions.favorito.FavoritoNotFoundException;
 import com.roomie.services.exceptions.piso.PisoNotFoundException;
 import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class FavoritoService {
 
@@ -80,6 +82,7 @@ public class FavoritoService {
     /* =====================================================
        4. ELIMINAR DE FAVORITOS
        ===================================================== */
+    @Transactional
     public void eliminarDeFavoritos(int idUsuario, int idPiso) {
 
         if (!favoritoRepository.existsByUsuarioIdAndPisoId(idUsuario, idPiso)) {

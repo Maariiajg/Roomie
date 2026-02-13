@@ -6,66 +6,132 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.roomie.persistence.entities.Usuario;
+import com.roomie.persistence.entities.enums.Roles;
 import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.administrador.AdministradorException;
 import com.roomie.services.exceptions.administrador.AdministradorNotFoundException;
+import com.roomie.services.exceptions.usuario.UsuarioException;
+import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
 
 @Service
 public class AdministradorService {
 
     @Autowired
-    private UsuarioRepository administradorRepository;
+    private UsuarioRepository usuarioRepository;
+    
+    public List<Usuario> findAllAdministradores() {
 
-    /* =====================================================
-       1. REGISTRAR ADMINISTRADOR (SOLICITUD)
-       ===================================================== 
-    public Usuario registrar(Usuario admin) {
+        return usuarioRepository.findByRol(Roles.ADMINISTRADOR);
+    }
+    
+ // Método para encontrar un usuario por ID
+    public Usuario findAdministradorById(int idAdministrador) {
 
-        if (administradorRepository.existsByDni(admin.getDni())) {
-            throw new AdministradorException("El DNI ya está registrado");
-        }
-
-        if (administradorRepository.existsByEmail(admin.getEmail())) {
-            throw new AdministradorException("El email ya está registrado");
-        }
-
-        if (administradorRepository.existsByNombreUsuario(admin.getNombreUsuario())) {
-            throw new AdministradorException("El nombre de usuario ya existe");
-        }
-
-        admin.setId(0);
-        admin.setAceptado(false);
-
-        return administradorRepository.save(admin);
+        return usuarioRepository.findByIdAndRol(idAdministrador, Roles.ADMINISTRADOR)
+                .orElseThrow(() ->
+                    new UsuarioNotFoundException(
+                        "El administrador con ID " + idAdministrador + " no existe"
+                    )
+                );
     }
 
-    =====================================================
+
+    public Usuario registrarAdministrador(Usuario admin) {
+
+        // CAMPOS PROHIBIDOS
+        if (admin.getId() != 0 ||
+            admin.getRol() != null ||
+            admin.isBloqueado() ||
+            admin.isAceptado()) {
+
+            throw new UsuarioException(
+                    "No se pueden introducir los campos id, rol, bloqueado o aceptado."
+            );
+        }
+
+        // CAMPOS OBLIGATORIOS
+        if (admin.getDni() == null ||
+            admin.getNombre() == null ||
+            admin.getApellido1() == null ||
+            admin.getApellido2() == null ||
+            admin.getAnioNacimiento() == null ||
+            admin.getGenero() == null ||
+            admin.getTelefono() == null ||
+            admin.getEmail() == null ||
+            admin.getNombreUsuario() == null ||
+            admin.getPassword() == null) {
+
+            throw new AdministradorException(
+                    "Todos los campos son obligatorios excepto foto y mensaje de presentación."
+            );
+        }
+
+        // Validar username único
+        if (usuarioRepository.existsByNombreUsuario(admin.getNombreUsuario())) {
+            throw new AdministradorException(
+                    "El nombre de usuario ya existe, debes elegir otro."
+            );
+        }
+        
+        if (usuarioRepository.existsByEmail(admin.getEmail())) {
+            throw new UsuarioException("El email ya está en uso.");
+        }
+        
+        if (usuarioRepository.existsByDni(admin.getDni())) {
+            throw new UsuarioException("El DNI ya existe en la base de datos.");
+        }
+
+        // FORZAR VALORES DE ADMINISTRADOR
+        admin.setRol(Roles.ADMINISTRADOR);
+        admin.setBloqueado(false);
+        admin.setAceptado(false);
+
+        return usuarioRepository.save(admin);
+    }
+
+
+    /*=====================================================
        2. LOGIN ADMINISTRADOR
-       ===================================================== 
-    public Usua iniciarSesion(String nombreUsuario, String password) {
+       ===================================================== */
+    public Usuario iniciarSesion(String nombreUsuario, String password) {
 
-        Administrador admin = administradorRepository.findByNombreUsuario(nombreUsuario);
+        Usuario admin = usuarioRepository.findByNombreUsuario(nombreUsuario)
+                .orElseThrow(() -> new UsuarioException(
+                    "Nombre de usuario o contraseña incorrectos."
+                ));
 
-        if (admin == null) {
-            throw new AdministradorException("Credenciales incorrectas");
+        if (!admin.getPassword().equals(password)) {
+            throw new UsuarioException(
+                "Nombre de usuario o contraseña incorrectos."
+            );
+        }
+
+        if (admin.isBloqueado()) {
+            throw new UsuarioException(
+                "Tu cuenta está bloqueada. Contacta con un administrador."
+            );
         }
 
         if (!admin.isAceptado()) {
-            throw new AdministradorException("El administrador aún no ha sido aceptado");
-        }
-
-        if (!admin.getPassword().equals(password)) {
-            throw new AdministradorException("Credenciales incorrectas");
+            throw new UsuarioException(
+                "Tu cuenta aún no ha sido aceptada."
+            );
         }
 
         return admin;
-    }*/
+    }
+    
+    
+    public void cerrarSesion() {
+        // No hay sesión que cerrar en backend
+        // Método intencionadamente vacío por ahora, este método hay q completarlo bien al meter springSecurity con JWT
+    }
 
     /* =====================================================
        3. VER SOLICITUDES DE ADMIN PENDIENTES
        ===================================================== */
     public List<Usuario> solicitudesPendientes() {
-        return administradorRepository.findAll()
+        return usuarioRepository.findAll()
                 .stream()
                 .filter(a -> !a.isAceptado())
                 .toList();
@@ -74,19 +140,51 @@ public class AdministradorService {
     /* =====================================================
        4. ACEPTAR ADMINISTRADOR
        ===================================================== */
-    public Usuario aceptarAdmin(int idAdmin) {
+    public Usuario aceptarAdministrador(int idAdmin, Usuario datos) {
 
-        Usuario admin = administradorRepository.findById(idAdmin)
-                .orElseThrow(() ->
-                        new AdministradorNotFoundException("El administrador no existe"));
-
-        if (admin.isAceptado()) {
-            throw new AdministradorException("El administrador ya está aceptado");
+        // Validación ID body vs path
+        if (datos.getId() != idAdmin) {
+            throw new UsuarioException(
+                String.format(
+                    "El id del body (%d) y el id del path (%d) no coinciden",
+                    datos.getId(), idAdmin
+                )
+            );
         }
 
+        // Validar que SOLO venga el ID
+        if (
+            datos.getDni() != null ||
+            datos.getNombre() != null ||
+            datos.getApellido1() != null ||
+            datos.getApellido2() != null ||
+            datos.getAnioNacimiento() != null ||
+            datos.getGenero() != null ||
+            datos.getTelefono() != null ||
+            datos.getEmail() != null ||
+            datos.getNombreUsuario() != null ||
+            datos.getPassword() != null ||
+            datos.getMensajePresentacion() != null ||
+            datos.getFoto() != null ||
+            datos.isBloqueado() != false || // default
+            datos.isAceptado() != false ||  // default
+            datos.getRol() != null
+        ) {
+            throw new UsuarioException(
+                "solo necesitas introducir correctamente el ID y el administrador será aceptado"
+            );
+        }
+
+        // Buscar administrador
+        Usuario admin = usuarioRepository.findById(idAdmin)
+            .orElseThrow(() ->
+                new UsuarioNotFoundException("El administrador no existe")
+            );
+
+        // Cambiar estado
         admin.setAceptado(true);
 
-        return administradorRepository.save(admin);
+        return usuarioRepository.save(admin);
     }
 
     /* =====================================================
@@ -94,26 +192,12 @@ public class AdministradorService {
        ===================================================== */
     public void rechazarAdmin(int idAdmin) {
 
-        if (!administradorRepository.existsById(idAdmin)) {
+        if (!usuarioRepository.existsById(idAdmin)) {
             throw new AdministradorNotFoundException("El administrador no existe");
         }
 
-        administradorRepository.deleteById(idAdmin);
+        usuarioRepository.deleteById(idAdmin);
     }
 
-    /* =====================================================
-       6. VER ADMIN POR ID
-       ===================================================== */
-    public Usuario findById(int idAdmin) {
-        return administradorRepository.findById(idAdmin)
-                .orElseThrow(() ->
-                        new AdministradorNotFoundException("El administrador no existe"));
-    }
-
-    /* =====================================================
-       7. LISTAR TODOS los administradores
-       ===================================================== */
-    public List<Usuario> findAll() {
-        return administradorRepository.findAll();
-    }
+    
 }
