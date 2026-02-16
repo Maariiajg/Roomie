@@ -189,7 +189,7 @@ public class AdministradorService {
 
     /* =====================================================
        5. RECHAZAR ADMINISTRADOR
-       ===================================================== */
+       ===================================================== 
     public void rechazarAdmin(int idAdmin) {
 
         if (!usuarioRepository.existsById(idAdmin)) {
@@ -197,7 +197,7 @@ public class AdministradorService {
         }
 
         usuarioRepository.deleteById(idAdmin);
-    }
+    }*/
 
     
 }

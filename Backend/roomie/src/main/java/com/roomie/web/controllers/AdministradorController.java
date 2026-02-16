@@ -107,7 +107,7 @@ public class AdministradorController {
 
     /* =========================
        RECHAZAR ADMIN
-       ========================= */
+       ========================= 
     @DeleteMapping("/{idAdmin}/rechazar")
     public ResponseEntity<?> rechazar(@PathVariable int idAdmin) {
         try {
@@ -116,7 +116,7 @@ public class AdministradorController {
         } catch (AdministradorNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         }
-    }
+    }*/
 
     
    

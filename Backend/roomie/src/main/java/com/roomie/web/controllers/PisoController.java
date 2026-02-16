@@ -16,89 +16,77 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.roomie.persistence.entities.Piso;
 import com.roomie.services.PisoService;
-import com.roomie.services.exceptions.piso.PisoException;
-import com.roomie.services.exceptions.usuario.UsuarioException;
 
 @RestController
-@RequestMapping("/pisos")
+@RequestMapping("/piso")
 public class PisoController {
 
     @Autowired
     private PisoService pisoService;
 
-    /* =========================
-       CREAR PISO
-       ========================= */
-    @PostMapping
-    public ResponseEntity<?> crear(
-            @RequestParam int idUsuario,
-            @RequestBody Piso piso) {
-
-        try {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(pisoService.crear(piso, idUsuario));
-        } catch (UsuarioException | PisoException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ex.getMessage());
-        }
-    }
-
-    /* =========================
-       LISTAR TODOS
-       ========================= */
+    
     @GetMapping
-    public ResponseEntity<List<Piso>> listar() {
-        return ResponseEntity.ok(pisoService.listarTodos());
+    public ResponseEntity<List<Piso>> findAll() {
+        return ResponseEntity.ok(pisoService.findAll());
     }
 
+    /* =====================================================
+       GET /pisos/{id}
+       ===================================================== */
+    @GetMapping("/{idPiso}")
+    public ResponseEntity<Piso> findById(@PathVariable int idPiso) {
+        return ResponseEntity.ok(pisoService.findById(idPiso));
+    }
+    
+    
     /* =========================
-       PISOS DE LOS QUE SOY DUEÑO
-       ========================= */
-    @GetMapping("/dueno/{idUsuario}")
-    public ResponseEntity<List<Piso>> pisosDueno(
-            @PathVariable int idUsuario) {
+    CREAR PISO
+    ========================= */
+	 @PostMapping("/crear/{idUsuario}")
+	 public ResponseEntity<Piso> crearPiso(
+	         @PathVariable int idUsuario,
+	         @RequestBody Piso datos) {
+	
+	     return ResponseEntity.status(HttpStatus.CREATED)
+	             .body(pisoService.crearPiso(idUsuario, datos));
+	 }
+	 
+	 /* =========================
+     MODIFICAR PISOS 
+     ========================= */
+	 
+	 @PutMapping("/{idPiso}")
+	 public ResponseEntity<Piso> modificarInformacionBasica(
+	         @PathVariable int idPiso,
+	         @RequestBody Piso datos) {
 
-        return ResponseEntity.ok(
-                pisoService.pisosDeDueno(idUsuario));
-    }
+	     return ResponseEntity.ok(
+	             pisoService.modificarInformacionBasica(idPiso, datos)
+	     );
+	 }
 
-    /* =========================
-       FILTRAR
-       ========================= */
-    @GetMapping("/filtrar")
-    public ResponseEntity<?> filtrar(
-            @RequestParam double precioMin,
-            @RequestParam double precioMax,
-            @RequestParam boolean garaje,
-            @RequestParam boolean animales,
-            @RequestParam boolean wifi,
-            @RequestParam boolean tabaco) {
 
-        try {
-            return ResponseEntity.ok(
-                    pisoService.filtrar(
-                            precioMin, precioMax,
-                            garaje, animales, wifi, tabaco));
-        } catch (PisoException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ex.getMessage());
-        }
-    }
+	 /* =========================
+     FILTRAR PISOS
+     ========================= */
+	 @GetMapping("/filtrar")
+	 public ResponseEntity<List<Piso>> filtrar(
+	         @RequestParam(required = false) Double precioMin,
+	         @RequestParam(required = false) Double precioMax,
+	         @RequestParam(required = false) Boolean garaje,
+	         @RequestParam(required = false) Boolean animales,
+	         @RequestParam(required = false) Boolean wifi,
+	         @RequestParam(required = false) Boolean tabaco) {
 
-    /* =========================
-       CAMBIAR DUEÑO
-       ========================= */
-    @PutMapping("/{idPiso}/dueno")
-    public ResponseEntity<?> cambiarDueno(
-            @PathVariable int idPiso,
-            @RequestParam int idNuevoDueno) {
-
-        try {
-            return ResponseEntity.ok(
-                    pisoService.cambiarDueno(idPiso, idNuevoDueno));
-        } catch (PisoException | UsuarioException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ex.getMessage());
-        }
-    }
+	     return ResponseEntity.ok(
+	             pisoService.filtrar(
+	                     precioMin,
+	                     precioMax,
+	                     garaje,
+	                     animales,
+	                     wifi,
+	                     tabaco
+	             )
+	     );
+	 }
 }
