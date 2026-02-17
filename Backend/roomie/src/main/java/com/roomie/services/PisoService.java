@@ -7,15 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.roomie.persistence.entities.Alquiler;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
+import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
 import com.roomie.persistence.entities.enums.Roles;
+import com.roomie.persistence.repositories.AlquilerRepository;
 import com.roomie.persistence.repositories.PisoRepository;
 import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.persistence.specifications.PisoSpecification;
+import com.roomie.services.dto.piso.PisoCederDTO;
 import com.roomie.services.exceptions.piso.PisoException;
 import com.roomie.services.exceptions.piso.PisoNotFoundException;
 import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class PisoService {
@@ -25,6 +31,9 @@ public class PisoService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private AlquilerRepository alquilerRepository;
     
     public List<Piso> findAll() {
         return pisoRepository.findAll();
@@ -179,9 +188,107 @@ public class PisoService {
         return pisoRepository.findAll(spec);
     }
     
+    /*=========================
+     * pisos de un owner
+     ==========================*/
+    
+    public List<Piso> findPisosByOwner(int idOwner) {
+
+        // 1️⃣ Verificar que el usuario existe
+        Usuario owner = usuarioRepository.findById(idOwner)
+                .orElseThrow(() ->
+                        new UsuarioNotFoundException("El usuario no existe")
+                );
+
+        // 2️⃣ Verificar que tiene rol OWNER
+        if (owner.getRol() != Roles.OWNER) {
+            throw new PisoException("El usuario indicado no es un OWNER");
+        }
+
+        // 3️⃣ Obtener pisos
+        return pisoRepository.findByOwnerId(idOwner);
+    }
+
+    
+    
     /* =========================
      * CEDER PISO
      * ========================= */
+    @Transactional
+    public Piso cederPiso(int idPiso, PisoCederDTO datos) {
+
+        // 1️ Buscar piso
+        Piso piso = pisoRepository.findById(idPiso)
+                .orElseThrow(() ->
+                        new PisoNotFoundException("El piso no existe")
+                );
+
+        // 2️ Buscar usuarios
+        Usuario duenoActual = usuarioRepository.findById(datos.getIdDuenoActual())
+                .orElseThrow(() ->
+                        new UsuarioNotFoundException("El dueño actual no existe")
+                );
+
+        Usuario nuevoDueno = usuarioRepository.findById(datos.getIdNuevoDueno())
+                .orElseThrow(() ->
+                        new UsuarioNotFoundException("El nuevo dueño no existe")
+                );
+
+        // 3️ Validar que el dueño actual es realmente el owner
+        if (piso.getOwner().getId() != duenoActual.getId()) {
+            throw new PisoException("El usuario que intenta ceder no es el dueño actual del piso");
+        }
+
+        // 4️ No permitir ceder a sí mismo
+        if (duenoActual.getId() == nuevoDueno.getId()) {
+            throw new PisoException("No puedes ceder el piso a ti mismo");
+        }
+
+        // 5️ Cambiar owner del piso
+        piso.setOwner(nuevoDueno);
+
+        // 6 Ajustar rol del nuevo dueño (solo si no lo era)
+        if (nuevoDueno.getRol() != Roles.OWNER) {
+            nuevoDueno.setRol(Roles.OWNER);
+            usuarioRepository.save(nuevoDueno);
+        }
+
+        // 7 Verificar si el dueño actual tiene más pisos
+        long pisosRestantes = pisoRepository.countByOwnerId(duenoActual.getId());
+
+        // Si este era su único piso, pierde rol OWNER
+        if (pisosRestantes <= 1) {
+            duenoActual.setRol(Roles.USUARIO);
+            usuarioRepository.save(duenoActual);
+        }
+
+        return pisoRepository.save(piso);
+    }
+
     
+    /*================================
+     * listar los usuarios de un piso
+     =================================*/
+    public List<Usuario> listarUsuariosQueVivenEnPiso(int idPiso) {
+
+        // 1️ Verificar que el piso existe
+        pisoRepository.findById(idPiso)
+                .orElseThrow(() ->
+                        new PisoException("El piso con ID " + idPiso + " no existe")
+                );
+
+        // 2️ Buscar alquileres aceptados
+        List<Alquiler> alquileres = alquilerRepository
+                .findByPisoIdAndEstadoSolicitud(
+                        idPiso,
+                        AlquilerEstadoSolicitud.ACEPTADA
+                );
+
+        // 3️ Extraer usuarios
+        return alquileres.stream()
+                .map(Alquiler::getUsuario)
+                .toList();
+    }
+
     
 }

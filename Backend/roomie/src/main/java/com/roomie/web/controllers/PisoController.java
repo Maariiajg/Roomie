@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.roomie.persistence.entities.Piso;
+import com.roomie.persistence.entities.Usuario;
 import com.roomie.services.PisoService;
+import com.roomie.services.dto.piso.PisoCederDTO;
 
 @RestController
 @RequestMapping("/piso")
@@ -89,4 +91,48 @@ public class PisoController {
 	             )
 	     );
 	 }
+	 
+	 
+	 /*=====================
+	  * pisos de un owner
+	  ======================*/
+	 
+	 @GetMapping("/owner/{idOwner}")
+	 public ResponseEntity<List<Piso>> listarPisosPorOwner(
+	         @PathVariable int idOwner) {
+
+	     return ResponseEntity.ok(
+	             pisoService.findPisosByOwner(idOwner)
+	     );
+	 }
+
+	 
+	 /*=====================
+	  * Ceder piso
+	  * ====================*/
+	 @PutMapping("/{idPiso}/ceder")
+	 public ResponseEntity<Piso> cederPiso(
+	         @PathVariable int idPiso,
+	         @RequestBody PisoCederDTO datos) {
+
+	     return ResponseEntity.ok(
+	             pisoService.cederPiso(idPiso, datos)
+	     );
+	 }
+	 
+	 
+	 
+	 /*=================
+	  * listar usuario de un piso
+	  ==================*/
+	 
+	 @GetMapping("/{idPiso}/usuarios")
+	    public ResponseEntity<List<Usuario>> listarUsuariosQueVivenEnPiso(
+	            @PathVariable int idPiso) {
+
+	        return ResponseEntity.ok(
+	                pisoService.listarUsuariosQueVivenEnPiso(idPiso)
+	        );
+	    }
+
 }

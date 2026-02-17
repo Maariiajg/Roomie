@@ -11,7 +11,10 @@ import com.roomie.persistence.entities.Piso;
 @Repository
 public interface PisoRepository extends JpaRepository<Piso, Integer>, JpaSpecificationExecutor<Piso>{
 	 
-	List<Piso> findByOwnerId(int idUsuario);
+	List<Piso> findByOwnerId(int ownerId);
+	
+	int countByOwnerId(int ownerId);
+	
 	
 	
 
