@@ -26,50 +26,21 @@ public class FeedbackService {
 
     @Autowired
     private AlquilerRepository alquilerRepository;
+    
+    /*=================
+     * find by id
+     */
+    
+    public Feedback findById(int idFeedback) {
 
-    /* =====================================================
-       1. DEJAR FEEDBACK
-       ===================================================== */
-    public Feedback dejarFeedback(int idUsuarioPone, int idUsuarioRecibe, Feedback feedback) {
-
-        if (idUsuarioPone == idUsuarioRecibe) {
-            throw new FeedbackException("No puedes dejarte feedback a ti mismo");
-        }
-
-        Usuario usuarioPone = usuarioRepository.findById(idUsuarioPone)
+        return feedbackRepository.findById(idFeedback)
+                .filter(Feedback::isVisible)
                 .orElseThrow(() ->
-                        new UsuarioNotFoundException("Usuario que pone feedback no existe"));
-
-        Usuario usuarioRecibe = usuarioRepository.findById(idUsuarioRecibe)
-                .orElseThrow(() ->
-                        new UsuarioNotFoundException("Usuario que recibe feedback no existe"));
-
-        // Validar convivencia real
-        boolean hanConvivido = alquilerRepository
-                .findByUsuarioId(idUsuarioPone)
-                .stream()
-                .filter(a -> a.getEstadoSolicitud() == AlquilerEstadoSolicitud.ACEPTADA)
-                .anyMatch(a -> a.getPiso().getAlquileresSolicitados()
-                        .stream()
-                        .anyMatch(b ->
-                                b.getUsuario().getId() == idUsuarioRecibe &&
-                                b.getEstadoSolicitud()
-                                        .equals(AlquilerEstadoSolicitud.ACEPTADA.name())
-                        )
+                        new RuntimeException("Feedback no encontrado o no visible")
                 );
-
-        if (!hanConvivido) {
-            throw new FeedbackException(
-                    "Solo puedes dejar feedback a usuarios con los que hayas convivido");
-        }
-
-        feedback.setId(0);
-        feedback.setUsuarioPone(usuarioPone);
-        feedback.setUsuarioRecibe(usuarioRecibe);
-        feedback.setVisible(true);
-
-        return feedbackRepository.save(feedback);
     }
+
+    
 
     /* =====================================================
        2. VER FEEDBACKS VISIBLES DE UN USUARIO
@@ -83,6 +54,54 @@ public class FeedbackService {
         return feedbackRepository.findByUsuarioRecibeIdAndVisibleTrue(idUsuario);
     }
 
+    
+    
+    /* =====================================================
+    1. DEJAR FEEDBACK
+    ===================================================== */
+	 public Feedback dejarFeedback(int idUsuarioPone, int idUsuarioRecibe, Feedback feedback) {
+	
+	     if (idUsuarioPone == idUsuarioRecibe) {
+	         throw new FeedbackException("No puedes dejarte feedback a ti mismo");
+	     }
+	
+	     Usuario usuarioPone = usuarioRepository.findById(idUsuarioPone)
+	             .orElseThrow(() ->
+	                     new UsuarioNotFoundException("Usuario que pone feedback no existe"));
+	
+	     Usuario usuarioRecibe = usuarioRepository.findById(idUsuarioRecibe)
+	             .orElseThrow(() ->
+	                     new UsuarioNotFoundException("Usuario que recibe feedback no existe"));
+	
+	     // Validar convivencia real
+	     boolean hanConvivido = alquilerRepository
+	             .findByUsuarioId(idUsuarioPone)
+	             .stream()
+	             .filter(a -> a.getEstadoSolicitud() == AlquilerEstadoSolicitud.ACEPTADA)
+	             .anyMatch(a -> a.getPiso().getAlquileresSolicitados()
+	                     .stream()
+	                     .anyMatch(b ->
+	                             b.getUsuario().getId() == idUsuarioRecibe &&
+	                             b.getEstadoSolicitud()
+	                                     .equals(AlquilerEstadoSolicitud.ACEPTADA.name())
+	                     )
+	             );
+	
+	     if (!hanConvivido) {
+	         throw new FeedbackException(
+	                 "Solo puedes dejar feedback a usuarios con los que hayas convivido");
+	     }
+	
+	     feedback.setId(0);
+	     feedback.setUsuarioPone(usuarioPone);
+	     feedback.setUsuarioRecibe(usuarioRecibe);
+	     feedback.setVisible(true);
+	
+	     return feedbackRepository.save(feedback);
+	 }
+    
+    
+    
     /* =====================================================
        3. MEDIA DE CALIFICACIONES (SOLO VISIBLES)
        ===================================================== */

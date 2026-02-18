@@ -26,6 +26,28 @@ public class FeedbackController {
 
     @Autowired
     private FeedbackService feedbackService;
+    
+    /*================================
+     * findById
+     */
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<Feedback> obtenerFeedback(@PathVariable int id) {
+
+        Feedback feedback = feedbackService.findById(id);
+        return ResponseEntity.ok(feedback);
+    }
+    
+    /* =========================
+    VER FEEDBACKS VISIBLES DE USUARIO
+    ========================= */
+    @GetMapping("/usuario/{idUsuario}")
+    public ResponseEntity<List<Feedback>> obtenerFeedbackRecibido(
+            @PathVariable int idUsuario) {
+
+        List<Feedback> lista = feedbackService.feedbacksVisiblesDeUsuario(idUsuario);
+        return ResponseEntity.ok(lista);
+    }
 
     /* =========================
        DEJAR FEEDBACK
@@ -45,19 +67,7 @@ public class FeedbackController {
         }
     }
 
-    /* =========================
-       VER FEEDBACKS VISIBLES DE USUARIO
-       ========================= */
-    @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<?> feedbacksUsuario(@PathVariable int idUsuario) {
-        try {
-            List<Feedback> feedbacks =
-                    feedbackService.feedbacksVisiblesDeUsuario(idUsuario);
-            return ResponseEntity.ok(feedbacks);
-        } catch (UsuarioNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-        }
-    }
+    
 
     /* =========================
        MEDIA DE CALIFICACIONES
