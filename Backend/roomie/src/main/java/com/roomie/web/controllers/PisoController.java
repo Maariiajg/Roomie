@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.roomie.persistence.entities.Foto;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.services.PisoService;
@@ -95,7 +97,7 @@ public class PisoController {
 	 
 	 /*=====================
 	  * pisos de un owner
-	  ======================*/
+	  ======================
 	 
 	 @GetMapping("/owner/{idOwner}")
 	 public ResponseEntity<List<Piso>> listarPisosPorOwner(
@@ -104,7 +106,7 @@ public class PisoController {
 	     return ResponseEntity.ok(
 	             pisoService.findPisosByOwner(idOwner)
 	     );
-	 }
+	 }*/
 
 	 
 	 /*=====================
@@ -134,5 +136,35 @@ public class PisoController {
 	                pisoService.listarUsuariosQueVivenEnPiso(idPiso)
 	        );
 	    }
+
+	 
+	 /*====================================
+	  * LISTAR FOTOS DE UN PISO
+	  */
+	 
+	 @GetMapping("/{idPiso}/fotos")
+	 public ResponseEntity<List<Foto>> listarFotosDePiso(
+	         @PathVariable int idPiso) {
+
+	     return ResponseEntity.ok(
+	             pisoService.listarFotosDePiso(idPiso)
+	     );
+	 }
+	 
+	 
+	 
+	 /*==================================
+	  * ELIMINAR UN PISO
+	  */
+	 @DeleteMapping("/{idPiso}")
+	 public ResponseEntity<Void> eliminarPiso(
+	         @PathVariable int idPiso) {
+
+	     pisoService.eliminarPiso(idPiso);
+	     return ResponseEntity.noContent().build();
+	 }
+
+	 
+
 
 }

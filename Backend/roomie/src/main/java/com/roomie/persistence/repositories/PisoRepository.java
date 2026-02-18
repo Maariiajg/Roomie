@@ -15,7 +15,7 @@ public interface PisoRepository extends JpaRepository<Piso, Integer>, JpaSpecifi
 	
 	int countByOwnerId(int ownerId);
 	
-	
+	boolean existsByOwnerId(int ownerId);
 	
 
 }

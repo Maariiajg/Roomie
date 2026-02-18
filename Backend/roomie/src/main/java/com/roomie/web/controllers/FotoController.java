@@ -23,13 +23,7 @@ public class FotoController {
     @Autowired
     private FotoService fotoService;
 
-    /* =========================
-       GET ALL
-       ========================= */
-    @GetMapping
-    public ResponseEntity<List<Foto>> list() {
-        return ResponseEntity.ok(this.fotoService.findAll());
-    }
+    
 
     /* =========================
        GET BY ID
@@ -58,5 +52,13 @@ public class FotoController {
     public ResponseEntity<?> delete(@PathVariable int idFoto) {
         this.fotoService.delete(idFoto);
         return ResponseEntity.noContent().build(); 
+    }
+    
+    @GetMapping("/{idPiso}/fotos")
+    public ResponseEntity<List<Foto>> findFotosByPiso(@PathVariable int idPiso) {
+
+        List<Foto> fotos = fotoService.findFotosByPiso(idPiso);
+
+        return ResponseEntity.ok(fotos);
     }
 }

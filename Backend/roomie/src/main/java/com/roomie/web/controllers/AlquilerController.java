@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.roomie.persistence.entities.Alquiler;
 import com.roomie.services.AlquilerService;
+import com.roomie.services.PisoService;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
 
 @RestController
@@ -25,6 +27,8 @@ public class AlquilerController {
 
     @Autowired
     private AlquilerService alquilerService;
+    
+    
     
     @GetMapping
 	public ResponseEntity<List<Alquiler>> list() {
@@ -116,5 +120,26 @@ public class AlquilerController {
     public ResponseEntity<?> canceladar(@PathVariable int idAlquiler, @RequestBody Alquiler alquiler){
     	return ResponseEntity.ok(this.alquilerService.cancelar(alquiler, idAlquiler));
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    //==================================================================
+    //========================================================================
+    //=========================================================================
+    @DeleteMapping("/{idPiso}/abandonar/{idUsuario}")
+    public ResponseEntity<Void> abandonarPiso(
+            @PathVariable int idPiso,
+            @PathVariable int idUsuario) {
+
+        alquilerService.abandonarPiso(idPiso, idUsuario);
+        return ResponseEntity.noContent().build();
+    }
+
      
 }

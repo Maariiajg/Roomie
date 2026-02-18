@@ -21,6 +21,17 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Integer> {
 
     List<Alquiler> findByUsuarioIdAndEstadoSolicitud(
             int idUsuario, AlquilerEstadoSolicitud estado);
+    
+    boolean existsByUsuarioIdAndPisoId(int idUsuario, int idPiso);
 
     Optional<Alquiler> findByUsuarioIdAndPisoId(int idUsuario, int idPiso);
+    
+    Optional<Alquiler> findByPisoIdAndUsuarioIdAndEstadoSolicitud(
+            int idPiso,
+            int idUsuario,
+            AlquilerEstadoSolicitud estadoSolicitud
+    );
+    
+    List<Alquiler> findByPisoId(int idPiso);
+
 }

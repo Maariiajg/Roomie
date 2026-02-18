@@ -17,7 +17,9 @@ import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
 import com.roomie.services.exceptions.alquiler.AlquilerNotFoundException;
 import com.roomie.services.exceptions.piso.PisoException;
+import com.roomie.services.exceptions.piso.PisoNotFoundException;
 import com.roomie.services.exceptions.usuario.UsuarioException;
+import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
 
 @Service
 public class AlquilerService {
@@ -200,4 +202,64 @@ public class AlquilerService {
     	
     	return this.alquilerRepository.save(alquilerBD);
      }
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     //================================================================================
+     //==========================================================================
+     //=================================================================================
+     
+     public void abandonarPiso(int idPiso, int idUsuario) {
+
+         Piso piso = pisoRepository.findById(idPiso)
+                 .orElseThrow(() ->
+                         new PisoNotFoundException("El piso no existe")
+                 );
+
+         Usuario usuario = usuarioRepository.findById(idUsuario)
+                 .orElseThrow(() ->
+                         new UsuarioNotFoundException("El usuario no existe")
+                 );
+
+         // 🔴 Si es owner → NO puede salir
+         if (piso.getOwner().getId() == usuario.getId()) {
+             throw new PisoException(
+                 "Eres la persona responsable del piso, si quieres salir de él primero debes ceder este puesto a otra persona"
+             );
+         }
+
+         // Buscar alquiler activo
+         Alquiler alquiler = alquilerRepository
+                 .findByPisoIdAndUsuarioIdAndEstadoSolicitud(
+                         idPiso,
+                         idUsuario,
+                         AlquilerEstadoSolicitud.ACEPTADA
+                 )
+                 .orElseThrow(() ->
+                         new PisoException("El usuario no vive en este piso")
+                 );
+
+         // Eliminar alquiler (abandona piso)
+         alquilerRepository.delete(alquiler);
+     }
+
 }
