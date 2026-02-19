@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.roomie.persistence.entities.Alquiler;
+import com.roomie.persistence.entities.Feedback;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
+import com.roomie.persistence.entities.enums.EstadoFeedback;
 import com.roomie.persistence.repositories.AlquilerRepository;
+import com.roomie.persistence.repositories.FeedbackRepository;
 import com.roomie.persistence.repositories.PisoRepository;
 import com.roomie.persistence.repositories.UsuarioRepository;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
@@ -32,6 +35,10 @@ public class AlquilerService {
 
     @Autowired
     private PisoRepository pisoRepository;
+    
+    @Autowired
+    private FeedbackRepository feedbackRepository;
+
     
     
  // findAll
@@ -138,6 +145,62 @@ public class AlquilerService {
             alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.ACEPTADA);
             piso.setNumOcupantesActual(piso.getNumOcupantesActual() + 1);
             pisoRepository.save(piso);
+            
+         // =============================
+         // CREAR FEEDBACKS AUTOMÁTICOS DENTRO DE RESOLVER SOLICITUD
+         // al aceptar la solicitud se generan todos los feedbacks automaticamente
+         // =============================
+
+         // Usuario que acaba de entrar
+         Usuario nuevoUsuario = alquiler.getUsuario();
+
+         // Buscar compañeros actuales (ya aceptados en el piso)
+         List<Alquiler> alquileresAceptados =
+                 alquilerRepository.findByPisoIdAndEstadoSolicitud(
+                         piso.getId(),
+                         AlquilerEstadoSolicitud.ACEPTADA);
+
+         // Para cada compañero crear feedback bidireccional
+         for (Alquiler a : alquileresAceptados) {
+
+             Usuario companero = a.getUsuario();
+
+             // Evitar que se cree consigo mismo
+             if (companero.getId() == nuevoUsuario.getId()) {
+                 continue;
+             }
+
+             // 🔹 compañer@ -> nuevo
+             if (!feedbackRepository.existsByUsuarioPoneIdAndUsuarioRecibeId(
+                     companero.getId(), nuevoUsuario.getId())) {
+
+                 Feedback f1 = new Feedback();
+                 f1.setUsuarioPone(companero);
+                 f1.setUsuarioRecibe(nuevoUsuario);
+                 f1.setCalificacion(1); // mínimo permitido
+                 f1.setEstadoFeedback(EstadoFeedback.NO_DISPONIBLE);
+                 f1.setVisible(true);
+                 f1.setFecha(null);
+
+                 feedbackRepository.save(f1);
+             }
+
+             // 🔹 nuevo -> compañer@
+             if (!feedbackRepository.existsByUsuarioPoneIdAndUsuarioRecibeId(
+                     nuevoUsuario.getId(), companero.getId())) {
+
+                 Feedback f2 = new Feedback();
+                 f2.setUsuarioPone(nuevoUsuario);
+                 f2.setUsuarioRecibe(companero);
+                 f2.setCalificacion(1);
+                 f2.setEstadoFeedback(EstadoFeedback.NO_DISPONIBLE);
+                 f2.setVisible(true);
+                 f2.setFecha(null);
+
+                 feedbackRepository.save(f2);
+             }
+         }
+
 
             // CANCELAR OTRAS SOLICITUDES DEL USUARIO
             List<Alquiler> otras =
@@ -207,7 +270,14 @@ public class AlquilerService {
      
      
      
-     
+     /*
+      * 
+      * 
+      * A PARTIR DE AQUÍ LOS QUE SON DEFINITIVOS
+      * 
+      * 
+      * 
+      */
      
      
      
@@ -230,36 +300,81 @@ public class AlquilerService {
      
      public void abandonarPiso(int idPiso, int idUsuario) {
 
-         Piso piso = pisoRepository.findById(idPiso)
-                 .orElseThrow(() ->
-                         new PisoNotFoundException("El piso no existe")
-                 );
+    	    Piso piso = pisoRepository.findById(idPiso)
+    	            .orElseThrow(() ->
+    	                    new PisoNotFoundException("El piso no existe")
+    	            );
 
-         Usuario usuario = usuarioRepository.findById(idUsuario)
-                 .orElseThrow(() ->
-                         new UsuarioNotFoundException("El usuario no existe")
-                 );
+    	    Usuario usuario = usuarioRepository.findById(idUsuario)
+    	            .orElseThrow(() ->
+    	                    new UsuarioNotFoundException("El usuario no existe")
+    	            );
 
-         // 🔴 Si es owner → NO puede salir
-         if (piso.getOwner().getId() == usuario.getId()) {
-             throw new PisoException(
-                 "Eres la persona responsable del piso, si quieres salir de él primero debes ceder este puesto a otra persona"
-             );
-         }
+    	    // 🔴 Si es owner → NO puede salir
+    	    if (piso.getOwner().getId() == usuario.getId()) {
+    	        throw new PisoException(
+    	            "Eres la persona responsable del piso, si quieres salir de él primero debes ceder este puesto a otra persona"
+    	        );
+    	    }
 
-         // Buscar alquiler activo
-         Alquiler alquiler = alquilerRepository
-                 .findByPisoIdAndUsuarioIdAndEstadoSolicitud(
-                         idPiso,
-                         idUsuario,
-                         AlquilerEstadoSolicitud.ACEPTADA
-                 )
-                 .orElseThrow(() ->
-                         new PisoException("El usuario no vive en este piso")
-                 );
+    	    // Buscar alquiler activo
+    	    Alquiler alquiler = alquilerRepository
+    	            .findByPisoIdAndUsuarioIdAndEstadoSolicitud(
+    	                    idPiso,
+    	                    idUsuario,
+    	                    AlquilerEstadoSolicitud.ACEPTADA
+    	            )
+    	            .orElseThrow(() ->
+    	                    new PisoException("El usuario no vive en este piso")
+    	            );
 
-         // Eliminar alquiler (abandona piso)
-         alquilerRepository.delete(alquiler);
-     }
+    	    // 🔹 Obtener compañeros actuales antes de borrar el alquiler
+    	    List<Alquiler> alquileresAceptados =
+    	            alquilerRepository.findByPisoIdAndEstadoSolicitud(
+    	                    idPiso,
+    	                    AlquilerEstadoSolicitud.ACEPTADA
+    	            );
+
+    	    for (Alquiler a : alquileresAceptados) {
+
+    	        Usuario companero = a.getUsuario();
+
+    	        if (companero.getId() == usuario.getId()) {
+    	            continue;
+    	        }
+
+    	        // 🔹 compañer@ -> usuario que se va
+    	        List<Feedback> f1 =
+    	                feedbackRepository
+    	                        .findByUsuarioPoneIdAndUsuarioRecibeIdAndEstadoFeedback(
+    	                                companero.getId(),
+    	                                usuario.getId(),
+    	                                EstadoFeedback.NO_DISPONIBLE
+    	                        );
+
+    	        f1.forEach(f -> {
+    	            f.setEstadoFeedback(EstadoFeedback.PENDIENTE);
+    	            feedbackRepository.save(f);
+    	        });
+
+    	        // 🔹 usuario que se va -> compañer@
+    	        List<Feedback> f2 =
+    	                feedbackRepository
+    	                        .findByUsuarioPoneIdAndUsuarioRecibeIdAndEstadoFeedback(
+    	                                usuario.getId(),
+    	                                companero.getId(),
+    	                                EstadoFeedback.NO_DISPONIBLE
+    	                        );
+
+    	        f2.forEach(f -> {
+    	            f.setEstadoFeedback(EstadoFeedback.PENDIENTE);
+    	            feedbackRepository.save(f);
+    	        });
+    	    }
+
+    	    // 🔹 Eliminar alquiler
+    	    alquilerRepository.delete(alquiler);
+    	}
+
 
 }

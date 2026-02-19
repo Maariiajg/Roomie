@@ -2,8 +2,13 @@ package com.roomie.persistence.entities;
 
 import java.time.LocalDate;
 
+import com.roomie.persistence.entities.enums.EstadoFeedback;
+import com.roomie.persistence.entities.enums.Genero;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -49,5 +54,9 @@ public class Feedback {
     
     @Column(nullable = false)
     private boolean visible = true;
+    
+    @Enumerated(value = EnumType.STRING)
+	private EstadoFeedback estadoFeedback;
+    
     
 }
