@@ -23,7 +23,7 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     /* =========================
-       GET /feedback/{id}
+       buscar por id
        ========================= */
     @GetMapping("/{idFeedback}")
     public ResponseEntity<Feedback> findById(
@@ -35,7 +35,7 @@ public class FeedbackController {
     }
 
     /* =========================
-       GET /feedback/{id}/visible
+      buscar por id visible
        ========================= */
     @GetMapping("/{idFeedback}/visible")
     public ResponseEntity<Feedback> findVisibleById(
@@ -47,7 +47,7 @@ public class FeedbackController {
     }
 
     /* =========================
-       GET /feedback/usuario/{id}
+     feeedbacks visibles de un usuario
        ========================= */
     @GetMapping("/usuario/{idUsuario}")
     public ResponseEntity<List<Feedback>> feedbacksVisiblesDeUsuario(
@@ -59,7 +59,7 @@ public class FeedbackController {
     }
 
     /* =========================
-       POST /feedback/{idPone}/{idRecibe}
+       poner feedback
        ========================= */
     @PostMapping("/{idUsuarioPone}/{idUsuarioRecibe}")
     public ResponseEntity<Feedback> valorar(

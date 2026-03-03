@@ -65,19 +65,20 @@ VALUES
 
 
 
-INSERT INTO feedback
-(id_usuario_pone, id_usuario_recibe, calificacion, descripcion, fecha, visible)
-VALUES
-(1,3,5,'Muy buen propietario','2025-02-01',true),
-(2,4,4,'Piso correcto y trato amable','2025-02-02',true),
-(5,3,3,'Todo bien pero algo ruidoso','2025-02-03',true),
-(6,4,5,'Excelente comunicación','2025-02-04',true),
-(8,7,4,'Piso limpio y ordenado','2025-02-05',true),
-(9,3,2,'Problemas con el wifi','2025-02-06',true),
-(1,4,5,'Muy recomendable','2025-02-07',true),
-(2,7,4,'Buena experiencia','2025-02-08',true),
-(5,3,1,'No cumplió lo acordado','2025-02-09',false),
-(6,4,5,'Repetiría sin duda','2025-02-10',true);
+INSERT INTO feedback (id_usuario_pone, id_usuario_recibe, calificacion, descripcion, fecha, visible, estado_feedback) 
+VALUES (1, 2, 5, 'Excelente compañero, muy limpio y ordenado.', '2026-01-15', true, 'VALORADO');
+
+INSERT INTO feedback (id_usuario_pone, id_usuario_recibe, calificacion, descripcion, fecha, visible, estado_feedback) 
+VALUES (2, 1, 4, 'Buena convivencia, aunque a veces olvida lavar los platos.', '2026-01-20', true, 'VALORADO');
+
+INSERT INTO feedback (id_usuario_pone, id_usuario_recibe, calificacion, descripcion, fecha, visible, estado_feedback) 
+VALUES (3, 2, 3, 'Persona tranquila, pero poco comunicativa.', '2026-02-10', true, 'PENDIENTE');
+
+INSERT INTO feedback (id_usuario_pone, id_usuario_recibe, calificacion, descripcion, fecha, visible, estado_feedback) 
+VALUES (1, 3, 2, 'No respeta los horarios de sueño acordados.', '2026-02-18', false, 'NO_DISPONIBLE');
+
+INSERT INTO feedback (id_usuario_pone, id_usuario_recibe, calificacion, descripcion, fecha, visible, estado_feedback) 
+VALUES (2, 3, 5, 'Increíble predisposición para ayudar con las tareas del hogar.', '2026-02-19', true, 'VALORADO');
 
 
 

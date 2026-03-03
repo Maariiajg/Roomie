@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.roomie.persistence.entities.Alquiler;
+import com.roomie.persistence.entities.Piso;
+import com.roomie.persistence.entities.Usuario;
 import com.roomie.services.AlquilerService;
 import com.roomie.services.PisoService;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
 
 @RestController
-@RequestMapping("/alquileres")
+@RequestMapping("/alquiler")
 public class AlquilerController {
 
     @Autowired
@@ -30,15 +32,9 @@ public class AlquilerController {
     
     
     
-    @GetMapping
-	public ResponseEntity<List<Alquiler>> list() {
-		return ResponseEntity.ok(this.alquilerService.findAll());
-	}
+    
 
-	@GetMapping("/{idAlquiler}")
-	public ResponseEntity<?> findById(@PathVariable int idAlquiler) {
-		return ResponseEntity.ok(this.alquilerService.findById(idAlquiler));
-	}
+	
 
     /* =========================
        SOLICITAR ALQUILER
@@ -59,40 +55,8 @@ public class AlquilerController {
         }
     }
 
-    /* =========================
-       SOLICITUDES DE UN PISO
-       ========================= */
-    @GetMapping("/piso/{idPiso}")
-    public ResponseEntity<?> solicitudes(
-            @PathVariable int idPiso,
-            @RequestParam int idDueno) {
+    
 
-        try {
-            List<Alquiler> solicitudes =
-                    alquilerService.solicitudesPendientes(idPiso, idDueno);
-            return ResponseEntity.ok(solicitudes);
-        } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
-        }
-    }
-
-    /* =========================
-       ACEPTAR / RECHAZAR
-       ========================= */
-    @PutMapping("/{idAlquiler}")
-    public ResponseEntity<?> resolver(
-            @PathVariable int idAlquiler,
-            @RequestParam int idDueno,
-            @RequestParam boolean aceptar) {
-
-        try {
-            return ResponseEntity.ok(
-                    alquilerService.resolverSolicitud(
-                            idAlquiler, idDueno, aceptar));
-        } catch (AlquilerException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-        }
-    }
 
     /* =========================
        SALIR DEL PISO
@@ -132,6 +96,45 @@ public class AlquilerController {
     //==================================================================
     //========================================================================
     //=========================================================================
+    
+    @GetMapping
+	public ResponseEntity<List<Alquiler>> list() {
+		return ResponseEntity.ok(this.alquilerService.findAll());
+	}
+    
+    @GetMapping("/{idAlquiler}")
+	public ResponseEntity<?> findById(@PathVariable int idAlquiler) {
+		return ResponseEntity.ok(this.alquilerService.findById(idAlquiler));
+	}
+    
+    
+    /* =========================
+    SOLICITUDES DE UN PISO
+    ========================= */
+ @GetMapping("/piso/{idPiso}/solicitudes")
+ public List<Alquiler> verSolicitudesPendientes(@PathVariable int idPiso) {
+
+     return alquilerService.solicitudesPendientes(idPiso);
+ }
+
+
+ /* =========================
+    ACEPTAR / RECHAZAR
+    ========================= */
+ @PutMapping("/{idAlquiler}/resolver")
+ public Alquiler resolverSolicitud(
+         @PathVariable int idAlquiler,
+         @RequestParam int idDueno,
+         @RequestParam boolean aceptar) {
+
+     return alquilerService.resolverSolicitud(
+             idAlquiler,
+             idDueno,
+             aceptar
+     );
+ }
+    
+    
     @DeleteMapping("/{idPiso}/abandonar/{idUsuario}")
     public ResponseEntity<Void> abandonarPiso(
             @PathVariable int idPiso,
