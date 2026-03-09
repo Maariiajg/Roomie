@@ -29,6 +29,9 @@ public class Alquiler {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    //Fehca de solicitud
+    @Column(name = "f_solicitud", nullable = false)
+    private LocalDate fsolicitud;
     // Fecha elegida por el usuario
     @Column(name = "f_inicio", nullable = false)
     private LocalDate fInicio;
