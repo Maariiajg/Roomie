@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service;
 import com.roomie.persistence.entities.Foto;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.repositories.FotoRepository;
-import com.roomie.persistence.repositories.PisoRepository;
-import com.roomie.services.exceptions.alquiler.AlquilerNotFoundException;
 import com.roomie.services.exceptions.foto.FotoException;
+import com.roomie.services.exceptions.foto.FotoNotFoundException;
 import com.roomie.services.exceptions.piso.PisoNotFoundException;
 
 @Service
@@ -19,51 +18,53 @@ public class FotoService {
 	private FotoRepository fotoRepository;
 	
 	@Autowired
-	private PisoRepository pisoRepository;
+	private PisoService pisoService;
 	
 	
 
  	// findById
  	public Foto findById(int idFoto) {
  		if (!this.fotoRepository.existsById(idFoto)) {
- 			throw new AlquilerNotFoundException("La foto con id " + idFoto + " no existe. ");
+ 			throw new FotoNotFoundException("La foto con id " + idFoto + " no existe. ");
  		} 
 
  		return this.fotoRepository.findById(idFoto).get();
  	}
  	
  	public Foto create(String url, int idPiso) {
-        // 1. Buscamos el piso al que pertenece la foto
-        Piso piso = pisoRepository.findById(idPiso)
-                .orElseThrow(() -> new FotoException("Piso no encontrado con ID: " + idPiso));
 
-        // 2. Creamos la instancia de Foto
+        // PisoService lanza PisoNotFoundException si el piso no existe
+        Piso piso = pisoService.findById(idPiso);
+
         Foto nuevaFoto = new Foto();
         nuevaFoto.setUrl(url);
-        nuevaFoto.setPiso(piso); // Establecemos la relación ManyToOne
+        nuevaFoto.setPiso(piso);
 
-        return fotoRepository.save(nuevaFoto); 
+        return fotoRepository.save(nuevaFoto);
     }
  	
  	
  	
- 	public void delete(int id) {
-        if (!fotoRepository.existsById(id)) {
-            throw new RuntimeException("No se puede borrar: Foto no encontrada con ID: " + id);
-        }
-        fotoRepository.deleteById(id);
+ // =========================================================================
+    // DELETE — eliminar una foto por ID
+    // =========================================================================
+    public void delete(int idFoto) {
+
+        // Reutilizamos findById para que lance la excepción correcta si no existe
+        findById(idFoto);
+
+        fotoRepository.deleteById(idFoto);
     }
  	
  	
  	
- 	
- 	
- 	public List<Foto> findFotosByPiso(int idPiso) {
+ // =========================================================================
+    // FIND FOTOS BY PISO — todas las fotos de un piso concreto
+    // =========================================================================
+    public List<Foto> findFotosByPiso(int idPiso) {
 
-        // Verificamos que el piso existe
-        if (!pisoRepository.existsById(idPiso)) {
-            throw new PisoNotFoundException("El piso no existe");
-        }
+        // PisoService lanza PisoNotFoundException si el piso no existe
+        pisoService.findById(idPiso);
 
         return fotoRepository.findByPisoId(idPiso);
     }

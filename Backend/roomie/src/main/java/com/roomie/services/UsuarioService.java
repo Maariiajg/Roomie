@@ -266,6 +266,22 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    
+ // =========================================================================
+    // MÉTODO INTERNO — llamado desde PisoService
+    // Cambia el rol de un usuario sin pasar por las validaciones del perfil.
+    // Solo lo usan otros services internamente (crear piso, ceder piso, eliminar piso).
+    // =========================================================================
+    public void cambiarRol(int idUsuario, Roles nuevoRol) {
+
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() ->
+                        new UsuarioNotFoundException(
+                                "Usuario con ID " + idUsuario + " no encontrado."));
+
+        usuario.setRol(nuevoRol);
+        usuarioRepository.save(usuario);
+    }
 
 
 }
