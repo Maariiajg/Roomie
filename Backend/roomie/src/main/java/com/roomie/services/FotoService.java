@@ -31,6 +31,9 @@ public class FotoService {
  		return this.fotoRepository.findById(idFoto).get();
  	}
  	
+ 	
+ 	
+ 	//CREATE
  	public Foto create(String url, int idPiso) {
 
         // PisoService lanza PisoNotFoundException si el piso no existe

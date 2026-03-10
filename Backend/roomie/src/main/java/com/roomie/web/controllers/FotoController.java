@@ -54,6 +54,8 @@ public class FotoController {
         return ResponseEntity.noContent().build(); 
     }
     
+    
+    //LISTA DE FOTOS POR PISO
     @GetMapping("/{idPiso}/fotos")
     public ResponseEntity<List<Foto>> findFotosByPiso(@PathVariable int idPiso) {
 

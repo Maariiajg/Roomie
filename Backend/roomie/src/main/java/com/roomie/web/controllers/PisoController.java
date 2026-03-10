@@ -33,6 +33,15 @@ public class PisoController {
     public ResponseEntity<List<Piso>> findAll() {
         return ResponseEntity.ok(pisoService.findAll());
     }
+    
+    /*======================
+     * find libres
+     * ================
+     */
+    @GetMapping("/libres")
+    public ResponseEntity<List<Piso>> findLibres(){
+        return ResponseEntity.ok(pisoService.findLibres());
+    }
 
     /* =====================================================
        GET /pisos/{id}
