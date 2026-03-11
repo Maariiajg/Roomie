@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.roomie.persistence.entities.Alquiler;
 import com.roomie.services.AlquilerService;
+import com.roomie.services.dto.alquiler.CompaneroDTO;
 
 @RestController
 @RequestMapping("/alquiler")
@@ -158,6 +159,19 @@ public class AlquilerController {
                 idPiso, idUsuario, fechaSalida, forzadoPorOwner, idOwner);
 
         return ResponseEntity.noContent().build();
+    }
+    
+ // =========================================================================
+    // GET /alquiler/usuario/{idUsuario}/companeros
+    // Devuelve nombre y apellidos de los compañeros actuales del usuario
+    // (usuarios con alquiler ACEPTADA en el mismo piso, excluyendo al propio).
+    // =========================================================================
+    @GetMapping("/usuario/{idUsuario}/companeros")
+    public ResponseEntity<List<CompaneroDTO>> companerosActuales(
+            @PathVariable int idUsuario) {
+
+        return ResponseEntity.ok(
+                alquilerService.companerosActuales(idUsuario));
     }
 
 }

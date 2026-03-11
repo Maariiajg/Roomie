@@ -49,6 +49,8 @@ public class PisoService {
                 .toList();
     } 
     
+    //FIND BY ID
+    
     public Piso findById(int idPiso) {
         return pisoRepository.findById(idPiso)
                 .orElseThrow(() ->

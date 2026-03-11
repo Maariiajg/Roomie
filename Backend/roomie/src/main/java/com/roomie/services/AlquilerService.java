@@ -12,6 +12,7 @@ import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
 import com.roomie.persistence.repositories.AlquilerRepository;
+import com.roomie.services.dto.alquiler.CompaneroDTO;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
 import com.roomie.services.exceptions.alquiler.AlquilerNotFoundException;
 import com.roomie.services.exceptions.piso.PisoException;
@@ -233,7 +234,7 @@ public class AlquilerService {
     }
 
 
-    // =========================================================================
+ // =========================================================================
     // 9. SALIR DEL PISO (voluntario o expulsión por el owner)
     // =========================================================================
     public void salirDelPiso(
@@ -269,6 +270,13 @@ public class AlquilerService {
 
         } else {
 
+            // Un owner no puede salirse voluntariamente sin ceder el rol primero
+            if (piso.getOwner().getId() == idUsuario) {
+                throw new PisoException(
+                        "Eres el owner del piso. Debes ceder el rol de owner " +
+                        "a otro usuario antes de abandonarlo.");
+            }
+
             if (fechaSalida == null) {
                 fechaSalida = LocalDate.now();
             }
@@ -301,6 +309,38 @@ public class AlquilerService {
     }
 
 
+ // =========================================================================
+    // 10. COMPAÑEROS ACTUALES DE UN USUARIO
+    //     Devuelve nombre y apellidos de los compañeros que viven ahora mismo
+    //     en el mismo piso que el usuario (alquileres ACEPTADA del mismo piso,
+    //     excluyendo al propio usuario).
+    // =========================================================================
+    public List<CompaneroDTO> companerosActuales(int idUsuario) {
+
+        usuarioService.findById(idUsuario); // lanza excepción si no existe
+
+        // Primero buscamos el alquiler activo del usuario
+        List<Alquiler> activos = alquilerRepository.findByUsuarioIdAndEstadoSolicitud(
+                idUsuario, AlquilerEstadoSolicitud.ACEPTADA);
+
+        if (activos.isEmpty()) {
+            throw new AlquilerNotFoundException(
+                    "El usuario no vive actualmente en ningún piso.");
+        }
+
+        int idPiso = activos.get(0).getPiso().getId();
+
+        // Todos los alquileres ACEPTADA del piso, menos el del propio usuario
+        return alquilerRepository
+                .findByPisoIdAndEstadoSolicitud(idPiso, AlquilerEstadoSolicitud.ACEPTADA)
+                .stream()
+                .map(Alquiler::getUsuario)
+                .filter(u -> u.getId() != idUsuario)
+                .map(u -> new CompaneroDTO(u.getId(), u.getNombre(), u.getApellido1(), u.getApellido2()))
+                .toList();
+    }
+    
+    
     // =========================================================================
     // MÉTODOS INTERNOS — llamados desde PisoService
     // =========================================================================
