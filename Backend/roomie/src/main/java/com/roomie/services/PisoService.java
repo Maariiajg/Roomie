@@ -207,12 +207,12 @@ public class PisoService {
 
         Usuario duenoActual = piso.getOwner();
 
-        if (duenoActual.getId() != datos.getIdDuenoActual()) {
+        if (duenoActual.getId() != datos.getIdOwnerActual()) {
             throw new PisoException(
                     "El usuario que intenta ceder no es el dueño actual del piso.");
         }
 
-        Usuario nuevoDueno = usuarioService.findById(datos.getIdNuevoDueno());
+        Usuario nuevoDueno = usuarioService.findById(datos.getIdNuevoOwner());
 
         if (duenoActual.getId() == nuevoDueno.getId()) {
             throw new PisoException("No puedes ceder el piso a ti mismo.");

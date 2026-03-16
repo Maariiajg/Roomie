@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class PisoCederDTO {
 
-    private int idDuenoActual;
-    private int idNuevoDueno;
+    private int idOwnerActual;
+    private int idNuevoOwner;
 }
