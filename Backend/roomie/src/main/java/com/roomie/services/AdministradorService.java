@@ -8,37 +8,44 @@ import org.springframework.stereotype.Service;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.Roles;
 import com.roomie.persistence.repositories.UsuarioRepository;
+import com.roomie.services.dto.administrador.AdministradorRegistroDTO;
+import com.roomie.services.dto.administrador.PerfilAdministradorDTO;
 import com.roomie.services.exceptions.administrador.AdministradorException;
-import com.roomie.services.exceptions.administrador.AdministradorNotFoundException;
 import com.roomie.services.exceptions.usuario.UsuarioException;
 import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
+import com.roomie.services.mapper.AdministradorMapper;
 
 @Service
 public class AdministradorService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-    
-    public List<Usuario> findAllAdministradores() {
 
-        return usuarioRepository.findByRol(Roles.ADMINISTRADOR);
-    }
-    
- // Método para encontrar un usuario por ID
-    public Usuario findAdministradorById(int idAdministrador) {
-
-        return usuarioRepository.findByIdAndRol(idAdministrador, Roles.ADMINISTRADOR)
-                .orElseThrow(() ->
-                    new UsuarioNotFoundException(
-                        "El administrador con ID " + idAdministrador + " no existe"
-                    )
-                );
+    // =========================================================================
+    // FIND ALL
+    // =========================================================================
+    public List<PerfilAdministradorDTO> findAllAdministradores() {
+        return usuarioRepository.findByRol(Roles.ADMINISTRADOR)
+                .stream()
+                .map(AdministradorMapper::toPerfilDTO)
+                .toList();
     }
 
+    // =========================================================================
+    // FIND BY ID
+    // =========================================================================
+    public PerfilAdministradorDTO findAdministradorById(int idAdministrador) {
+        Usuario admin = usuarioRepository.findByIdAndRol(idAdministrador, Roles.ADMINISTRADOR)
+                .orElseThrow(() -> new UsuarioNotFoundException(
+                        "El administrador con ID " + idAdministrador + " no existe"));
+        return AdministradorMapper.toPerfilDTO(admin);
+    }
 
-    public Usuario registrarAdministrador(Usuario admin) {
-
-        // CAMPOS PROHIBIDOS
+    // =========================================================================
+    // REGISTRAR ADMINISTRADOR
+    // =========================================================================
+    public PerfilAdministradorDTO registrarAdministrador(AdministradorRegistroDTO dto) {
+        /*// CAMPOS PROHIBIDOS
         if (admin.getId() != 0 ||
             admin.getRol() != null ||
             admin.isBloqueado() ||
@@ -47,157 +54,113 @@ public class AdministradorService {
             throw new UsuarioException(
                     "No se pueden introducir los campos id, rol, bloqueado o aceptado."
             );
+        } */
+        // Validar repetirPassword
+        if (dto.getPassword() == null || dto.getRepetirPassword() == null ||
+                !dto.getPassword().equals(dto.getRepetirPassword())) {
+            throw new AdministradorException("Las contraseñas no coinciden.");
         }
 
-        // CAMPOS OBLIGATORIOS
-        if (admin.getDni() == null ||
-            admin.getNombre() == null ||
-            admin.getApellido1() == null ||
-            admin.getApellido2() == null ||
-            admin.getAnioNacimiento() == null ||
-            admin.getGenero() == null ||
-            admin.getTelefono() == null ||
-            admin.getEmail() == null ||
-            admin.getNombreUsuario() == null ||
-            admin.getPassword() == null) {
-
+        // Campos obligatorios
+        if (dto.getDni() == null ||
+            dto.getNombre() == null ||
+            dto.getApellido1() == null ||
+            dto.getApellido2() == null ||
+            dto.getAnioNacimiento() == null ||
+            dto.getGenero() == null ||
+            dto.getTelefono() == null ||
+            dto.getEmail() == null ||
+            dto.getNombreUsuario() == null ||
+            dto.getPassword() == null) {
             throw new AdministradorException(
-                    "Todos los campos son obligatorios excepto foto y mensaje de presentación."
-            );
+                    "Todos los campos son obligatorios excepto foto.");
         }
 
-        // Validar username único
-        if (usuarioRepository.existsByNombreUsuario(admin.getNombreUsuario())) {
+        // Unicidad
+        if (usuarioRepository.existsByNombreUsuario(dto.getNombreUsuario())) {
             throw new AdministradorException(
-                    "El nombre de usuario ya existe, debes elegir otro."
-            );
+                    "El nombre de usuario ya existe, debes elegir otro.");
         }
-        
-        if (usuarioRepository.existsByEmail(admin.getEmail())) {
+        if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new UsuarioException("El email ya está en uso.");
         }
-        
-        if (usuarioRepository.existsByDni(admin.getDni())) {
+        if (usuarioRepository.existsByDni(dto.getDni())) {
             throw new UsuarioException("El DNI ya existe en la base de datos.");
         }
 
-        // FORZAR VALORES DE ADMINISTRADOR
-        admin.setRol(Roles.ADMINISTRADOR);
-        admin.setBloqueado(false);
-        admin.setAceptado(false);
+        // El mapper asigna rol=ADMINISTRADOR, bloqueado=false, aceptado=false
+        Usuario admin = AdministradorMapper.fromRegistroDTO(dto);
+        Usuario guardado = usuarioRepository.save(admin);
 
-        return usuarioRepository.save(admin);
+        return AdministradorMapper.toPerfilDTO(guardado);
     }
 
-
-    /*=====================================================
-       2. LOGIN ADMINISTRADOR
-       ===================================================== */
-    public Usuario iniciarSesion(String nombreUsuario, String password) {
+    // =========================================================================
+    // LOGIN ADMINISTRADOR
+    // =========================================================================
+    public PerfilAdministradorDTO iniciarSesion(String nombreUsuario, String password) {
 
         Usuario admin = usuarioRepository.findByNombreUsuario(nombreUsuario)
                 .orElseThrow(() -> new UsuarioException(
-                    "Nombre de usuario o contraseña incorrectos."
-                ));
+                        "Nombre de usuario o contraseña incorrectos."));
 
         if (!admin.getPassword().equals(password)) {
-            throw new UsuarioException(
-                "Nombre de usuario o contraseña incorrectos."
-            );
+            throw new UsuarioException("Nombre de usuario o contraseña incorrectos.");
         }
-
         if (admin.isBloqueado()) {
             throw new UsuarioException(
-                "Tu cuenta está bloqueada. Contacta con un administrador."
-            );
+                    "Tu cuenta está bloqueada. Contacta con un administrador.");
         }
-
         if (!admin.isAceptado()) {
-            throw new UsuarioException(
-                "Tu cuenta aún no ha sido aceptada."
-            );
+            throw new UsuarioException("Tu cuenta aún no ha sido aceptada.");
         }
 
-        return admin;
-    }
-    
-    
-    public void cerrarSesion() {
-        // No hay sesión que cerrar en backend
-        // Método intencionadamente vacío por ahora, este método hay q completarlo bien al meter springSecurity con JWT
+        return AdministradorMapper.toPerfilDTO(admin);
     }
 
-    /* =====================================================
-       3. VER SOLICITUDES DE ADMIN PENDIENTES
-       ===================================================== */
-    public List<Usuario> solicitudesPendientes() {
-        return usuarioRepository.findAll()
+    // =========================================================================
+    // CERRAR SESIÓN
+    // =========================================================================
+    public void cerrarSesion() {
+        // Vacío hasta implementar JWT
+    }
+
+    // =========================================================================
+    // SOLICITUDES PENDIENTES — solo admins no aceptados (bug corregido)
+    // =========================================================================
+    public List<PerfilAdministradorDTO> solicitudesPendientes() {
+        return usuarioRepository.findByRol(Roles.ADMINISTRADOR)
                 .stream()
                 .filter(a -> !a.isAceptado())
+                .map(AdministradorMapper::toPerfilDTO)
                 .toList();
     }
 
-    /* =====================================================
-       4. ACEPTAR ADMINISTRADOR
-       ===================================================== */
-    public Usuario aceptarAdministrador(int idAdmin, Usuario datos) {
-
-        // Validación ID body vs path
-        if (datos.getId() != idAdmin) {
+    // =========================================================================
+    // ACEPTAR ADMINISTRADOR
+    // =========================================================================
+    public PerfilAdministradorDTO aceptarAdministrador(int idAdmin) {
+        /*if (datos.getId() != idAdmin) {
             throw new UsuarioException(
                 String.format(
                     "El id del body (%d) y el id del path (%d) no coinciden",
                     datos.getId(), idAdmin
                 )
             );
+        } */
+        Usuario admin = usuarioRepository.findByIdAndRol(idAdmin, Roles.ADMINISTRADOR)
+                .orElseThrow(() -> new UsuarioNotFoundException(
+                        "El administrador con ID " + idAdmin + " no existe."));
+
+        if (admin.isAceptado()) {
+            throw new AdministradorException("El administrador ya está aceptado.");
         }
 
-        // Validar que SOLO venga el ID
-        if (
-            datos.getDni() != null ||
-            datos.getNombre() != null ||
-            datos.getApellido1() != null ||
-            datos.getApellido2() != null ||
-            datos.getAnioNacimiento() != null ||
-            datos.getGenero() != null ||
-            datos.getTelefono() != null ||
-            datos.getEmail() != null ||
-            datos.getNombreUsuario() != null ||
-            datos.getPassword() != null ||
-            datos.getMensajePresentacion() != null ||
-            datos.getFoto() != null ||
-            datos.isBloqueado() != false || // default
-            datos.isAceptado() != false ||  // default
-            datos.getRol() != null
-        ) {
-            throw new UsuarioException(
-                "solo necesitas introducir correctamente el ID y el administrador será aceptado"
-            );
-        }
-
-        // Buscar administrador
-        Usuario admin = usuarioRepository.findById(idAdmin)
-            .orElseThrow(() ->
-                new UsuarioNotFoundException("El administrador no existe")
-            );
-
-        // Cambiar estado
         admin.setAceptado(true);
+        Usuario guardado = usuarioRepository.save(admin);
 
-        return usuarioRepository.save(admin);
+        return AdministradorMapper.toPerfilDTO(guardado);
     }
-
-    /* =====================================================
-       5. RECHAZAR ADMINISTRADOR
-       ===================================================== 
-    public void rechazarAdmin(int idAdmin) {
-
-        if (!usuarioRepository.existsById(idAdmin)) {
-            throw new AdministradorNotFoundException("El administrador no existe");
-        }
-
-        usuarioRepository.deleteById(idAdmin);
-    }*/
-
     
+    //No hace falta método rechazar xq aceptado es un booleano q por defecto está a false
 }

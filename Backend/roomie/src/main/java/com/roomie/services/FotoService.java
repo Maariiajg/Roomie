@@ -8,67 +8,58 @@ import org.springframework.stereotype.Service;
 import com.roomie.persistence.entities.Foto;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.repositories.FotoRepository;
-import com.roomie.services.exceptions.foto.FotoException;
+import com.roomie.services.dto.foto.FotoDTO;
 import com.roomie.services.exceptions.foto.FotoNotFoundException;
-import com.roomie.services.exceptions.piso.PisoNotFoundException;
+import com.roomie.services.mapper.FotoMapper;
 
 @Service
 public class FotoService {
-	@Autowired
-	private FotoRepository fotoRepository;
-	
-	@Autowired
-	private PisoService pisoService;
-	
-	
 
- 	// findById
- 	public Foto findById(int idFoto) {
- 		if (!this.fotoRepository.existsById(idFoto)) {
- 			throw new FotoNotFoundException("La foto con id " + idFoto + " no existe. ");
- 		} 
+    @Autowired
+    private FotoRepository fotoRepository;
 
- 		return this.fotoRepository.findById(idFoto).get();
- 	}
- 	
- 	
- 	
- 	//CREATE
- 	public Foto create(String url, int idPiso) {
+    @Autowired
+    private PisoService pisoService;
 
-        // PisoService lanza PisoNotFoundException si el piso no existe
+    // =========================================================================
+    // FIND BY ID
+    // =========================================================================
+    public FotoDTO findById(int idFoto) {
+        Foto foto = fotoRepository.findById(idFoto)
+                .orElseThrow(() -> new FotoNotFoundException(
+                        "La foto con id " + idFoto + " no existe."));
+        return FotoMapper.toDTO(foto);
+    }
+
+    // =========================================================================
+    // CREATE
+    // =========================================================================
+    public FotoDTO create(String url, int idPiso) {
         Piso piso = pisoService.findById(idPiso);
 
         Foto nuevaFoto = new Foto();
         nuevaFoto.setUrl(url);
         nuevaFoto.setPiso(piso);
 
-        return fotoRepository.save(nuevaFoto);
+        return FotoMapper.toDTO(fotoRepository.save(nuevaFoto));
     }
- 	
- 	
- 	
- // =========================================================================
-    // DELETE — eliminar una foto por ID
+
+    // =========================================================================
+    // DELETE
     // =========================================================================
     public void delete(int idFoto) {
-
-        // Reutilizamos findById para que lance la excepción correcta si no existe
-        findById(idFoto);
-
+        // Reutilizamos findById para lanzar la excepción correcta si no existe
+        fotoRepository.findById(idFoto)
+                .orElseThrow(() -> new FotoNotFoundException(
+                        "La foto con id " + idFoto + " no existe."));
         fotoRepository.deleteById(idFoto);
     }
- 	
- 	
- 	
- // =========================================================================
-    // FIND FOTOS BY PISO — todas las fotos de un piso concreto
+
     // =========================================================================
-    public List<Foto> findFotosByPiso(int idPiso) {
-
-        // PisoService lanza PisoNotFoundException si el piso no existe
+    // FIND FOTOS BY PISO
+    // =========================================================================
+    public List<FotoDTO> findFotosByPiso(int idPiso) {
         pisoService.findById(idPiso);
-
-        return fotoRepository.findByPisoId(idPiso);
+        return FotoMapper.toDTOList(fotoRepository.findByPisoId(idPiso));
     }
 }

@@ -10,55 +10,51 @@ import com.roomie.persistence.entities.Favorito;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.repositories.FavoritoRepository;
+import com.roomie.services.dto.favorito.FavoritoDTO;
 import com.roomie.services.exceptions.favorito.FavoritoException;
 import com.roomie.services.exceptions.favorito.FavoritoNotFoundException;
+import com.roomie.services.mapper.FavoritoMapper;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class FavoritoService {
 
-    // ✅ Único repository propio
     @Autowired
     private FavoritoRepository favoritoRepository;
 
-    // ✅ Servicios ajenos en lugar de sus repositories
     @Autowired
     private UsuarioService usuarioService;
 
     @Autowired
     private PisoService pisoService;
 
-
     // =========================================================================
     // 1. FIND ALL — todos los favoritos de un usuario
     // =========================================================================
-    public List<Favorito> findAll(int idUsuario) {
-
-        usuarioService.findById(idUsuario); // lanza excepción si no existe
-
-        return favoritoRepository.findByUsuarioId(idUsuario);
+    public List<FavoritoDTO> findAll(int idUsuario) {
+        usuarioService.findById(idUsuario);
+        return FavoritoMapper.toDTOList(
+                favoritoRepository.findByUsuarioId(idUsuario));
     }
-
 
     // =========================================================================
     // 2. FIND BY ID
     // =========================================================================
-    public Favorito findById(int idFavorito) {
-
-        return favoritoRepository.findById(idFavorito)
-                .orElseThrow(() ->
-                        new FavoritoNotFoundException("El favorito no existe."));
+    public FavoritoDTO findById(int idFavorito) {
+        Favorito favorito = favoritoRepository.findById(idFavorito)
+                .orElseThrow(() -> new FavoritoNotFoundException(
+                        "El favorito no existe."));
+        return FavoritoMapper.toDTO(favorito);
     }
-
 
     // =========================================================================
     // 3. AÑADIR A FAVORITOS
     // =========================================================================
-    public Favorito anadirAFavoritos(int idUsuario, int idPiso) {
+    public FavoritoDTO anadirAFavoritos(int idUsuario, int idPiso) {
 
         Usuario usuario = usuarioService.findById(idUsuario);
-        Piso piso       = pisoService.findById(idPiso);
+        Piso piso = pisoService.findById(idPiso);
 
         if (favoritoRepository.existsByUsuarioIdAndPisoId(idUsuario, idPiso)) {
             throw new FavoritoException("El piso ya está en favoritos.");
@@ -69,9 +65,8 @@ public class FavoritoService {
         favorito.setPiso(piso);
         favorito.setFecha(LocalDateTime.now());
 
-        return favoritoRepository.save(favorito);
+        return FavoritoMapper.toDTO(favoritoRepository.save(favorito));
     }
-
 
     // =========================================================================
     // 4. ELIMINAR DE FAVORITOS
@@ -86,5 +81,4 @@ public class FavoritoService {
 
         favoritoRepository.deleteByUsuarioIdAndPisoId(idUsuario, idPiso);
     }
-
 }

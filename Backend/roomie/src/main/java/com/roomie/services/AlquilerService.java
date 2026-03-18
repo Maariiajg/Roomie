@@ -12,123 +12,125 @@ import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
 import com.roomie.persistence.repositories.AlquilerRepository;
+import com.roomie.services.dto.alquiler.AlquilerDTO;
 import com.roomie.services.dto.alquiler.CompaneroDTO;
 import com.roomie.services.exceptions.alquiler.AlquilerException;
 import com.roomie.services.exceptions.alquiler.AlquilerNotFoundException;
 import com.roomie.services.exceptions.piso.PisoException;
+import com.roomie.services.mapper.AlquilerMapper;
 
 @Service
 public class AlquilerService {
-
-    // ✅ Único repository propio
+ 
+    // Único repository propio
     @Autowired
     private AlquilerRepository alquilerRepository;
-
-    // ✅ Servicios ajenos en lugar de sus repositories
+ 
     @Autowired
     private UsuarioService usuarioService;
-
+ 
     // @Lazy rompe la dependencia circular AlquilerService <-> PisoService
     @Autowired
     @Lazy
     private PisoService pisoService;
-
+ 
     @Autowired
     private FeedbackService feedbackService;
-
-
+ 
     // =========================================================================
-    // 1. FIND ALL — ver todos los alquileres (uso interno / admin)
+    // HELPER — convierte Alquiler a AlquilerDTO usando UsuarioService
+    // para obtener la calificacion media sin tocar UsuarioRepository
     // =========================================================================
-    public List<Alquiler> findAll() {
-        return this.alquilerRepository.findAll();
+    private AlquilerDTO toDTO(Alquiler alquiler) {
+        Double media = usuarioService.getCalificacionMedia(
+                alquiler.getUsuario().getId());
+        return AlquilerMapper.toDTO(alquiler, media);
     }
-
-
+ 
+    // =========================================================================
+    // 1. FIND ALL
+    // =========================================================================
+    public List<AlquilerDTO> findAll() {
+        return alquilerRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+ 
     // =========================================================================
     // 2. FIND BY ID
     // =========================================================================
-    public Alquiler findById(int idAlquiler) {
-
-        if (!this.alquilerRepository.existsById(idAlquiler)) {
-            throw new AlquilerNotFoundException(
-                    "El alquiler con id " + idAlquiler + " no existe.");
-        }
-
-        return this.alquilerRepository.findById(idAlquiler).get();
+    public AlquilerDTO findById(int idAlquiler) {
+        Alquiler alquiler = alquilerRepository.findById(idAlquiler)
+                .orElseThrow(() -> new AlquilerNotFoundException(
+                        "El alquiler con id " + idAlquiler + " no existe."));
+        return toDTO(alquiler);
     }
-
-
+ 
     // =========================================================================
     // 3. HISTORIAL DE ALQUILERES DE UN USUARIO
-    //    Todos los alquileres del usuario sin filtrar por estado.
     // =========================================================================
-    public List<Alquiler> historialDeUsuario(int idUsuario) {
-
-        usuarioService.findById(idUsuario); // lanza excepción si no existe
-
-        return alquilerRepository.findByUsuarioId(idUsuario);
+    public List<AlquilerDTO> historialDeUsuario(int idUsuario) {
+        usuarioService.findById(idUsuario);
+        return alquilerRepository.findByUsuarioId(idUsuario)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
-
-
+ 
     // =========================================================================
     // 4. ALQUILER ACTUAL DE UN USUARIO (estado ACEPTADA)
     // =========================================================================
-    public Alquiler alquilerActual(int idUsuario) {
-
-        usuarioService.findById(idUsuario); // lanza excepción si no existe
-
+    public AlquilerDTO alquilerActual(int idUsuario) {
+        usuarioService.findById(idUsuario);
+ 
         List<Alquiler> aceptados = alquilerRepository
                 .findByUsuarioIdAndEstadoSolicitud(
                         idUsuario, AlquilerEstadoSolicitud.ACEPTADA);
-
+ 
         if (aceptados.isEmpty()) {
             throw new AlquilerNotFoundException(
                     "El usuario no vive actualmente en ningún piso.");
         }
-
-        return aceptados.get(0); // por regla de negocio solo puede haber uno
+ 
+        return toDTO(aceptados.get(0));
     }
-
-
+ 
     // =========================================================================
     // 5. VER SOLICITUDES PENDIENTES DE UN PISO
     // =========================================================================
-    public List<Alquiler> solicitudesPendientes(int idPiso) {
-
-        pisoService.findById(idPiso); // lanza excepción si no existe
-
-        return alquilerRepository.findByPisoIdAndEstadoSolicitud(
-                idPiso, AlquilerEstadoSolicitud.PENDIENTE);
+    public List<AlquilerDTO> solicitudesPendientes(int idPiso) {
+        pisoService.findById(idPiso);
+        return alquilerRepository
+                .findByPisoIdAndEstadoSolicitud(idPiso, AlquilerEstadoSolicitud.PENDIENTE)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
-
-
+ 
     // =========================================================================
     // 6. ENVIAR SOLICITUD A UN PISO
     // =========================================================================
-    public Alquiler enviarSolicitud(int idUsuario, int idPiso, LocalDate fInicio) {
-
+    public AlquilerDTO enviarSolicitud(int idUsuario, int idPiso, LocalDate fInicio) {
+ 
         Usuario usuario = usuarioService.findById(idUsuario);
         Piso piso       = pisoService.findById(idPiso);
-
+ 
         if (fInicio == null) {
             throw new AlquilerException("Debes indicar la fecha de inicio.");
         }
-
         if (fInicio.isBefore(LocalDate.now())) {
             throw new AlquilerException(
                     "La fecha de inicio no puede ser anterior a hoy.");
         }
-
         if (alquilerRepository.existsByUsuarioIdAndEstadoSolicitud(
                 idUsuario, AlquilerEstadoSolicitud.ACEPTADA)) {
             throw new AlquilerException("Ya estás viviendo en un piso.");
         }
-
         if (alquilerRepository.existsByUsuarioIdAndPisoId(idUsuario, idPiso)) {
             throw new AlquilerException("Ya has enviado una solicitud a este piso.");
         }
-
+ 
         Alquiler alquiler = new Alquiler();
         alquiler.setId(0);
         alquiler.setUsuario(usuario);
@@ -137,104 +139,91 @@ public class AlquilerService {
         alquiler.setFInicio(fInicio);
         alquiler.setFFin(null);
         alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.PENDIENTE);
-
-        return alquilerRepository.save(alquiler);
+ 
+        return toDTO(alquilerRepository.save(alquiler));
     }
-
-
+ 
     // =========================================================================
     // 7. CANCELAR UNA SOLICITUD
-    //    Solo el propio usuario puede cancelar su solicitud PENDIENTE.
     // =========================================================================
-    public Alquiler cancelarSolicitud(int idAlquiler, int idUsuario) {
-
+    public AlquilerDTO cancelarSolicitud(int idAlquiler, int idUsuario) {
+ 
         Alquiler alquiler = alquilerRepository.findById(idAlquiler)
-                .orElseThrow(() ->
-                        new AlquilerNotFoundException(
-                                "El alquiler con ID " + idAlquiler + " no existe."));
-
+                .orElseThrow(() -> new AlquilerNotFoundException(
+                        "El alquiler con ID " + idAlquiler + " no existe."));
+ 
         if (alquiler.getUsuario().getId() != idUsuario) {
             throw new AlquilerException(
                     "No puedes cancelar una solicitud que no es tuya.");
         }
-
         if (alquiler.getEstadoSolicitud() != AlquilerEstadoSolicitud.PENDIENTE) {
             throw new AlquilerException(
                     "Solo puedes cancelar solicitudes en estado PENDIENTE. " +
                     "Estado actual: " + alquiler.getEstadoSolicitud());
         }
-
+ 
         alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.CANCELADA);
-
-        return alquilerRepository.save(alquiler);
+        return toDTO(alquilerRepository.save(alquiler));
     }
-
-
+ 
     // =========================================================================
     // 8. ACEPTAR O RECHAZAR UNA SOLICITUD (solo el owner)
     // =========================================================================
-    public Alquiler resolverSolicitud(int idAlquiler, int idDueno, boolean aceptar) {
-
+    public AlquilerDTO resolverSolicitud(int idAlquiler, int idDueno, boolean aceptar) {
+ 
         Alquiler alquiler = alquilerRepository.findById(idAlquiler)
-                .orElseThrow(() ->
-                        new AlquilerNotFoundException("La solicitud no existe."));
-
+                .orElseThrow(() -> new AlquilerNotFoundException(
+                        "La solicitud no existe."));
+ 
         Piso piso = alquiler.getPiso();
-
+ 
         if (piso.getOwner().getId() != idDueno) {
             throw new AlquilerException("No eres el dueño del piso.");
         }
-
         if (alquiler.getEstadoSolicitud() != AlquilerEstadoSolicitud.PENDIENTE) {
             throw new AlquilerException("La solicitud ya fue resuelta.");
         }
-
+ 
         if (aceptar) {
-
+ 
             if (piso.getNumOcupantesActual() >= piso.getNumTotalHabitaciones()) {
                 throw new AlquilerException("El piso está completo.");
             }
-
+ 
             Usuario nuevoUsuario = alquiler.getUsuario();
-
-            // Compañeros que ya viven en el piso
+ 
             List<Alquiler> alquileresAceptados =
                     alquilerRepository.findByPisoIdAndEstadoSolicitud(
                             piso.getId(), AlquilerEstadoSolicitud.ACEPTADA);
-
+ 
             for (Alquiler a : alquileresAceptados) {
                 Usuario companero = a.getUsuario();
-                // FeedbackService se encarga de crear el feedback si no existe
                 feedbackService.crearSiNoExiste(companero, nuevoUsuario);
                 feedbackService.crearSiNoExiste(nuevoUsuario, companero);
             }
-
+ 
             alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.ACEPTADA);
-
-            // Incrementamos ocupantes a través del PisoService
             pisoService.incrementarOcupantes(piso.getId());
-
-            // Cancelamos las demás solicitudes PENDIENTES del usuario
+ 
             List<Alquiler> otrasSolicitudes =
                     alquilerRepository.findByUsuarioIdAndEstadoSolicitud(
                             nuevoUsuario.getId(), AlquilerEstadoSolicitud.PENDIENTE);
-
+ 
             otrasSolicitudes.forEach(a -> {
                 if (a.getId() != alquiler.getId()) {
                     a.setEstadoSolicitud(AlquilerEstadoSolicitud.CANCELADA);
                     alquilerRepository.save(a);
                 }
             });
-
+ 
         } else {
             alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.RECHAZADA);
         }
-
-        return alquilerRepository.save(alquiler);
+ 
+        return toDTO(alquilerRepository.save(alquiler));
     }
-
-
- // =========================================================================
+ 
+    // =========================================================================
     // 9. SALIR DEL PISO (voluntario o expulsión por el owner)
     // =========================================================================
     public void salirDelPiso(
@@ -243,111 +232,93 @@ public class AlquilerService {
             LocalDate fechaSalida,
             boolean forzadoPorOwner,
             int idOwner) {
-
+ 
         Piso piso = pisoService.findById(idPiso);
-        usuarioService.findById(idUsuario); // valida que existe
-
+        usuarioService.findById(idUsuario);
+ 
         Alquiler alquiler = alquilerRepository
                 .findByPisoIdAndUsuarioIdAndEstadoSolicitud(
                         idPiso, idUsuario, AlquilerEstadoSolicitud.ACEPTADA)
-                .orElseThrow(() ->
-                        new AlquilerException(
-                                "El usuario no vive actualmente en este piso."));
-
+                .orElseThrow(() -> new AlquilerException(
+                        "El usuario no vive actualmente en este piso."));
+ 
         if (forzadoPorOwner) {
-
+ 
             if (piso.getOwner().getId() != idOwner) {
                 throw new PisoException("Solo el owner puede expulsar usuarios.");
             }
-
             if (idUsuario == idOwner) {
                 throw new PisoException(
                         "El owner no puede expulsarse a sí mismo. " +
                         "Primero cede el rol de owner a otro usuario.");
             }
-
             fechaSalida = LocalDate.now();
-
+ 
         } else {
-
-            // Un owner no puede salirse voluntariamente sin ceder el rol primero
+ 
             if (piso.getOwner().getId() == idUsuario) {
                 throw new PisoException(
                         "Eres el owner del piso. Debes ceder el rol de owner " +
                         "a otro usuario antes de abandonarlo.");
             }
-
             if (fechaSalida == null) {
                 fechaSalida = LocalDate.now();
             }
-
             if (fechaSalida.isBefore(LocalDate.now())) {
                 throw new AlquilerException(
                         "La fecha de salida no puede ser anterior a hoy.");
             }
         }
-
-        // Activamos feedbacks pendientes con cada compañero
+ 
         List<Alquiler> companeros = alquilerRepository
                 .findByPisoIdAndEstadoSolicitud(idPiso, AlquilerEstadoSolicitud.ACEPTADA);
-
+ 
         for (Alquiler a : companeros) {
             Usuario companero = a.getUsuario();
             if (companero.getId() == idUsuario) continue;
-
-            // FeedbackService activa los feedbacks NO_DISPONIBLE -> PENDIENTE
             feedbackService.activarFeedbacks(companero.getId(), idUsuario);
             feedbackService.activarFeedbacks(idUsuario, companero.getId());
         }
-
+ 
         alquiler.setFFin(fechaSalida);
         alquiler.setEstadoSolicitud(AlquilerEstadoSolicitud.FINALIZADA);
         alquilerRepository.save(alquiler);
-
-        // Decrementamos ocupantes a través del PisoService
+ 
         pisoService.decrementarOcupantes(piso.getId());
     }
-
-
- // =========================================================================
+ 
+    // =========================================================================
     // 10. COMPAÑEROS ACTUALES DE UN USUARIO
-    //     Devuelve nombre y apellidos de los compañeros que viven ahora mismo
-    //     en el mismo piso que el usuario (alquileres ACEPTADA del mismo piso,
-    //     excluyendo al propio usuario).
     // =========================================================================
     public List<CompaneroDTO> companerosActuales(int idUsuario) {
-
-        usuarioService.findById(idUsuario); // lanza excepción si no existe
-
-        // Primero buscamos el alquiler activo del usuario
+ 
+        usuarioService.findById(idUsuario);
+ 
         List<Alquiler> activos = alquilerRepository.findByUsuarioIdAndEstadoSolicitud(
                 idUsuario, AlquilerEstadoSolicitud.ACEPTADA);
-
+ 
         if (activos.isEmpty()) {
             throw new AlquilerNotFoundException(
                     "El usuario no vive actualmente en ningún piso.");
         }
-
+ 
         int idPiso = activos.get(0).getPiso().getId();
-
-        // Todos los alquileres ACEPTADA del piso, menos el del propio usuario
+ 
         return alquilerRepository
                 .findByPisoIdAndEstadoSolicitud(idPiso, AlquilerEstadoSolicitud.ACEPTADA)
                 .stream()
                 .map(Alquiler::getUsuario)
                 .filter(u -> u.getId() != idUsuario)
-                .map(u -> new CompaneroDTO(u.getId(), u.getNombre(), u.getApellido1(), u.getApellido2()))
+                .map(u -> new CompaneroDTO(
+                        u.getId(), u.getNombre(), u.getApellido1(), u.getApellido2()))
                 .toList();
     }
-    
-    
+ 
     // =========================================================================
     // MÉTODOS INTERNOS — llamados desde PisoService
     // =========================================================================
-
-    /** Crea el alquiler automático para el owner al publicar un piso */
+ 
     public void crearAlquilerOwner(Piso piso, Usuario owner) {
-
         Alquiler alquilerOwner = new Alquiler();
         alquilerOwner.setId(0);
         alquilerOwner.setPiso(piso);
@@ -356,25 +327,20 @@ public class AlquilerService {
         alquilerOwner.setFInicio(LocalDate.now());
         alquilerOwner.setFFin(null);
         alquilerOwner.setEstadoSolicitud(AlquilerEstadoSolicitud.ACEPTADA);
-
         alquilerRepository.save(alquilerOwner);
     }
-
-    /** Elimina todos los alquileres de un piso (usado al borrar el piso) */
+ 
     public void eliminarAlquileresDePiso(int idPiso) {
         List<Alquiler> alquileres = alquilerRepository.findByPisoId(idPiso);
         alquilerRepository.deleteAll(alquileres);
     }
-
-    /** Comprueba si un usuario tiene algún alquiler en un piso concreto */
+ 
     public boolean existeAlquilerEnPiso(int idUsuario, int idPiso) {
         return alquilerRepository.existsByUsuarioIdAndPisoId(idUsuario, idPiso);
     }
-
-    /** Devuelve los alquileres ACEPTADOS de un piso (usuarios que viven en él) */
+ 
     public List<Alquiler> alquileresAceptadosDePiso(int idPiso) {
         return alquilerRepository.findByPisoIdAndEstadoSolicitud(
                 idPiso, AlquilerEstadoSolicitud.ACEPTADA);
     }
-
 }

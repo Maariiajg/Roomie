@@ -10,25 +10,34 @@ import org.springframework.stereotype.Service;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.Roles;
 import com.roomie.persistence.repositories.UsuarioRepository;
+import com.roomie.services.dto.usuario.ActualizarPerfilDTO;
+import com.roomie.services.dto.usuario.CambiarCredencialesDTO;
+import com.roomie.services.dto.usuario.PerfilUsuarioDTO;
+import com.roomie.services.dto.usuario.UsuarioRegistroDTO;
 import com.roomie.services.exceptions.usuario.UsuarioException;
 import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
+import com.roomie.services.mapper.UsuarioMapper;
 
 @Service
 public class UsuarioService {
 
-    @Autowired
+	@Autowired
     private UsuarioRepository usuarioRepository;
 
-    
 
-    // Método para encontrar todos los usuarios y owners
-    public List<Usuario> findAllUsuariosYOwners() {
+    // =========================================================================
+    // FIND ALL — solo USUARIO y OWNER (nunca ADMINISTRADOR)
+    // =========================================================================
+    public List<PerfilUsuarioDTO> findAllUsuariosYOwners() {
         return usuarioRepository.findAll().stream()
-                .filter(usuario -> usuario.getRol() == Roles.USUARIO || usuario.getRol() == Roles.OWNER)
+                .filter(u -> u.getRol() == Roles.USUARIO || u.getRol() == Roles.OWNER)
+                .map(u -> UsuarioMapper.toPerfilDTO(u, usuarioRepository.getCalificacionMedia(u.getId())))
                 .collect(Collectors.toList());
     }
-    
- // Método para encontrar un usuario por ID
+
+    // =========================================================================
+    // FIND BY ID — devuelve entidad (uso interno entre services)
+    // =========================================================================
     public Usuario findById(int idUsuario) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(idUsuario);
         if (usuarioOpt.isPresent()) {
@@ -37,14 +46,25 @@ public class UsuarioService {
                 return usuario;
             }
         }
-        throw new UsuarioNotFoundException("El usuario con ID " + idUsuario + " no fue encontrado o no tiene acceso.");
+        throw new UsuarioNotFoundException(
+                "El usuario con ID " + idUsuario + " no fue encontrado o no tiene acceso.");
     }
-    
-    
- // Método para registrar un nuevo usuario
-    public Usuario registrar(Usuario usuario) {
 
-        if (usuario.getRol() != null) {
+    // =========================================================================
+    // FIND BY ID — devuelve DTO (uso en controller)
+    // =========================================================================
+    public PerfilUsuarioDTO findByIdDTO(int idUsuario) {
+        Usuario usuario = findById(idUsuario);
+        return UsuarioMapper.toPerfilDTO(
+                usuario, usuarioRepository.getCalificacionMedia(idUsuario));
+    }
+
+    // =========================================================================
+    // REGISTRAR
+    // =========================================================================
+    public PerfilUsuarioDTO registrar(UsuarioRegistroDTO dto) {
+
+        /*if (usuario.getRol() != null) {
             throw new UsuarioException(
                 "No puedes introducir el rol; por defecto será USUARIO."
             );
@@ -66,127 +86,102 @@ public class UsuarioService {
             throw new UsuarioException(
                 "No puedes introducir el estado 'aceptado'."
             );
+        }*/
+
+
+        // Validar repetirPassword
+        if (dto.getPassword() == null || dto.getRepetirPassword() == null ||
+                !dto.getPassword().equals(dto.getRepetirPassword())) {
+            throw new UsuarioException("Las contraseñas no coinciden.");
         }
 
         // Validar campos obligatorios
-        if (usuario.getNombre() == null ||
-            usuario.getApellido1() == null ||
-            usuario.getAnioNacimiento() == null ||
-            usuario.getGenero() == null ||
-            usuario.getTelefono() == null ||
-            usuario.getEmail() == null ||
-            usuario.getNombreUsuario() == null ||
-            usuario.getPassword() == null) {
-
-            throw new UsuarioException(
-                "Todos los campos obligatorios deben ser completados."
-            );
+        if (dto.getNombre() == null ||
+            dto.getApellido1() == null ||
+            dto.getAnioNacimiento() == null ||
+            dto.getGenero() == null ||
+            dto.getTelefono() == null ||
+            dto.getEmail() == null ||
+            dto.getNombreUsuario() == null ||
+            dto.getPassword() == null) {
+            throw new UsuarioException("Todos los campos obligatorios deben ser completados.");
         }
 
         // Validar unicidad
-        if (usuarioRepository.existsByNombreUsuario(usuario.getNombreUsuario())) {
+        if (usuarioRepository.existsByNombreUsuario(dto.getNombreUsuario())) {
             throw new UsuarioException("El nombre de usuario ya está en uso.");
         }
-
-        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+        if (usuarioRepository.existsByEmail(dto.getEmail())) {
             throw new UsuarioException("El email ya está en uso.");
         }
-        
-        if (usuarioRepository.existsByDni(usuario.getDni())) {
+        if (dto.getDni() != null && usuarioRepository.existsByDni(dto.getDni())) {
             throw new UsuarioException("El DNI ya existe en la base de datos.");
         }
 
-        usuario.setRol(Roles.USUARIO);
-        usuario.setId(0);              // nuevo registro
-        usuario.setBloqueado(false);   // por defecto
-        usuario.setAceptado(true);     // por defecto
+        // El mapper inicializa rol=USUARIO, bloqueado=false, aceptado=true
+        Usuario usuario = UsuarioMapper.fromRegistroDTO(dto);
+        Usuario guardado = usuarioRepository.save(usuario);
 
-        return usuarioRepository.save(usuario);
+        return UsuarioMapper.toPerfilDTO(guardado,
+                usuarioRepository.getCalificacionMedia(guardado.getId()));
     }
-    
-    
-    
-    
-    // Método para iniciar sesión
-    public Usuario iniciarSesion(String nombreUsuario, String password) {
+
+    // =========================================================================
+    // INICIAR SESIÓN — devuelve DTO (no expone password al cliente)
+    // =========================================================================
+    public PerfilUsuarioDTO iniciarSesion(String nombreUsuario, String password) {
 
         Usuario usuario = usuarioRepository.findByNombreUsuario(nombreUsuario)
                 .orElseThrow(() -> new UsuarioException(
-                    "Nombre de usuario o contraseña incorrectos."
-                ));
+                        "Nombre de usuario o contraseña incorrectos."));
 
         if (!usuario.getPassword().equals(password)) {
-            throw new UsuarioException(
-                "Nombre de usuario o contraseña incorrectos."
-            );
+            throw new UsuarioException("Nombre de usuario o contraseña incorrectos.");
         }
-
         if (usuario.isBloqueado()) {
             throw new UsuarioException(
-                "Tu cuenta está bloqueada. Contacta con un administrador."
-            );
+                    "Tu cuenta está bloqueada. Contacta con un administrador.");
         }
-
         if (!usuario.isAceptado()) {
-            throw new UsuarioException(
-                "Tu cuenta aún no ha sido aceptada."
-            );
+            throw new UsuarioException("Tu cuenta aún no ha sido aceptada.");
         }
 
-        return usuario;
+        return UsuarioMapper.toPerfilDTO(
+                usuario, usuarioRepository.getCalificacionMedia(usuario.getId()));
     }
 
-    
-    
-    
-    
+    // =========================================================================
+    // CERRAR SESIÓN
+    // =========================================================================
     public void cerrarSesion() {
-        // No hay sesión que cerrar en backend
-        // Método intencionadamente vacío por ahora, este método hay q completarlo bien al meter springSecurity con JWT
+        // Vacío hasta implementar JWT
     }
 
-    
-    public Usuario actualizarPerfil(int idUsuario, Usuario datos) {
-    	
-    	if (datos.getId() != idUsuario) {
+    // =========================================================================
+    // ACTUALIZAR PERFIL
+    // =========================================================================
+    public PerfilUsuarioDTO actualizarPerfil(int idUsuario, ActualizarPerfilDTO dto) {
+
+        /*if (datos.getId() != idUsuario) {
 			throw new UsuarioException(
 					String.format("El id del body (%d) y el id del path (%d) no coinciden", datos.getId(), idUsuario));
-		}
-    	
+		} */
+
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
 
-        
-        // Validar campos NO permitidos
-        if (datos.getNombreUsuario() != null ||
-            datos.getPassword() != null ||
-            datos.isBloqueado() ||
-            datos.isAceptado() ||
-            datos.getRol() != null) {
+        UsuarioMapper.applyActualizarPerfil(dto, usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
 
-            throw new UsuarioException("No puedes modificar alguno de los campos introducidos.");
-        }
-
-        // Actualizar solo campos permitidos
-        usuario.setDni(datos.getDni());
-        usuario.setNombre(datos.getNombre());
-        usuario.setApellido1(datos.getApellido1());
-        usuario.setApellido2(datos.getApellido2());
-        usuario.setAnioNacimiento(datos.getAnioNacimiento());
-        usuario.setGenero(datos.getGenero());
-        usuario.setTelefono(datos.getTelefono());
-        usuario.setEmail(datos.getEmail());
-        usuario.setFoto(datos.getFoto());
-        usuario.setMensajePresentacion(datos.getMensajePresentacion());
-
-        return usuarioRepository.save(usuario);
+        return UsuarioMapper.toPerfilDTO(guardado,
+                usuarioRepository.getCalificacionMedia(guardado.getId()));
     }
 
-    
-    public Usuario cambiarEstadoBloqueo(int idUsuario, Usuario datos, boolean bloquear) {
-
-        // 🔐 Validación ID path vs body
-        if (datos.getId() != idUsuario) {
+    // =========================================================================
+    // BLOQUEAR / DESBLOQUEAR (solo administrador)
+    // =========================================================================
+    public PerfilUsuarioDTO cambiarEstadoBloqueo(int idUsuario, boolean bloquear) {
+        /*if (datos.getId() != idUsuario) {
             throw new UsuarioException(
                     String.format(
                             "El id del body (%d) y el id del path (%d) no coinciden",
@@ -194,76 +189,60 @@ public class UsuarioService {
                             idUsuario
                     )
             );
-        }
-
+        } */
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
-
-        // 🔒 Validar que NO venga ningún otro campo
-        if (datos.getNombre() != null ||
-            datos.getApellido1() != null ||
-            datos.getApellido2() != null ||
-            datos.getDni() != null ||
-            datos.getEmail() != null ||
-            datos.getTelefono() != null ||
-            datos.getGenero() != null ||
-            datos.getAnioNacimiento() != null ||
-            datos.getNombreUsuario() != null ||
-            datos.getPassword() != null ||
-            datos.getRol() != null ||
-            datos.isAceptado()) {
-
-            throw new UsuarioException("Solo se puede modificar el estado de bloqueo del usuario.");
-        }
 
         usuario.setBloqueado(bloquear);
-        return usuarioRepository.save(usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        return UsuarioMapper.toPerfilDTO(guardado,
+                usuarioRepository.getCalificacionMedia(guardado.getId()));
     }
 
-    
-    
-    public Usuario cambiarCredenciales(int idUsuario, Usuario datos) {
+    // =========================================================================
+    // CAMBIAR CREDENCIALES
+    // =========================================================================
+    public PerfilUsuarioDTO cambiarCredenciales(int idUsuario, CambiarCredencialesDTO dto) {
 
-    	if (datos.getId() != idUsuario) {
+        /*if (datos.getId() != idUsuario) {
 			throw new UsuarioException(
 					String.format("El id del body (%d) y el id del path (%d) no coinciden", datos.getId(), idUsuario));
-		}
-    	
+		} */
+
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
 
-        // Validar campos NO permitidos
-        if (datos.getDni() != null ||
-            datos.getNombre() != null ||
-            datos.getApellido1() != null ||
-            datos.getApellido2() != null ||
-            datos.getAnioNacimiento() != null ||
-            datos.getGenero() != null ||
-            datos.getTelefono() != null ||
-            datos.getEmail() != null ||
-            datos.getMensajePresentacion() != null ||
-            datos.getFoto() != null ||
-            datos.isBloqueado() ||
-            datos.isAceptado() ||
-            datos.getRol() != null) {
+        // Si quiere cambiar contraseña, validamos las reglas
+        if (dto.getPasswordNueva() != null) {
 
-            throw new UsuarioException("Solo puedes modificar el nombre de usuario y/o la contraseña.");
-        }
-
-        // Cambiar nombreUsuario si viene
-        if (datos.getNombreUsuario() != null) {
-            if (usuarioRepository.existsByNombreUsuario(datos.getNombreUsuario())) {
-                throw new UsuarioException("El nombre de usuario ya está en uso.");
+            if (dto.getPasswordActual() == null) {
+                throw new UsuarioException(
+                        "Debes introducir tu contraseña actual para cambiarla.");
             }
-            usuario.setNombreUsuario(datos.getNombreUsuario());
+            if (!usuario.getPassword().equals(dto.getPasswordActual())) {
+                throw new UsuarioException("La contraseña actual es incorrecta.");
+            }
+            if (dto.getPasswordNueva().equals(dto.getPasswordActual())) {
+                throw new UsuarioException(
+                        "La nueva contraseña no puede ser igual a la actual.");
+            }
+            if (!dto.getPasswordNueva().equals(dto.getRepetirPassword())) {
+                throw new UsuarioException("Las contraseñas nuevas no coinciden.");
+            }
         }
 
-        // Cambiar password si viene
-        if (datos.getPassword() != null) {
-            usuario.setPassword(datos.getPassword());
+        // Si quiere cambiar nombreUsuario, validamos unicidad
+        if (dto.getNombreUsuario() != null &&
+                usuarioRepository.existsByNombreUsuario(dto.getNombreUsuario())) {
+            throw new UsuarioException("El nombre de usuario ya está en uso.");
         }
 
-        return usuarioRepository.save(usuario);
+        UsuarioMapper.applyCambiarCredenciales(dto, usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        return UsuarioMapper.toPerfilDTO(guardado,
+                usuarioRepository.getCalificacionMedia(guardado.getId()));
     }
 
     
@@ -281,6 +260,15 @@ public class UsuarioService {
 
         usuario.setRol(nuevoRol);
         usuarioRepository.save(usuario);
+    }
+    
+ // =========================================================================
+    // MÉTODO INTERNO — devuelve la calificacion media de un usuario
+    // Usado por PisoService y AlquilerService para construir DTOs sin
+    // necesidad de inyectar UsuarioRepository fuera de este service.
+    // =========================================================================
+    public Double getCalificacionMedia(int idUsuario) {
+        return usuarioRepository.getCalificacionMedia(idUsuario);
     }
 
 
