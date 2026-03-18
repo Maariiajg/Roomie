@@ -12,89 +12,85 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.roomie.persistence.entities.Feedback;
 import com.roomie.services.FeedbackService;
+import com.roomie.services.dto.feedback.FeedbackDTO;
 
 @RestController
 @RequestMapping("/feedback")
 public class FeedbackController {
-
-	@Autowired
+ 
+    @Autowired
     private FeedbackService feedbackService;
-
+ 
     /* =========================
-       buscar por id
+       FIND BY ID
        ========================= */
     @GetMapping("/{idFeedback}")
-    public ResponseEntity<Feedback> findById(
+    public ResponseEntity<FeedbackDTO> findById(
             @PathVariable int idFeedback) {
-
+ 
         return ResponseEntity.ok(
                 feedbackService.findById(idFeedback)
         );
     }
-
+ 
     /* =========================
-      buscar por id visible
+       FIND VISIBLE BY ID
        ========================= */
     @GetMapping("/{idFeedback}/visible")
-    public ResponseEntity<Feedback> findVisibleById(
+    public ResponseEntity<FeedbackDTO> findVisibleById(
             @PathVariable int idFeedback) {
-
+ 
         return ResponseEntity.ok(
                 feedbackService.findVisibleById(idFeedback)
         );
     }
-
+ 
     /* =========================
-     feeedbacks visibles de un usuario
+       FEEDBACKS VISIBLES DE UN USUARIO
        ========================= */
     @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<List<Feedback>> feedbacksVisiblesDeUsuario(
+    public ResponseEntity<List<FeedbackDTO>> feedbacksVisiblesDeUsuario(
             @PathVariable int idUsuario) {
-
+ 
         return ResponseEntity.ok(
                 feedbackService.feedbacksVisiblesDeUsuario(idUsuario)
         );
     }
-
+ 
     /* =========================
-       poner feedback
+       VALORAR (dejar feedback)
        ========================= */
     @PostMapping("/{idUsuarioPone}/{idUsuarioRecibe}")
-    public ResponseEntity<Feedback> valorar(
+    public ResponseEntity<FeedbackDTO> valorar(
             @PathVariable int idUsuarioPone,
             @PathVariable int idUsuarioRecibe,
-            @RequestBody Feedback datos) {
-
+            @RequestBody FeedbackDTO datos) {
+ 
         return ResponseEntity.ok(
-                feedbackService.valorar(
-                        idUsuarioPone,
-                        idUsuarioRecibe,
-                        datos
-                )
+                feedbackService.valorar(idUsuarioPone, idUsuarioRecibe, datos)
         );
     }
-
+ 
     /* =========================
-       GET /feedback/media/{idUsuario}
+       MEDIA DE CALIFICACIONES
        ========================= */
     @GetMapping("/media/{idUsuario}")
     public ResponseEntity<Double> mediaCalificaciones(
             @PathVariable int idUsuario) {
-
+ 
         return ResponseEntity.ok(
                 feedbackService.mediaCalificaciones(idUsuario)
         );
     }
-
+ 
     /* =========================
-       PUT /feedback/{id}/toggle
+       TOGGLE VISIBLE (administrador)
        ========================= */
     @PutMapping("/{idFeedback}/toggle")
-    public ResponseEntity<Feedback> toggleVisible(
+    public ResponseEntity<FeedbackDTO> toggleVisible(
             @PathVariable int idFeedback) {
-
+ 
         return ResponseEntity.ok(
                 feedbackService.toggleVisible(idFeedback)
         );

@@ -13,54 +13,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.roomie.persistence.entities.Foto;
 import com.roomie.services.FotoService;
+import com.roomie.services.dto.foto.FotoDTO;
 
 @RestController
 @RequestMapping("/foto")
 public class FotoController {
-
+ 
     @Autowired
     private FotoService fotoService;
-
-    
-
+ 
     /* =========================
-       GET BY ID
+       FIND BY ID
        ========================= */
     @GetMapping("/{idFoto}")
-    public ResponseEntity<?> findById(@PathVariable int idFoto) {
-        return ResponseEntity.ok(this.fotoService.findById(idFoto));
+    public ResponseEntity<FotoDTO> findById(@PathVariable int idFoto) {
+        return ResponseEntity.ok(fotoService.findById(idFoto));
     }
-
+ 
     /* =========================
-       CREATE (AÑADIR A PISO)
+       CREATE (añadir al piso)
        ========================= */
     @PostMapping
-    public ResponseEntity<?> create(
-            @RequestParam String url, 
+    public ResponseEntity<FotoDTO> create(
+            @RequestParam String url,
             @RequestParam int idPiso) {
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(this.fotoService.create(url, idPiso));
+ 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(fotoService.create(url, idPiso));
     }
-
+ 
     /* =========================
        DELETE
        ========================= */
     @DeleteMapping("/{idFoto}")
-    public ResponseEntity<?> delete(@PathVariable int idFoto) {
-        this.fotoService.delete(idFoto);
-        return ResponseEntity.noContent().build(); 
+    public ResponseEntity<Void> delete(@PathVariable int idFoto) {
+        fotoService.delete(idFoto);
+        return ResponseEntity.noContent().build();
     }
-    
-    
-    //LISTA DE FOTOS POR PISO
+ 
+    /* =========================
+       FOTOS DE UN PISO
+       ========================= */
     @GetMapping("/{idPiso}/fotos")
-    public ResponseEntity<List<Foto>> findFotosByPiso(@PathVariable int idPiso) {
-
-        List<Foto> fotos = fotoService.findFotosByPiso(idPiso);
-
-        return ResponseEntity.ok(fotos);
+    public ResponseEntity<List<FotoDTO>> findFotosByPiso(@PathVariable int idPiso) {
+        return ResponseEntity.ok(fotoService.findFotosByPiso(idPiso));
     }
 }

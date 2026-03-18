@@ -14,94 +14,120 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.roomie.persistence.entities.Usuario;
 import com.roomie.services.UsuarioService;
+import com.roomie.services.dto.usuario.ActualizarPerfilDTO;
+import com.roomie.services.dto.usuario.CambiarCredencialesDTO;
+import com.roomie.services.dto.usuario.PerfilUsuarioDTO;
+import com.roomie.services.dto.usuario.UsuarioRegistroDTO;
 
 @RestController
 @RequestMapping("/usuario")
 public class UsuarioController {
-
+ 
     @Autowired
     private UsuarioService usuarioService;
-
- // Endpoint para listar todos los usuarios y owners
+ 
+    /* =========================
+       FIND ALL
+       ========================= */
     @GetMapping
-    public ResponseEntity<List<Usuario>> findAll() {
-        List<Usuario> usuarios = usuarioService.findAllUsuariosYOwners();
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<List<PerfilUsuarioDTO>> findAll() {
+        return ResponseEntity.ok(
+                usuarioService.findAllUsuariosYOwners()
+        );
     }
-    
- // Endpoint para encontrar un usuario por ID
+ 
+    /* =========================
+       FIND BY ID
+       ========================= */
     @GetMapping("/{idUsuario}")
-    public ResponseEntity<Usuario> findById(@PathVariable int idUsuario) {
-        Usuario usuario = usuarioService.findById(idUsuario);
-        return ResponseEntity.ok(usuario);
+    public ResponseEntity<PerfilUsuarioDTO> findById(@PathVariable int idUsuario) {
+        return ResponseEntity.ok(
+                usuarioService.findByIdDTO(idUsuario)
+        );
     }
-    
- // Endpoint para registrar un nuevo usuario
+ 
+    /* =========================
+       REGISTRAR
+       ========================= */
     @PostMapping("/registrar")
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
-        Usuario nuevoUsuario = usuarioService.registrar(usuario);
-        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
+    public ResponseEntity<PerfilUsuarioDTO> registrar(
+            @RequestBody UsuarioRegistroDTO dto) {
+ 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(usuarioService.registrar(dto));
     }
-
-    // Endpoint para iniciar sesión
+ 
+    /* =========================
+       INICIAR SESIÓN
+       ========================= */
     @PostMapping("/iniciar-sesion")
-    public ResponseEntity<Usuario> iniciarSesion(
+    public ResponseEntity<PerfilUsuarioDTO> iniciarSesion(
             @RequestParam String nombreUsuario,
             @RequestParam String password) {
-
-        Usuario usuario = usuarioService.iniciarSesion(nombreUsuario, password);
-        return ResponseEntity.ok(usuario);
+ 
+        return ResponseEntity.ok(
+                usuarioService.iniciarSesion(nombreUsuario, password)
+        );
     }
-    
-    
+ 
+    /* =========================
+       CERRAR SESIÓN
+       ========================= */
     @PostMapping("/cerrar-sesion")
     public ResponseEntity<String> cerrarSesion() {
         usuarioService.cerrarSesion();
         return ResponseEntity.ok("Sesión cerrada correctamente.");
     }
-
-    
+ 
+    /* =========================
+       ACTUALIZAR PERFIL
+       ========================= */
     @PutMapping("/{idUsuario}/actualizar-perfil")
-    public ResponseEntity<Usuario> actualizarPerfil(
+    public ResponseEntity<PerfilUsuarioDTO> actualizarPerfil(
             @PathVariable int idUsuario,
-            @RequestBody Usuario usuario) {
-
-        return ResponseEntity.ok(usuarioService.actualizarPerfil(idUsuario, usuario));
+            @RequestBody ActualizarPerfilDTO dto) {
+ 
+        return ResponseEntity.ok(
+                usuarioService.actualizarPerfil(idUsuario, dto)
+        );
     }
-
-    
+ 
+    /* =========================
+       BLOQUEAR
+       ========================= */
     @PutMapping("/{idUsuario}/bloquear")
-    public ResponseEntity<Usuario> bloquear(
-            @PathVariable int idUsuario,
-            @RequestBody Usuario usuario) {
-
+    public ResponseEntity<PerfilUsuarioDTO> bloquear(
+            @PathVariable int idUsuario) {
+ 
         return ResponseEntity.ok(
-                usuarioService.cambiarEstadoBloqueo(idUsuario, usuario, true)
+                usuarioService.cambiarEstadoBloqueo(idUsuario, true)
         );
     }
-
+ 
+    /* =========================
+       DESBLOQUEAR
+       ========================= */
     @PutMapping("/{idUsuario}/desbloquear")
-    public ResponseEntity<Usuario> desbloquear(
-            @PathVariable int idUsuario,
-            @RequestBody Usuario usuario) {
-
+    public ResponseEntity<PerfilUsuarioDTO> desbloquear(
+            @PathVariable int idUsuario) {
+ 
         return ResponseEntity.ok(
-                usuarioService.cambiarEstadoBloqueo(idUsuario, usuario, false)
+                usuarioService.cambiarEstadoBloqueo(idUsuario, false)
         );
     }
-
-    
-    
+ 
+    /* =========================
+       CAMBIAR CREDENCIALES
+       ========================= */
     @PutMapping("/{idUsuario}/credenciales")
-    public ResponseEntity<Usuario> cambiarCredenciales(
+    public ResponseEntity<PerfilUsuarioDTO> cambiarCredenciales(
             @PathVariable int idUsuario,
-            @RequestBody Usuario usuario) {
-
-        return ResponseEntity.ok(usuarioService.cambiarCredenciales(idUsuario, usuario));
+            @RequestBody CambiarCredencialesDTO dto) {
+ 
+        return ResponseEntity.ok(
+                usuarioService.cambiarCredenciales(idUsuario, dto)
+        );
     }
-
-
-
 }

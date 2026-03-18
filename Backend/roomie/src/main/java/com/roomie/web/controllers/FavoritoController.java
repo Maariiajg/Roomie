@@ -13,64 +13,60 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.roomie.persistence.entities.Favorito;
 import com.roomie.services.FavoritoService;
+import com.roomie.services.dto.favorito.FavoritoDTO;
 
 @RestController
 @RequestMapping("/favorito")
 public class FavoritoController {
-
+ 
     @Autowired
     private FavoritoService favoritoService;
-
+ 
     /* =========================
-       GET ALL (favoritos de un usuario)
+       FIND ALL (favoritos de un usuario)
        ========================= */
     @GetMapping
-    public ResponseEntity<List<Favorito>> list(
+    public ResponseEntity<List<FavoritoDTO>> list(
             @RequestParam int idUsuario) {
-
+ 
         return ResponseEntity.ok(
-                this.favoritoService.findAll(idUsuario));
+                favoritoService.findAll(idUsuario));
     }
-
+ 
     /* =========================
-       GET BY ID
+       FIND BY ID
        ========================= */
     @GetMapping("/{idFavorito}")
-    public ResponseEntity<?> findById(
+    public ResponseEntity<FavoritoDTO> findById(
             @PathVariable int idFavorito) {
-
+ 
         return ResponseEntity.ok(
-                this.favoritoService.findById(idFavorito));
+                favoritoService.findById(idFavorito));
     }
-
+ 
     /* =========================
-       CREATE (AÑADIR A FAVORITOS)
+       AÑADIR A FAVORITOS
        ========================= */
     @PostMapping
-    public ResponseEntity<?> create(
+    public ResponseEntity<FavoritoDTO> create(
             @RequestParam int idUsuario,
             @RequestParam int idPiso) {
-
+ 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(this.favoritoService
-                        .anadirAFavoritos(idUsuario, idPiso));
+                .body(favoritoService.anadirAFavoritos(idUsuario, idPiso));
     }
-
+ 
     /* =========================
-       DELETE (ELIMINAR DE FAVORITOS)
+       ELIMINAR DE FAVORITOS
        ========================= */
     @DeleteMapping
-    public ResponseEntity<?> delete(
+    public ResponseEntity<Void> delete(
             @RequestParam int idUsuario,
             @RequestParam int idPiso) {
-
-        this.favoritoService
-                .eliminarDeFavoritos(idUsuario, idPiso);
-
+ 
+        favoritoService.eliminarDeFavoritos(idUsuario, idPiso);
         return ResponseEntity.noContent().build();
     }
 }
-
