@@ -94,6 +94,12 @@ public class UsuarioService {
                 !dto.getPassword().equals(dto.getRepetirPassword())) {
             throw new UsuarioException("Las contraseñas no coinciden.");
         }
+        
+        if (dto.getPassword() == null || dto.getPassword().length() < 8) {
+            throw new UsuarioException(
+                "La contraseña es demasiado corta, debe tener al menos 8 caracteres."
+            );
+        }
 
         // Validar campos obligatorios
         if (dto.getNombre() == null ||
@@ -162,10 +168,7 @@ public class UsuarioService {
     // =========================================================================
     public PerfilUsuarioDTO actualizarPerfil(int idUsuario, ActualizarPerfilDTO dto) {
 
-        /*if (datos.getId() != idUsuario) {
-			throw new UsuarioException(
-					String.format("El id del body (%d) y el id del path (%d) no coinciden", datos.getId(), idUsuario));
-		} */
+    	
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
@@ -229,6 +232,12 @@ public class UsuarioService {
             }
             if (!dto.getPasswordNueva().equals(dto.getRepetirPassword())) {
                 throw new UsuarioException("Las contraseñas nuevas no coinciden.");
+            }
+            
+            if (dto.getPasswordNueva() == null || dto.getPasswordNueva().length() < 8) {
+                throw new UsuarioException(
+                    "La nueve contraseña es demasiado corta, debe tener al menos 8 caracteres."
+                );
             }
         }
 

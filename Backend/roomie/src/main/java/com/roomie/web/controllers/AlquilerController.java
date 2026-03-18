@@ -111,7 +111,7 @@ public class AlquilerController {
     /* =========================
        SALIR DEL PISO
        ========================= */
-    @PutMapping("/pisos/{idPiso}/salir")
+    @PutMapping("/piso/{idPiso}/salir")
     public ResponseEntity<Void> salirDelPiso(
             @PathVariable int idPiso,
             @RequestParam int idUsuario,
