@@ -29,7 +29,25 @@ public class PisoMapper {
     // -------------------------------------------------------------------------
     public static PisoDTO toPisoDTO(Piso piso, Double calificacionMediaOwner) {
         if (piso == null) return null;
- 
+        
+        if (piso.getNumOcupantesActual() < 0) {
+            throw new IllegalStateException(
+                "Datos corruptos: ocupantes negativos en piso ID " + piso.getId()
+            );
+        }
+
+        if (piso.getNumTotalHabitaciones() < 0) {
+            throw new IllegalStateException(
+                "Datos corruptos: habitaciones negativas en piso ID " + piso.getId()
+            );
+        }
+
+        if (piso.getNumOcupantesActual() > piso.getNumTotalHabitaciones()) {
+            throw new IllegalStateException(
+                "Datos corruptos: más ocupantes que habitaciones en piso ID " + piso.getId()
+            );
+        }
+        
         PisoDTO dto = new PisoDTO();
         dto.setId(piso.getId());
         dto.setDireccion(piso.getDireccion());
@@ -65,6 +83,24 @@ public class PisoMapper {
     public static PisoResidenteDTO toPisoResidenteDTO(Piso piso, Double calificacionMediaOwner) {
         if (piso == null) return null;
  
+        if (piso.getNumOcupantesActual() < 0) {
+            throw new IllegalStateException(
+                "Datos corruptos: ocupantes negativos en piso ID " + piso.getId()
+            );
+        }
+
+        if (piso.getNumTotalHabitaciones() < 0) {
+            throw new IllegalStateException(
+                "Datos corruptos: habitaciones negativas en piso ID " + piso.getId()
+            );
+        }
+
+        if (piso.getNumOcupantesActual() > piso.getNumTotalHabitaciones()) {
+            throw new IllegalStateException(
+                "Datos corruptos: más ocupantes que habitaciones en piso ID " + piso.getId()
+            );
+        }
+        
         PisoResidenteDTO dto = new PisoResidenteDTO();
         dto.setId(piso.getId());
         dto.setDireccion(piso.getDireccion());

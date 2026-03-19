@@ -92,4 +92,44 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleNotFound(FavoritoException ex) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+	
+	
+	//=========================================================
+	
+	@ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+	public ResponseEntity<String> handleDataIntegrity(
+	        org.springframework.dao.DataIntegrityViolationException ex) {
+
+	    return ResponseEntity.status(HttpStatus.CONFLICT)
+	            .body("Ya existe un registro con esos datos únicos (email, DNI o nombre de usuario).");
+	}
+	
+	@ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+	public ResponseEntity<String> handleBadJson(
+	        org.springframework.http.converter.HttpMessageNotReadableException ex) {
+
+	    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	            .body("El cuerpo de la petición no es un JSON válido o tiene un formato incorrecto.");
+	}
+	
+	@ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<String> handleTypeMismatch(
+	        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException ex) {
+
+	    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	            .body("Parámetro con tipo incorrecto: " + ex.getName());
+	}
+	
+	@ExceptionHandler(org.hibernate.LazyInitializationException.class)
+	public ResponseEntity<String> handleLazy(org.hibernate.LazyInitializationException ex) {
+
+	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	            .body("Error de carga de datos: " + ex.getMessage());
+	}
+	
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<String> handleIllegalState(IllegalStateException ex) {
+	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	            .body(ex.getMessage());
+	}
 }

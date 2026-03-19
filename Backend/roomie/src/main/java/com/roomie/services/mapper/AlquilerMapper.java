@@ -26,7 +26,19 @@ public class AlquilerMapper {
     // -------------------------------------------------------------------------
     public static AlquilerDTO toDTO(Alquiler alquiler, Double calificacionMediaUsuario) {
         if (alquiler == null) return null;
- 
+        
+        if (alquiler.getUsuario() == null) {
+            throw new IllegalStateException(
+                "Alquiler con usuario null (error de integridad en BD). ID alquiler: " + alquiler.getId()
+            );
+        }
+
+        if (alquiler.getPiso() == null) {
+            throw new IllegalStateException(
+                "Alquiler con piso null (error de integridad en BD). ID alquiler: " + alquiler.getId()
+            );
+        }
+        
         AlquilerDTO dto = new AlquilerDTO();
         dto.setId(alquiler.getId());
         dto.setFsolicitud(alquiler.getFsolicitud());
@@ -54,9 +66,19 @@ public class AlquilerMapper {
         if (alquileres == null) return List.of();
  
         return alquileres.stream()
-                .map(a -> toDTO(a, mediasUsuarios != null
-                        ? mediasUsuarios.get((long) a.getUsuario().getId())
-                        : null))
+                .map(a -> {
+                    if (a.getUsuario() == null) {
+                        throw new IllegalStateException(
+                            "Alquiler con usuario null (ID: " + a.getId() + ")"
+                        );
+                    }
+
+                    Double media = (mediasUsuarios != null)
+                            ? mediasUsuarios.get((long) a.getUsuario().getId())
+                            : null;
+
+                    return toDTO(a, media);
+                })
                 .toList();
     }
 }
