@@ -15,6 +15,7 @@ import com.roomie.persistence.entities.enums.Roles;
 import com.roomie.persistence.repositories.PisoRepository;
 import com.roomie.persistence.specifications.PisoSpecification;
 import com.roomie.services.dto.foto.FotoDTO;
+import com.roomie.services.dto.piso.PisoActualizarDTO;
 import com.roomie.services.dto.piso.PisoCederDTO;
 import com.roomie.services.dto.piso.PisoCrearDTO;
 import com.roomie.services.dto.piso.PisoDTO;
@@ -47,7 +48,17 @@ public class PisoService {
     public List<Piso> findAll() {
         return pisoRepository.findAll();
     }
-
+    
+    // =========================================================================
+    // FIND ALL COMO DTO
+    // =========================================================================
+    public List<PisoDTO> findAllDTO() {
+        List<Piso> pisos = pisoRepository.findAll();
+        return pisos.stream()
+                .map(p -> PisoMapper.toPisoDTO(p,
+                        usuarioService.getCalificacionMedia(p.getOwner().getId())))
+                .toList();
+    }
     // =========================================================================
     // FIND LIBRES — devuelve entidades (uso interno)
     // =========================================================================
@@ -139,7 +150,7 @@ public class PisoService {
     // =========================================================================
     // 2. MODIFICAR INFORMACIÓN BÁSICA DEL PISO
     // =========================================================================
-    public PisoDTO modificarInformacionBasica(int idPiso, PisoCrearDTO dto) {
+    public PisoDTO modificarInformacionBasica(int idPiso, PisoActualizarDTO dto) {
         /*if (datos.getId() != idPiso) {
             throw new PisoException(
                     String.format(
@@ -222,7 +233,11 @@ public class PisoService {
     // 4. CEDER PISO
     // =========================================================================
     public PisoDTO cederPiso(int idPiso, PisoCederDTO datos) {
-
+    	
+    	if (datos.getIdOwnerActual() <= 0 || datos.getIdNuevoOwner() <= 0) {
+            throw new PisoException("Los IDs de usuario deben ser válidos.");
+        }
+    	
         Piso piso = pisoRepository.findById(idPiso)
                 .orElseThrow(() -> new PisoNotFoundException("El piso no existe."));
 

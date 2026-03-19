@@ -3,7 +3,6 @@ package com.roomie.persistence.entities;
 import java.time.LocalDate;
 
 import com.roomie.persistence.entities.enums.EstadoFeedback;
-import com.roomie.persistence.entities.enums.Genero;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

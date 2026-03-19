@@ -57,6 +57,16 @@ public class FeedbackController {
                 feedbackService.feedbacksVisiblesDeUsuario(idUsuario)
         );
     }
+    
+    //Feedbacks de un usuario para pruebas
+    @GetMapping("/usuario/{idUsuario}/todos")
+    public ResponseEntity<List<FeedbackDTO>> todosLosFeedbacksDeUsuario(
+            @PathVariable int idUsuario) {
+
+        return ResponseEntity.ok(
+                feedbackService.todosLosFeedbacksDeUsuario(idUsuario)
+        );
+    }
  
     /* =========================
        VALORAR (dejar feedback)

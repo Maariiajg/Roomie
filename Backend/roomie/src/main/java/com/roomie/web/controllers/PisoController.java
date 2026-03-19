@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.roomie.services.PisoService;
 import com.roomie.services.dto.foto.FotoDTO;
+import com.roomie.services.dto.piso.PisoActualizarDTO;
 import com.roomie.services.dto.piso.PisoCederDTO;
 import com.roomie.services.dto.piso.PisoCrearDTO;
 import com.roomie.services.dto.piso.PisoDTO;
@@ -35,10 +36,7 @@ public class PisoController {
        ========================= */
     @GetMapping
     public ResponseEntity<List<PisoDTO>> findAll() {
-        // Reutilizamos filtrar sin filtros para obtener lista completa como DTOs
-        return ResponseEntity.ok(
-                pisoService.filtrar(null, null, null, null, null, null)
-        );
+        return ResponseEntity.ok(pisoService.findAllDTO());
     }
  
     /* =========================
@@ -84,7 +82,7 @@ public class PisoController {
     @PutMapping("/{idPiso}")
     public ResponseEntity<PisoDTO> modificarInformacionBasica(
             @PathVariable int idPiso,
-            @RequestBody PisoCrearDTO dto) {
+            @RequestBody PisoActualizarDTO dto) {
  
         return ResponseEntity.ok(
                 pisoService.modificarInformacionBasica(idPiso, dto)

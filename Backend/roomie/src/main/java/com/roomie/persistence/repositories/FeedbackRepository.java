@@ -26,5 +26,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
             int idRecibe,
             EstadoFeedback estadoFeedback
     );
+    
+    List<Feedback> findByUsuarioRecibeId(int idUsuario);
 
 }

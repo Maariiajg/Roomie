@@ -43,8 +43,8 @@ public interface AlquilerRepository extends JpaRepository<Alquiler, Integer> {
               AND a2.id_usuario <> :idUsuario
               AND a1.estado_solicitud = 'ACEPTADA'
               AND a2.estado_solicitud = 'ACEPTADA'
-              AND a1.f_inicio <= a2.f_fin
-              AND a1.f_fin >= a2.f_inicio
+              AND (a1.f_fin IS NULL OR a1.f_fin >= a2.f_inicio)
+    		  AND (a2.f_fin IS NULL OR a2.f_fin >= a1.f_inicio)
             """, nativeQuery = true)
         List<Integer> findCompanerosConvivencia(int idUsuario);
 

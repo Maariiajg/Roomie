@@ -59,6 +59,13 @@ public class FeedbackService {
                 feedbackRepository.findByUsuarioRecibeIdAndVisibleTrueAndEstadoFeedback(
                         idUsuario, EstadoFeedback.VALORADO));
     }
+    
+ // Solo para pruebas/admin — devuelve todos los feedbacks sin filtrar visibilidad
+    public List<FeedbackDTO> todosLosFeedbacksDeUsuario(int idUsuario) {
+        usuarioService.findById(idUsuario);
+        return FeedbackMapper.toDTOList(
+                feedbackRepository.findByUsuarioRecibeId(idUsuario));
+    }
 
     // =========================================================================
     // 4. DEJAR FEEDBACK (VALORAR) — recibe solo calificacion y descripcion
