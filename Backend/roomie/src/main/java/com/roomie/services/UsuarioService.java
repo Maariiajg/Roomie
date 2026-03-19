@@ -5,6 +5,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.roomie.persistence.entities.Usuario;
@@ -19,12 +23,26 @@ import com.roomie.services.exceptions.usuario.UsuarioNotFoundException;
 import com.roomie.services.mapper.UsuarioMapper;
 
 @Service
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService{
 
 	@Autowired
     private UsuarioRepository usuarioRepository;
 
 
+	@Override
+	public UserDetails loadUserByUsername(String nombreUsuario) throws UsernameNotFoundException {
+
+		Usuario usuario = this.usuarioRepository.findByNombreUsuario(nombreUsuario)
+				.orElseThrow(() -> new UsernameNotFoundException("El usuario " + nombreUsuario + " no existe. "));
+
+		return User.builder()
+				.username(usuario.getNombreUsuario())
+				.password(usuario.getPassword())
+				.roles(usuario.getRol().name())
+				.build();
+	}
+	
+	
     // =========================================================================
     // FIND ALL — solo USUARIO y OWNER (nunca ADMINISTRADOR)
     // =========================================================================
