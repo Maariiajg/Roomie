@@ -1,0 +1,100 @@
+<div class="min-h-screen bg-bgMain py-10 px-4 flex items-center justify-center">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-8">
+    <h2 class="text-3xl font-bold text-center text-textMain mb-6">Crear Cuenta Administrador</h2>
+    
+    <form [formGroup]="registroForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      
+      <!-- Datos de acceso -->
+      <div class="border-b border-gray-200 pb-4">
+        <h3 class="text-lg font-semibold text-textMain mb-4">Datos de Acceso</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">Usuario</label>
+            <input type="text" formControlName="nombreUsuario" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+            @if (f['nombreUsuario'].touched && f['nombreUsuario'].invalid) {
+              <p class="text-red-500 text-xs mt-1">Usuario requerido (min 3 chars)</p>
+            }
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">Email</label>
+            <input type="email" formControlName="email" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+            @if (f['email'].touched && f['email'].invalid) {
+              <p class="text-red-500 text-xs mt-1">Email inválido</p>
+            }
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">Contraseña</label>
+            <input type="password" formControlName="password" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">Repetir Contraseña</label>
+            <input type="password" formControlName="repetirPassword" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+            @if (registroForm.hasError('passwordMismatch') && f['repetirPassword'].touched) {
+              <p class="text-red-500 text-xs mt-1">Las contraseñas no coinciden</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Datos Personales -->
+      <div class="border-b border-gray-200 pb-4">
+        <h3 class="text-lg font-semibold text-textMain mb-4">Datos Personales</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">Nombre</label>
+            <input type="text" formControlName="nombre" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">1º Apellido</label>
+            <input type="text" formControlName="apellido1" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">2º Apellido (Opcional)</label>
+            <input type="text" formControlName="apellido2" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">DNI</label>
+            <input type="text" formControlName="dni" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">Teléfono</label>
+            <input type="tel" formControlName="telefono" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-textMain mb-1">Fecha de Nacimiento</label>
+            <input type="date" formControlName="anioNacimiento" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none bg-white">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-textMain mb-2">Género</label>
+            <div class="flex gap-4">
+              @for (g of generos; track g) {
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="radio" formControlName="genero" [value]="g" class="form-radio text-primary focus:ring-primary h-5 w-5 border-gray-300">
+                  <span class="ml-2 text-textMain capitalize">{{ g.toLowerCase() }}</span>
+                </label>
+              }
+            </div>
+          </div>
+          
+          <div class="md:col-span-2 mt-2">
+            <label class="block text-sm font-medium text-textMain mb-1">Foto (URL opcional)</label>
+            <input type="text" formControlName="foto" placeholder="https://..." class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+          </div>
+        </div>
+      </div>
+
+      <button 
+        type="submit" 
+        [disabled]="registroForm.invalid || isLoading"
+        class="w-full bg-primary hover:bg-hover text-white font-semibold py-4 px-4 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed mt-4 text-lg"
+      >
+        {{ isLoading ? 'Creando cuenta...' : 'Registrarse' }}
+      </button>
+    </form>
+
+    <p class="text-center text-gray-600 mt-6 font-medium">
+      ¿Ya tienes cuenta? 
+      <a routerLink="/login" class="text-secondary hover:underline">Entrar aquí</a>
+    </p>
+  </div>
+</div>
