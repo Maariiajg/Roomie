@@ -65,7 +65,8 @@ public class AuthController {
                 accessToken,
                 refreshToken,
                 usuario.getNombreUsuario(),
-                usuario.getRol().name()
+                usuario.getRol().name(),
+                usuario.getId()
         ));
     }
 
@@ -109,7 +110,8 @@ public class AuthController {
                 accessToken,
                 refreshToken,
                 usuario.getNombreUsuario(),
-                usuario.getRol().name()
+                usuario.getRol().name(),
+                usuario.getId()
         ));
     }
 
@@ -137,7 +139,8 @@ public class AuthController {
                 nuevoAccessToken,
                 nuevoRefreshToken,
                 usuario.getNombreUsuario(),
-                usuario.getRol().name()
+                usuario.getRol().name(),
+                usuario.getId()
         ));
     }
 

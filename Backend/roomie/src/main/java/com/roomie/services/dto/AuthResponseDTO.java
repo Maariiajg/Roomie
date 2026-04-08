@@ -10,4 +10,5 @@ public class AuthResponseDTO {
     private String refreshToken;
     private String nombreUsuario;
     private String rol;
+    private int idUsuario;
 }

@@ -2,13 +2,17 @@
 <app-toast></app-toast>
 
 <!-- Header -->
-<app-header></app-header>
+@if (showLayout()) {
+  <app-header></app-header>
+}
 
 <!-- Main App Router -->
-<main class="min-h-screen flex flex-col">
+<main class="min-h-screen flex flex-col" [class.pt-[70px]]="showLayout()">
   <div class="flex-grow flex flex-col">
     <router-outlet></router-outlet>
   </div>
-  <app-footer></app-footer>
+  @if (showLayout()) {
+    <app-footer></app-footer>
+  }
 </main>
 

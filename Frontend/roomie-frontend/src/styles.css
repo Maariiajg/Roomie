@@ -1,10 +1,16 @@
+@import "tailwindcss";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "tailwindcss";
+
 
 @layer base {
   body {
     @apply bg-bgMain text-textMain antialiased;
+  }
+
+  body.hide-layout app-header,
+  body.hide-layout app-footer {
+    display: none !important;
   }
 }

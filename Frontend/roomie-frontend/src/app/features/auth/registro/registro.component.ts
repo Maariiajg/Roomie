@@ -56,12 +56,23 @@ export class RegistroComponent {
     }
 
     this.isLoading = true;
-    const dto: UsuarioRegistroDTO = this.registroForm.value;
+    const formValue = this.registroForm.value;
+    
+    // Formatear fecha a yyyy-MM-dd para el backend
+    const dto: UsuarioRegistroDTO = {
+      ...formValue,
+      anioNacimiento: formValue.anioNacimiento ? new Date(formValue.anioNacimiento).toISOString().split('T')[0] : null
+    };
 
-    this.authService.register(dto).subscribe({
+    const isRegistrationAdmin = this.router.url.includes('/admin');
+    const registration$ = isRegistrationAdmin 
+      ? this.authService.registerAdmin(dto) 
+      : this.authService.register(dto);
+
+    registration$.subscribe({
       next: () => {
         this.isLoading = false;
-        this.notificationService.showSuccess('Cuenta creada correctamente. ¡Inicia sesión!');
+        this.notificationService.showSuccess('Cuenta creada con éxito. Ya puedes iniciar sesión');
         this.router.navigate(['/login']);
       },
       error: (err) => {

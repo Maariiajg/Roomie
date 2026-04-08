@@ -26,5 +26,17 @@ export const routes: Routes = [
     path: 'registro/admin', 
     loadComponent: () => import('./features/auth/registro-admin/registro-admin.component').then(m => m.RegistroAdminComponent) 
   },
+  {
+    path: 'piso/:id',
+    loadComponent: () => import('./features/pisos/piso-detalle.component').then(m => m.PisoDetalleComponent)
+  },
+  {
+    path: 'usuario/:id',
+    loadComponent: () => import('./features/usuario/perfil-usuario.component').then(m => m.PerfilUsuarioComponent)
+  },
+  {
+    path: 'mis-alquileres',
+    loadComponent: () => import('./features/usuario/mis-alquileres.component').then(m => m.MisAlquileresComponent)
+  },
   { path: '**', redirectTo: '/home' }
 ];

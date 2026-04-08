@@ -84,12 +84,25 @@ export class LoginComponent {
     this.authService.login(dto).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/home']);
+        this.router.navigate(['/resultados']);
       },
       error: (err) => {
-        this.isLoading = false;
-        const msg = err.error?.message || 'Error al iniciar sesión. Revisa tus credenciales.';
-        this.notificationService.showError(msg);
+        // Si el backend indica que es administrador, intentamos el login de admin
+        if (err.error?.message?.includes('administrador')) {
+           this.authService.loginAdmin(dto).subscribe({
+              next: () => {
+                this.isLoading = false;
+                this.router.navigate(['/resultados']);
+              },
+              error: () => {
+                this.isLoading = false;
+                this.notificationService.showError('Usuario o contraseña incorrectos');
+              }
+           });
+        } else {
+          this.isLoading = false;
+          this.notificationService.showError('Usuario o contraseña incorrectos');
+        }
       }
     });
   }

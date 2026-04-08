@@ -12,6 +12,7 @@ interface AuthState {
   role: UserRole;
   isLoggedIn: boolean;
   username: string | null;
+  idUsuario: number | null;
 }
 
 @Injectable({
@@ -19,13 +20,14 @@ interface AuthState {
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private backendUrl = 'http://localhost:8091';
+  private backendUrl = 'http://localhost:8081';
 
   private initialState: AuthState = {
     token: localStorage.getItem('token'),
     role: localStorage.getItem('role') as UserRole,
     isLoggedIn: !!localStorage.getItem('token'),
-    username: localStorage.getItem('username')
+    username: localStorage.getItem('username'),
+    idUsuario: localStorage.getItem('userId') ? Number(localStorage.getItem('userId')) : null
   };
 
   private state = signal<AuthState>(this.initialState);
@@ -34,35 +36,53 @@ export class AuthService {
   readonly role = computed(() => this.state().role);
   readonly isLoggedIn = computed(() => this.state().isLoggedIn);
   readonly username = computed(() => this.state().username);
+  readonly userId = computed(() => this.state().idUsuario);
 
   constructor() {}
 
   login(dto: InicioSesionDTO): Observable<AuthResponseDTO> {
+    // Intentamos login de usuario normal por defecto
     return this.http.post<AuthResponseDTO>(`${this.backendUrl}/auth/login/usuario`, dto)
       .pipe(
         tap(response => {
-          this.setAuthState(response.accessToken, response.rol as UserRole, response.nombreUsuario);
+          this.setAuthState(response.accessToken, response.rol as UserRole, response.nombreUsuario, response.idUsuario);
         })
       );
   }
 
+  // Método específico para admin si se requiere
+  loginAdmin(dto: InicioSesionDTO): Observable<AuthResponseDTO> {
+    return this.http.post<AuthResponseDTO>(`${this.backendUrl}/auth/login/administrador`, null, {
+      params: { 
+        nombreUsuario: dto.nombreUsuario || '', 
+        password: dto.password || '' 
+      }
+    }).pipe(
+      tap(response => {
+        this.setAuthState(response.accessToken, response.rol as UserRole, response.nombreUsuario, response.idUsuario);
+      })
+    );
+  }
+
   register(dto: UsuarioRegistroDTO): Observable<any> {
-    return this.http.post(`${this.backendUrl}/usuario/registrar`, dto);
+    return this.http.post<any>(`${this.backendUrl}/usuario/registrar`, dto);
   }
 
   registerAdmin(dto: any): Observable<any> {
-    return this.http.post(`${this.backendUrl}/administrador/registrar`, dto);
+    return this.http.post<any>(`${this.backendUrl}/administrador/registrar`, dto);
   }
 
-  setAuthState(token: string, role: UserRole, username: string) {
+  setAuthState(token: string, role: UserRole, username: string, idUsuario: number) {
     localStorage.setItem('token', token);
-    if (role) localStorage.setItem('role', role);
-    if (username) localStorage.setItem('username', username);
+    localStorage.setItem('role', role || '');
+    localStorage.setItem('username', username);
+    localStorage.setItem('userId', idUsuario.toString());
     
     this.state.set({
       token,
       role,
       username,
+      idUsuario,
       isLoggedIn: true
     });
   }
@@ -71,11 +91,13 @@ export class AuthService {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('username');
+    localStorage.removeItem('userId');
 
     this.state.set({
       token: null,
       role: null,
       username: null,
+      idUsuario: null,
       isLoggedIn: false
     });
   }
