@@ -76,7 +76,10 @@ export class AuthService {
     localStorage.setItem('token', token);
     localStorage.setItem('role', role || '');
     localStorage.setItem('username', username);
-    localStorage.setItem('userId', idUsuario.toString());
+    
+    if (idUsuario !== undefined && idUsuario !== null) {
+      localStorage.setItem('userId', idUsuario.toString());
+    }
     
     this.state.set({
       token,

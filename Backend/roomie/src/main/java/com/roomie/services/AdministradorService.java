@@ -3,6 +3,7 @@ package com.roomie.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.roomie.persistence.entities.Usuario;
@@ -20,6 +21,9 @@ public class AdministradorService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // =========================================================================
     // FIND ALL
@@ -90,6 +94,10 @@ public class AdministradorService {
 
         // El mapper asigna rol=ADMINISTRADOR, bloqueado=false, aceptado=false
         Usuario admin = AdministradorMapper.fromRegistroDTO(dto);
+        
+        // Encriptar contraseña antes de persistir
+        admin.setPassword(passwordEncoder.encode(dto.getPassword()));
+        
         Usuario guardado = usuarioRepository.save(admin);
 
         return AdministradorMapper.toPerfilDTO(guardado);
@@ -104,7 +112,7 @@ public class AdministradorService {
                 .orElseThrow(() -> new UsuarioException(
                         "Nombre de usuario o contraseña incorrectos."));
 
-        if (!admin.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, admin.getPassword())) {
             throw new UsuarioException("Nombre de usuario o contraseña incorrectos.");
         }
         if (admin.isBloqueado()) {

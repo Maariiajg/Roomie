@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.roomie.persistence.entities.Usuario;
@@ -27,6 +28,9 @@ public class UsuarioService implements UserDetailsService{
 
 	@Autowired
     private UsuarioRepository usuarioRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 
 	@Override
@@ -144,6 +148,10 @@ public class UsuarioService implements UserDetailsService{
 
         // El mapper inicializa rol=USUARIO, bloqueado=false, aceptado=true
         Usuario usuario = UsuarioMapper.fromRegistroDTO(dto);
+        
+        // Encriptar contraseña antes de persistir
+        usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
+        
         Usuario guardado = usuarioRepository.save(usuario);
 
         return UsuarioMapper.toPerfilDTO(guardado,
@@ -159,7 +167,7 @@ public class UsuarioService implements UserDetailsService{
                 .orElseThrow(() -> new UsuarioException(
                         "Nombre de usuario o contraseña incorrectos."));
 
-        if (!usuario.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, usuario.getPassword())) {
             throw new UsuarioException("Nombre de usuario o contraseña incorrectos.");
         }
         if (usuario.isBloqueado()) {
@@ -241,7 +249,7 @@ public class UsuarioService implements UserDetailsService{
                 throw new UsuarioException(
                         "Debes introducir tu contraseña actual para cambiarla.");
             }
-            if (!usuario.getPassword().equals(dto.getPasswordActual())) {
+            if (!passwordEncoder.matches(dto.getPasswordActual(), usuario.getPassword())) {
                 throw new UsuarioException("La contraseña actual es incorrecta.");
             }
             if (dto.getPasswordNueva().equals(dto.getPasswordActual())) {
@@ -266,6 +274,12 @@ public class UsuarioService implements UserDetailsService{
         }
 
         UsuarioMapper.applyCambiarCredenciales(dto, usuario);
+        
+        // Si ha cambiado la contraseña, viene en texto plano desde el mapper, hay que encriptarla
+        if (dto.getPasswordNueva() != null) {
+            usuario.setPassword(passwordEncoder.encode(dto.getPasswordNueva()));
+        }
+        
         Usuario guardado = usuarioRepository.save(usuario);
 
         return UsuarioMapper.toPerfilDTO(guardado,
