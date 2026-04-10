@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.Roles;
 import com.roomie.persistence.repositories.UsuarioRepository;
-import com.roomie.services.dto.AuthResponseDTO;
+import com.roomie.services.dto.LoginResponse;
 import com.roomie.services.dto.usuario.InicioSesionDTO;
 import com.roomie.services.exceptions.usuario.UsuarioException;
 import com.roomie.web.config.JwtUtils;
@@ -37,7 +37,7 @@ public class AuthController {
     // LOGIN USUARIO (roles USUARIO y OWNER)
     // =========================================================================
     @PostMapping("/login/usuario")
-    public ResponseEntity<AuthResponseDTO> loginUsuario(@RequestBody InicioSesionDTO dto) {
+    public ResponseEntity<LoginResponse> loginUsuario(@RequestBody InicioSesionDTO dto) {
 
         // 1. Autenticar con Spring Security (lanza excepción si falla)
         UserDetails userDetails = autenticar(dto.getNombreUsuario(), dto.getPassword());
@@ -61,12 +61,9 @@ public class AuthController {
         String accessToken  = jwtUtils.generateAccessToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshToken(userDetails);
 
-        return ResponseEntity.ok(new AuthResponseDTO(
+        return ResponseEntity.ok(new LoginResponse(
                 accessToken,
-                refreshToken,
-                usuario.getNombreUsuario(),
-                usuario.getRol().name(),
-                usuario.getId()
+                refreshToken
         ));
     }
 
@@ -74,7 +71,7 @@ public class AuthController {
     // LOGIN ADMINISTRADOR
     // =========================================================================
     @PostMapping("/login/administrador")
-    public ResponseEntity<AuthResponseDTO> loginAdministrador(
+    public ResponseEntity<LoginResponse> loginAdministrador(
             @RequestParam String nombreUsuario,
             @RequestParam String password) {
 
@@ -106,12 +103,9 @@ public class AuthController {
         String accessToken  = jwtUtils.generateAccessToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshToken(userDetails);
 
-        return ResponseEntity.ok(new AuthResponseDTO(
+        return ResponseEntity.ok(new LoginResponse(
                 accessToken,
-                refreshToken,
-                usuario.getNombreUsuario(),
-                usuario.getRol().name(),
-                usuario.getId()
+                refreshToken
         ));
     }
 
@@ -119,7 +113,7 @@ public class AuthController {
     // REFRESH TOKEN — renueva el accessToken con el refreshToken
     // =========================================================================
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponseDTO> refresh(
+    public ResponseEntity<LoginResponse> refresh(
             @RequestParam String refreshToken) {
 
         // Extraer el username del refreshToken (JwtUtils ya verifica la firma)
@@ -135,12 +129,9 @@ public class AuthController {
         String nuevoAccessToken  = jwtUtils.generateAccessToken(refreshToken);
         String nuevoRefreshToken = jwtUtils.generateRefreshToken(refreshToken);
 
-        return ResponseEntity.ok(new AuthResponseDTO(
+        return ResponseEntity.ok(new LoginResponse(
                 nuevoAccessToken,
-                nuevoRefreshToken,
-                usuario.getNombreUsuario(),
-                usuario.getRol().name(),
-                usuario.getId()
+                nuevoRefreshToken
         ));
     }
 

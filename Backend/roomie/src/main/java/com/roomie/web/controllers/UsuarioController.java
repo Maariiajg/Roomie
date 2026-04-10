@@ -49,7 +49,7 @@ public class UsuarioController {
  
     /* =========================
        REGISTRAR
-       ========================= */
+       ========================= 
     @PostMapping("/registrar")
     public ResponseEntity<PerfilUsuarioDTO> registrar(
             @RequestBody UsuarioRegistroDTO dto) {
@@ -57,7 +57,7 @@ public class UsuarioController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(usuarioService.registrar(dto));
-    }
+    }*/ 
  
     /* =========================
        INICIAR SESIÓN
