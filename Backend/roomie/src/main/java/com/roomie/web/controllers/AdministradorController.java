@@ -49,7 +49,7 @@ public class AdministradorController {
  
     /* =========================
        REGISTRAR
-       ========================= */
+       ========================= 
     @PostMapping("/registrar")
     public ResponseEntity<PerfilAdministradorDTO> registrarAdministrador(
             @RequestBody AdministradorRegistroDTO dto) {
@@ -57,11 +57,11 @@ public class AdministradorController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(administradorService.registrarAdministrador(dto));
-    }
+    }*/
  
     /* =========================
        INICIAR SESIÓN
-       ========================= */
+       ========================= 
     @PostMapping("/iniciar-sesion")
     public ResponseEntity<PerfilAdministradorDTO> iniciarSesion(
             @RequestParam String nombreUsuario,
@@ -70,7 +70,7 @@ public class AdministradorController {
         return ResponseEntity.ok(
                 administradorService.iniciarSesion(nombreUsuario, password)
         );
-    }
+    }*/
  
     /* =========================
        CERRAR SESIÓN

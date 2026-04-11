@@ -61,7 +61,7 @@ public class UsuarioController {
  
     /* =========================
        INICIAR SESIÓN
-       ========================= */
+       ========================= 
     @PostMapping("/iniciar-sesion")
     public ResponseEntity<PerfilUsuarioDTO> iniciarSesion(
             @RequestParam String nombreUsuario,
@@ -70,7 +70,7 @@ public class UsuarioController {
         return ResponseEntity.ok(
                 usuarioService.iniciarSesion(nombreUsuario, password)
         );
-    }
+    }*/
  
     /* =========================
        CERRAR SESIÓN
