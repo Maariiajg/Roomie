@@ -37,19 +37,23 @@ public class FotoController {
     @PostMapping
     public ResponseEntity<FotoDTO> create(
             @RequestParam String url,
-            @RequestParam int idPiso) {
+            @RequestParam int idPiso, 
+            @RequestParam int idOwner) {
  
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(fotoService.create(url, idPiso));
+                .body(fotoService.create(url, idPiso, idOwner));
     }
  
     /* =========================
        DELETE
        ========================= */
     @DeleteMapping("/{idFoto}")
-    public ResponseEntity<Void> delete(@PathVariable int idFoto) {
-        fotoService.delete(idFoto);
+    public ResponseEntity<Void> delete(
+    		@PathVariable int idFoto, 
+    		@RequestParam int idPiso, 
+            @RequestParam int idOwner) {
+        fotoService.delete(idFoto, idPiso, idOwner);
         return ResponseEntity.noContent().build();
     }
  

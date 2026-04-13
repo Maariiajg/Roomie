@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -72,6 +74,14 @@ public class UsuarioService implements UserDetailsService{
                 "El usuario con ID " + idUsuario + " no fue encontrado o no tiene acceso.");
     }
 
+    //====================
+    //BUSCAR POR NOMBRE DE USUARIO
+    public Usuario findByNombreUsuario(String nombreUsuario) {
+        return usuarioRepository.findByNombreUsuario(nombreUsuario)
+            .orElseThrow(() -> new UsuarioNotFoundException(
+                "Usuario con nombre '" + nombreUsuario + "' no encontrado."));
+    }
+    
     // =========================================================================
     // FIND BY ID — devuelve DTO (uso en controller)
     // =========================================================================
@@ -86,30 +96,7 @@ public class UsuarioService implements UserDetailsService{
     // =========================================================================
     public PerfilUsuarioDTO registrar(UsuarioRegistroDTO dto) {
 
-        /*if (usuario.getRol() != null) {
-            throw new UsuarioException(
-                "No puedes introducir el rol; por defecto será USUARIO."
-            );
-        }
-
-        if (usuario.getId() != 0) {
-            throw new UsuarioException(
-                "No puedes introducir el id; se genera automáticamente."
-            );
-        }
-
-        if (usuario.isBloqueado()) {
-            throw new UsuarioException(
-                "No puedes introducir el estado 'bloqueado'."
-            );
-        }
-
-        if (usuario.isAceptado()) {
-            throw new UsuarioException(
-                "No puedes introducir el estado 'aceptado'."
-            );
-        }*/
-
+        
 
         // Validar repetirPassword
         if (dto.getPassword() == null || dto.getRepetirPassword() == null ||
@@ -194,7 +181,13 @@ public class UsuarioService implements UserDetailsService{
     // =========================================================================
     public PerfilUsuarioDTO actualizarPerfil(int idUsuario, ActualizarPerfilDTO dto) {
 
-    	
+    	// Obtener el usuario autenticado del SecurityContext
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    	String nombreUsuarioActual = auth.getName();
+    	Usuario usuarioActual = usuarioRepository.findByNombreUsuario(nombreUsuarioActual).orElseThrow();
+    	if (usuarioActual.getId() != idUsuario && usuarioActual.getRol() != Roles.ADMINISTRADOR) {
+    	    throw new UsuarioException("No puedes editar el perfil de otro usuario.");
+    	}
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
@@ -234,10 +227,13 @@ public class UsuarioService implements UserDetailsService{
     // =========================================================================
     public PerfilUsuarioDTO cambiarCredenciales(int idUsuario, CambiarCredencialesDTO dto) {
 
-        /*if (datos.getId() != idUsuario) {
-			throw new UsuarioException(
-					String.format("El id del body (%d) y el id del path (%d) no coinciden", datos.getId(), idUsuario));
-		} */
+    	// Obtener el usuario autenticado del SecurityContext
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    	String nombreUsuarioActual = auth.getName();
+    	Usuario usuarioActual = usuarioRepository.findByNombreUsuario(nombreUsuarioActual).orElseThrow();
+    	if (usuarioActual.getId() != idUsuario && usuarioActual.getRol() != Roles.ADMINISTRADOR) {
+    	    throw new UsuarioException("No puedes editar el perfil de otro usuario.");
+    	}
 
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));

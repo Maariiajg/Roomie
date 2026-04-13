@@ -9,6 +9,7 @@ import com.roomie.persistence.entities.Foto;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.repositories.FotoRepository;
 import com.roomie.services.dto.foto.FotoDTO;
+import com.roomie.services.exceptions.foto.FotoException;
 import com.roomie.services.exceptions.foto.FotoNotFoundException;
 import com.roomie.services.mapper.FotoMapper;
 
@@ -34,9 +35,12 @@ public class FotoService {
     // =========================================================================
     // CREATE
     // =========================================================================
-    public FotoDTO create(String url, int idPiso) {
+    public FotoDTO create(String url, int idPiso, int idOwner) {
         Piso piso = pisoService.findById(idPiso);
 
+        if (piso.getOwner().getId() != idOwner) {
+            throw new FotoException("Solo el owner del piso puede añadir fotos.");
+        }
         Foto nuevaFoto = new Foto();
         nuevaFoto.setUrl(url);
         nuevaFoto.setPiso(piso);
@@ -47,7 +51,11 @@ public class FotoService {
     // =========================================================================
     // DELETE
     // =========================================================================
-    public void delete(int idFoto) {
+    public void delete(int idFoto, int idPiso, int idOwner) {
+    	Piso piso = pisoService.findById(idPiso);
+    	if (piso.getOwner().getId() != idOwner) {
+            throw new FotoException("Solo el owner del piso puede añadir fotos.");
+        }
         // Reutilizamos findById para lanzar la excepción correcta si no existe
         fotoRepository.findById(idFoto)
                 .orElseThrow(() -> new FotoNotFoundException(

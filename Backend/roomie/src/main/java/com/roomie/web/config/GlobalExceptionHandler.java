@@ -2,6 +2,7 @@ package com.roomie.web.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -131,5 +132,11 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<String> handleIllegalState(IllegalStateException ex) {
 	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	            .body(ex.getMessage());
+	}
+	
+	@ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+	public ResponseEntity<String> handleAccessDenied(AccessDeniedException ex) {
+	    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	        .body("No tienes permisos para realizar esta acción.");
 	}
 }

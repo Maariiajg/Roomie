@@ -39,109 +39,96 @@ public class SecurityConfig {
 	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(auth -> auth
 
-	            // ── RUTAS PÚBLICAS ──────────────────────────────────────────────
-		        .requestMatchers(HttpMethod.POST, "/auth/login/usuario").permitAll()
-	            .requestMatchers(HttpMethod.POST, "/usuario/registrar").permitAll()
-	            .requestMatchers(HttpMethod.POST, "/usuario/iniciar-sesion").permitAll()
-	            .requestMatchers(HttpMethod.POST, "/administrador/registrar").permitAll()
-	            .requestMatchers(HttpMethod.POST, "/administrador/iniciar-sesion").permitAll()
+	        	    // ── RUTAS COMPLETAMENTE PÚBLICAS ─────────────────────────────
+	        	    .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+	        	    .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+	        	    .requestMatchers(HttpMethod.POST, "/auth/register-admin").permitAll()
+	        	    .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
 
-	            // Ver pisos (público, sin token)
-	            .requestMatchers(HttpMethod.GET, "/piso/libres").permitAll()
-	            .requestMatchers(HttpMethod.GET, "/piso/filtrar").permitAll()
-	            .requestMatchers(HttpMethod.GET, "/piso/{idPiso}").permitAll()
-	            .requestMatchers(HttpMethod.GET, "/piso/{idPiso}/fotos").permitAll()
-	            .requestMatchers(HttpMethod.GET, "/foto/{idFoto}").permitAll()
+	        	    // Ver pisos libres/filtrados (sin token)
+	        	    .requestMatchers(HttpMethod.GET,  "/piso/libres").permitAll()
+	        	    .requestMatchers(HttpMethod.GET,  "/piso/filtrar").permitAll()
+	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}").permitAll()
+	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/fotos").permitAll()
+	        	    .requestMatchers(HttpMethod.GET,  "/foto/{idFoto}").permitAll()
 
-	            // Ver reputación pública de un usuario
-	            .requestMatchers(HttpMethod.GET, "/feedback/usuario/{idUsuario}").permitAll()
-	            .requestMatchers(HttpMethod.GET, "/feedback/media/{idUsuario}").permitAll()
+	        	    // Reputación pública
+	        	    .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{idUsuario}").permitAll()
+	        	    .requestMatchers(HttpMethod.GET,  "/feedback/media/{idUsuario}").permitAll()
 
-	            // ── SOLO ADMINISTRADOR ──────────────────────────────────────────
-	            // Gestión de administradores
-	            .requestMatchers(HttpMethod.GET, "/administrador").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.GET, "/administrador/{idAdministrador}").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.GET, "/administrador/solicitudes").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.PUT, "/administrador/{idAdmin}/aceptar").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.POST, "/administrador/cerrar-sesion").hasRole("ADMINISTRADOR")
+	        	    // ── SOLO ADMINISTRADOR ────────────────────────────────────────
+	        	    .requestMatchers(HttpMethod.GET,  "/administrador").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/administrador/{id}").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/administrador/solicitudes").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/administrador/solicitudes/count").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.PUT,  "/administrador/{id}/aceptar").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET, "/administrador/perfil/{id}").hasRole("ADMINISTRADOR")
 
-	            // Ver TODOS los pisos (no solo los libres)
-	            .requestMatchers(HttpMethod.GET, "/piso").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/piso").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.DELETE, "/piso/{idPiso}").hasRole("ADMINISTRADOR")
 
-	            // Eliminar piso
-	            .requestMatchers(HttpMethod.DELETE, "/piso/{idPiso}").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/usuario").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/bloquear").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/desbloquear").hasRole("ADMINISTRADOR")
 
-	            // Gestión de usuarios
-	            .requestMatchers(HttpMethod.GET, "/usuario").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.PUT, "/usuario/{idUsuario}/bloquear").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.PUT, "/usuario/{idUsuario}/desbloquear").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/alquiler").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/{idAlquiler}").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/feedback/{idFeedback}").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{id}/todos").hasRole("ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.PUT,  "/feedback/{id}/toggle").hasRole("ADMINISTRADOR")
 
-	            // Ver alquiler concreto por ID y listado global
-	            .requestMatchers(HttpMethod.GET, "/alquiler").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.GET, "/alquiler/{idAlquiler}").hasRole("ADMINISTRADOR")
+	        	    // ── OWNER Y ADMINISTRADOR ─────────────────────────────────────
+	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/piso/{idPiso}/solicitudes").hasAnyRole("OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/{idAlquiler}/resolver").hasAnyRole("OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}/ceder").hasAnyRole("OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}").hasAnyRole("OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.POST, "/foto").hasAnyRole("OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.DELETE, "/foto/{idFoto}").hasAnyRole("OWNER","ADMINISTRADOR")
 
-	            // Historial y alquiler actual: admin puede ver el de cualquier usuario
-	            // (los propios usuarios también acceden — ver sección USUARIO+OWNER)
-	            // → se resuelve con hasAnyRole en esa sección
+	        	    // Expulsar usuario del piso (owner forzado)
+	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/piso/{idPiso}/salir").hasAnyRole("USUARIO","OWNER")
 
-	            // Feedback: ver todos (visibles + ocultos) y toggle visible
-	            .requestMatchers(HttpMethod.GET, "/feedback/{idFeedback}").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.GET, "/feedback/usuario/{idUsuario}/todos").hasRole("ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.PUT, "/feedback/{idFeedback}/toggle").hasRole("ADMINISTRADOR")
+	        	    // ── CUALQUIER AUTENTICADO ─────────────────────────────────────
+	        	    .requestMatchers(HttpMethod.GET,  "/usuario/{idUsuario}").authenticated()
+	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/actualizar-perfil").authenticated()
+	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/credenciales").authenticated()
+	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/residente").authenticated()
+	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/usuarios").authenticated()
+	        	    .requestMatchers(HttpMethod.POST, "/usuario/cerrar-sesion").authenticated()
+	        	    //.requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes/count").hasAnyRole() //NO ES DEFINITIVO, HAY Q CAMBIARLO
 
-	            // ── OWNER Y ADMINISTRADOR ───────────────────────────────────────
-	            // Ver solicitudes pendientes de un piso
-	            .requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes").hasAnyRole("OWNER", "ADMINISTRADOR")
-	            // Resolver solicitudes (aceptar o rechazar)
-	            .requestMatchers(HttpMethod.PUT, "/alquiler/{idAlquiler}/resolver").hasAnyRole("OWNER", "ADMINISTRADOR")
-	            // Ceder piso
-	            .requestMatchers(HttpMethod.PUT, "/piso/{idPiso}/ceder").hasAnyRole("OWNER", "ADMINISTRADOR")
-	            // Modificar información básica del piso
-	            .requestMatchers(HttpMethod.PUT, "/piso/{idPiso}").hasAnyRole("OWNER", "ADMINISTRADOR")
-	            // Gestión de fotos del piso (el service valida que sea el owner del piso)
-	            .requestMatchers(HttpMethod.POST, "/foto").hasRole("OWNER")
-	            .requestMatchers(HttpMethod.DELETE, "/foto/{idFoto}").hasRole("OWNER")
+	        	    // ── USUARIO Y OWNER (no administrador) ───────────────────────
+	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/historial").hasAnyRole("USUARIO","OWNER")
+	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/actual").hasAnyRole("USUARIO","OWNER")
+	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/companeros").hasAnyRole("USUARIO","OWNER")
+	        	    .requestMatchers(HttpMethod.POST, "/alquiler/solicitar").hasRole("USUARIO")
+	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/{id}/cancelar").hasAnyRole("USUARIO","OWNER")
 
-	            // ── USUARIO, OWNER Y ADMINISTRADOR (cualquier autenticado) ──────
-	            // Cerrar sesión (solo si has iniciado sesión, es decir, tienes token)
-	            .requestMatchers(HttpMethod.POST, "/usuario/cerrar-sesion").authenticated()
-	            // Ver perfil de cualquier usuario
-	            .requestMatchers(HttpMethod.GET, "/usuario/{idUsuario}").authenticated()
-	            // Historial y alquiler actual (el service valida que sea el propio usuario)
-	            .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{idUsuario}/historial").hasAnyRole("USUARIO", "OWNER", "ADMINISTRADOR")
-	            .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{idUsuario}/actual").hasAnyRole("USUARIO", "OWNER", "ADMINISTRADOR")
+	        	    //--- Solicitudes de alquiler -visible usuarios y solo owners resuelven
+	        	    .requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes").hasAnyRole("USUARIO", "OWNER")
+	        	    .requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes/count").hasAnyRole("USUARIO", "OWNER")
+	        	    .requestMatchers(HttpMethod.PUT, "/alquiler/{idAlquiler}/resolver").hasAnyRole("OWNER", "ADMINISTRADOR")  // Admin también por si necesita intervenir
+	        	    //-- OWNER---------------------
+	        	    .requestMatchers(HttpMethod.GET, "/piso/mio/{idOwner}").hasRole("OWNER")
+	        	    
+	        	    // ── SOLO USUARIO (no owner) ───────────────────────────────────
+	        	    .requestMatchers(HttpMethod.POST, "/piso/crear/{idUsuario}").hasRole("USUARIO")
 
-	            // ── SOLO USUARIO ────────────────────────────────────────────────
-	            // Crear piso (en el service pasa a OWNER automáticamente)
-	            .requestMatchers(HttpMethod.POST, "/piso/crear/{idUsuario}").hasRole("USUARIO")
+	        	    // ── FAVORITOS (usuario y owner) ───────────────────────────────
+	        	    .requestMatchers(HttpMethod.GET,    "/favorito").hasAnyRole("USUARIO","OWNER")
+	        	    .requestMatchers(HttpMethod.GET,    "/favorito/{id}").hasAnyRole("USUARIO","OWNER")
+	        	    .requestMatchers(HttpMethod.POST,   "/favorito").hasAnyRole("USUARIO","OWNER")
+	        	    .requestMatchers(HttpMethod.DELETE, "/favorito").hasAnyRole("USUARIO","OWNER")
 
-	            // ── USUARIO Y OWNER ─────────────────────────────────────────────
-	            // Ver piso como residente (requiere login para verificar convivencia)
-	            .requestMatchers(HttpMethod.GET, "/piso/{idPiso}/residente").hasAnyRole("USUARIO", "OWNER")
-	            // Ver usuarios que viven en un piso y compañeros
-	            .requestMatchers(HttpMethod.GET, "/piso/{idPiso}/usuarios").hasAnyRole("USUARIO", "OWNER")
-	            .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{idUsuario}/companeros").hasAnyRole("USUARIO", "OWNER")
-	            // Actualizar perfil y credenciales
-	            .requestMatchers(HttpMethod.PUT, "/usuario/{idUsuario}/actualizar-perfil").hasAnyRole("USUARIO", "OWNER")
-	            .requestMatchers(HttpMethod.PUT, "/usuario/{idUsuario}/credenciales").hasAnyRole("USUARIO", "OWNER")
-	            // Cerrar sesión como usuario/owner
-	            .requestMatchers(HttpMethod.POST, "/usuario/cerrar-sesion").hasAnyRole("USUARIO", "OWNER")
-	            // Enviar y cancelar solicitudes de alquiler
-	            .requestMatchers(HttpMethod.POST, "/alquiler/solicitar").hasAnyRole("USUARIO", "OWNER")
-	            .requestMatchers(HttpMethod.PUT, "/alquiler/{idAlquiler}/cancelar").hasAnyRole("USUARIO", "OWNER")
-	            // Salir del piso (solo USUARIO, un OWNER primero debe ceder el piso)
-	            .requestMatchers(HttpMethod.PUT, "/alquiler/piso/{idPiso}/salir").hasRole("USUARIO")
-	            // Favoritos
-	            .requestMatchers(HttpMethod.GET,    "/favorito").hasAnyRole("USUARIO", "OWNER")
-	            .requestMatchers(HttpMethod.GET,    "/favorito/{idFavorito}").hasAnyRole("USUARIO", "OWNER")
-	            .requestMatchers(HttpMethod.POST,   "/favorito").hasAnyRole("USUARIO", "OWNER")
-	            .requestMatchers(HttpMethod.DELETE, "/favorito").hasAnyRole("USUARIO", "OWNER")
-	            // Dejar feedback (el service valida que hayan convivido)
-	            .requestMatchers(HttpMethod.POST, "/feedback/{idUsuarioPone}/{idUsuarioRecibe}").hasAnyRole("USUARIO", "OWNER")
+	        	    // ── FEEDBACK (usuario y owner) ────────────────────────────────
+	        	    .requestMatchers(HttpMethod.POST, "/feedback/{idPone}/{idRecibe}").hasAnyRole("USUARIO","OWNER")
 
-	            // ── CUALQUIER PETICIÓN NO DECLARADA: DENEGADA ───────────────────
-	            .anyRequest().denyAll()
-	        )
+	        	    // ── ADMIN: historial por cualquier usuario ────────────────────
+	        	    .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{id}/historial").hasAnyRole("USUARIO","OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{id}/actual").hasAnyRole("USUARIO","OWNER","ADMINISTRADOR")
+
+	        	    .anyRequest().denyAll()
+	        	)
 	        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 	    return http.build();

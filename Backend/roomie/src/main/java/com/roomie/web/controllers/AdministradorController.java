@@ -46,6 +46,11 @@ public class AdministradorController {
                 administradorService.findAdministradorById(idAdministrador)
         );
     }
+    
+    @GetMapping("/perfil/{id}")
+    public ResponseEntity<PerfilAdministradorDTO> miPerfil(@PathVariable int id) {
+        return ResponseEntity.ok(administradorService.findAdministradorById(id));
+    }
  
     /* =========================
        REGISTRAR

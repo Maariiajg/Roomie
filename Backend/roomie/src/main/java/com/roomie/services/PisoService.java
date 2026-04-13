@@ -103,19 +103,15 @@ public class PisoService {
 
         Usuario usuario = usuarioService.findById(idUsuario);
 
-        /*if (datos.getId() != 0) {
-            throw new PisoException("No se puede introducir el ID manualmente.");
+     // Verificar que el usuario no vive ya en un piso
+        if (alquilerService.tieneAlquilerAceptado(idUsuario)) {
+            throw new PisoException("No puedes crear un piso si ya vives en uno.");
         }
 
-        if (datos.getFPublicacion() != null) {
-            throw new PisoException(
-                    "La fecha de publicación se asigna automáticamente.");
+        // Verificar que no es ya owner de otro piso
+        if (pisoRepository.existsByOwnerId(idUsuario)) {
+            throw new PisoException("Ya eres owner de un piso. No puedes crear otro.");
         }
-
-        if (datos.getNumOcupantesActual() != 0) {
-            throw new PisoException(
-                    "El número de ocupantes se asigna automáticamente.");
-        } */
 
         if (dto.getDireccion() == null ||
                 dto.getDireccion().isBlank() ||
@@ -161,30 +157,7 @@ public class PisoService {
                 .orElseThrow(() -> new PisoNotFoundException(
                         "El piso con ID " + idPiso + " no existe."));
 
-        /*if (datos.getFPublicacion() != null &&
-                !datos.getFPublicacion().equals(pisoExistente.getFPublicacion())) {
-            throw new PisoException("La fecha de publicación no se puede modificar.");
-        }
-
-        if (datos.getOwner() != null &&
-                datos.getOwner().getId() != pisoExistente.getOwner().getId()) {
-            throw new PisoException(
-                    "No se puede modificar el owner desde este endpoint.");
-        }
-
-        if (datos.getNumOcupantesActual() != pisoExistente.getNumOcupantesActual()) {
-            throw new PisoException(
-                    "El número de ocupantes se modifica automáticamente.");
-        }
-
-        if (datos.getFotos() != null) {
-            throw new PisoException("Las fotos se gestionan desde la entidad Foto.");
-        }
-
-        if (datos.getAlquileresSolicitados() != null) {
-            throw new PisoException(
-                    "Los alquileres no se pueden modificar desde aquí.");
-        } */
+        
        
         // Aplicamos solo los campos permitidos (los del DTO de creación)
         pisoExistente.setDireccion(dto.getDireccion());
@@ -304,13 +277,31 @@ public class PisoService {
     // 7. ELIMINAR UN PISO
     // =========================================================================
     public void eliminarPiso(int idPiso) {
-
         Piso piso = pisoRepository.findById(idPiso)
-                .orElseThrow(() -> new PisoNotFoundException("El piso no existe."));
+            .orElseThrow(() -> new PisoNotFoundException("El piso no existe."));
 
+        // 1. Activar feedbacks entre residentes antes de que el piso desaparezca
+        alquilerService.activarFeedbacksEntreResidentes(idPiso);
+
+        // 2. Finalizar alquileres activos y cancelar solicitudes pendientes
+        alquilerService.finalizarAlquileresActivosDePiso(idPiso);
+
+        // 3. Cambiar rol del owner a USUARIO
         usuarioService.cambiarRol(piso.getOwner().getId(), Roles.USUARIO);
-        alquilerService.eliminarAlquileresDePiso(idPiso);
+
+        // 4. Eliminar el piso (las fotos y favoritos se eliminan en cascada)
         pisoRepository.delete(piso);
+    }
+    
+    /*=======================================
+     * Sacar el piso de un owner para que pueda operar sobre él sin saber su ID
+     */
+    public PisoResidenteDTO findMiPisoDTO(int idOwner) {
+        List<Piso> pisos = pisoRepository.findByOwnerId(idOwner);
+        if (pisos.isEmpty()) throw new PisoNotFoundException("No tienes ningún piso.");
+        Piso piso = pisos.get(0);
+        Double media = usuarioService.getCalificacionMedia(piso.getOwner().getId());
+        return PisoMapper.toPisoResidenteDTO(piso, media);
     }
 
     // =========================================================================

@@ -135,4 +135,10 @@ public class AlquilerController {
         return ResponseEntity.ok(
                 alquilerService.companerosActuales(idUsuario));
     }
+    
+    //numero solicitudes
+    @GetMapping("/piso/{idPiso}/solicitudes/count")
+    public ResponseEntity<Integer> countSolicitudesPendientes(@PathVariable int idPiso) {
+        return ResponseEntity.ok(alquilerService.countSolicitudesPendientes(idPiso));
+    }
 }

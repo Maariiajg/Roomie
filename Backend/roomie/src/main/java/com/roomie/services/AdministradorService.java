@@ -45,6 +45,13 @@ public class AdministradorService {
         return AdministradorMapper.toPerfilDTO(admin);
     }
 
+  //====================
+    //BUSCAR POR NOMBRE DE USUARIO
+    public Usuario findByNombreUsuario(String nombreUsuario) {
+        return usuarioRepository.findByNombreUsuario(nombreUsuario)
+                .orElseThrow(() -> new RuntimeException("Administrador no encontrado con el nombre: " + nombreUsuario));
+    }
+    
     // =========================================================================
     // REGISTRAR ADMINISTRADOR
     // =========================================================================

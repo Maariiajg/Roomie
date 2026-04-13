@@ -151,4 +151,9 @@ public class PisoController {
         pisoService.eliminarPiso(idPiso);
         return ResponseEntity.noContent().build();
     }
+    
+    @GetMapping("/mio/{idOwner}")
+    public ResponseEntity<PisoResidenteDTO> getMiPiso(@PathVariable int idOwner) {
+        return ResponseEntity.ok(pisoService.findMiPisoDTO(idOwner));
+    }
 }

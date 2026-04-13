@@ -11,6 +11,7 @@ import com.roomie.persistence.entities.Alquiler;
 import com.roomie.persistence.entities.Piso;
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.AlquilerEstadoSolicitud;
+import com.roomie.persistence.entities.enums.Roles;
 import com.roomie.persistence.repositories.AlquilerRepository;
 import com.roomie.services.dto.alquiler.AlquilerDTO;
 import com.roomie.services.dto.alquiler.CompaneroDTO;
@@ -130,6 +131,15 @@ public class AlquilerService {
         if (alquilerRepository.existsByUsuarioIdAndPisoId(idUsuario, idPiso)) {
             throw new AlquilerException("Ya has enviado una solicitud a este piso.");
         }
+        //los owners no pueden solicitar un alquiler
+        if (usuario.getRol() == Roles.OWNER) {
+            throw new AlquilerException("Los owners no pueden solicitar alquiler en otro piso.");
+        }
+        //validación piso tiene plazas libres
+        if (piso.getNumOcupantesActual() >= piso.getNumTotalHabitaciones()) {
+            throw new AlquilerException("El piso no tiene plazas disponibles.");
+        }
+        
  
         Alquiler alquiler = new Alquiler();
         alquiler.setId(0);
@@ -330,11 +340,6 @@ public class AlquilerService {
         alquilerRepository.save(alquilerOwner);
     }
  
-    public void eliminarAlquileresDePiso(int idPiso) {
-        List<Alquiler> alquileres = alquilerRepository.findByPisoId(idPiso);
-        alquilerRepository.deleteAll(alquileres);
-    }
- 
     public boolean existeAlquilerEnPiso(int idUsuario, int idPiso) {
         return alquilerRepository.existsByUsuarioIdAndPisoId(idUsuario, idPiso);
     }
@@ -343,4 +348,60 @@ public class AlquilerService {
         return alquilerRepository.findByPisoIdAndEstadoSolicitud(
                 idPiso, AlquilerEstadoSolicitud.ACEPTADA);
     }
+    
+    public boolean tieneAlquilerAceptado(int idUsuario) {
+        return alquilerRepository.existsByUsuarioIdAndEstadoSolicitud(
+            idUsuario, AlquilerEstadoSolicitud.ACEPTADA);
+    }
+    
+    //numero de solicitudes pendientes
+    public int countSolicitudesPendientes(int idPiso) {
+        return alquilerRepository
+            .findByPisoIdAndEstadoSolicitud(idPiso, AlquilerEstadoSolicitud.PENDIENTE)
+            .size();
+    }
+    
+    
+ // En AlquilerService.java — añadir estos dos métodos al final
+
+ // =========================================================================
+ // MÉTODO INTERNO — finaliza todos los alquileres activos de un piso
+ // y cancela las solicitudes pendientes
+ // Llamado desde PisoService.eliminarPiso
+ // =========================================================================
+ public void finalizarAlquileresActivosDePiso(int idPiso) {
+     // Finalizar alquileres ACEPTADOS
+     List<Alquiler> activos = alquilerRepository.findByPisoIdAndEstadoSolicitud(
+         idPiso, AlquilerEstadoSolicitud.ACEPTADA);
+     activos.forEach(a -> {
+         a.setFFin(LocalDate.now());
+         a.setEstadoSolicitud(AlquilerEstadoSolicitud.FINALIZADA);
+     });
+     alquilerRepository.saveAll(activos);
+
+     // Cancelar solicitudes PENDIENTES
+     List<Alquiler> pendientes = alquilerRepository.findByPisoIdAndEstadoSolicitud(
+         idPiso, AlquilerEstadoSolicitud.PENDIENTE);
+     pendientes.forEach(a -> a.setEstadoSolicitud(AlquilerEstadoSolicitud.CANCELADA));
+     alquilerRepository.saveAll(pendientes);
+ }
+
+ // =========================================================================
+ // MÉTODO INTERNO — activa feedbacks entre todos los residentes actuales
+ // de un piso (para usarlo justo antes de eliminar el piso)
+ // =========================================================================
+ public void activarFeedbacksEntreResidentes(int idPiso) {
+     List<Alquiler> activos = alquilerRepository.findByPisoIdAndEstadoSolicitud(
+         idPiso, AlquilerEstadoSolicitud.ACEPTADA);
+
+     for (int i = 0; i < activos.size(); i++) {
+         for (int j = 0; j < activos.size(); j++) {
+             if (i != j) {
+                 int idA = activos.get(i).getUsuario().getId();
+                 int idB = activos.get(j).getUsuario().getId();
+                 feedbackService.activarFeedbacks(idA, idB);
+             }
+         }
+     }
+ }
 }
