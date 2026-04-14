@@ -1,18 +1,19 @@
 <!-- Global toast notifications -->
 <app-toast></app-toast>
 
-<!-- Header -->
+<!-- Header Global (sticky — se oculta en /piso/:id) -->
 @if (showLayout()) {
   <app-header></app-header>
 }
 
-<!-- Main App Router -->
-<main class="min-h-screen flex flex-col" [class.pt-[70px]]="showLayout()">
+<!-- Main — padding-top igual al header (h-20 = 5rem = 80px) -->
+<main class="min-h-screen flex flex-col" [class.pt-20]="showLayout()">
   <div class="flex-grow flex flex-col">
     <router-outlet></router-outlet>
   </div>
+
+  <!-- Footer Global (dentro del main para que quede al fondo) -->
   @if (showLayout()) {
     <app-footer></app-footer>
   }
 </main>
-

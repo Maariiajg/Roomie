@@ -36,7 +36,7 @@ export class RegistroComponent {
   registroForm: FormGroup = this.fb.group({
     nombreUsuario: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
     repetirPassword: ['', Validators.required],
     nombre: ['', Validators.required],
     apellido1: ['', Validators.required],
@@ -44,7 +44,7 @@ export class RegistroComponent {
     dni: ['', Validators.required],
     anioNacimiento: ['', Validators.required],
     genero: ['', Validators.required],
-    telefono: ['', Validators.required],
+    telefono: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
     foto: [''],
     mensajePresentacion: ['']
   }, { validators: passwordMatchValidator });
@@ -72,15 +72,30 @@ export class RegistroComponent {
     registration$.subscribe({
       next: () => {
         this.isLoading = false;
-        this.notificationService.showSuccess('Cuenta creada con éxito. Ya puedes iniciar sesión');
-        this.router.navigate(['/login']);
+        this.notificationService.showSuccess('Cuenta creada con éxito. Bienvenid@ a Roomie.');
+        this.router.navigate(['/resultados']);
       },
       error: (err) => {
         this.isLoading = false;
+        // Let the error interceptor handle standard errors as per user prompt, but we can fallback here
         const msg = err.error?.message || 'Error al registrar el usuario. Revisa los datos.';
-        this.notificationService.showError(msg);
+        // Notification is automatic from interceptor usually, but leaving it if interceptor only targets specific errors.
+        // Wait! The user prompt: "usa el errorInterceptor para manejar credenciales". 
+        // We will remove the explicit showError so it doesn't double toast.
       }
     });
+  }
+
+  get avatarPreview(): string {
+    const foto = this.registroForm.get('foto')?.value;
+    if (foto) return foto;
+    
+    const nombreUsuario = this.registroForm.get('nombreUsuario')?.value;
+    if (nombreUsuario && nombreUsuario.trim().length > 0) {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nombreUsuario)}`;
+    }
+    
+    return '';
   }
 
   get f() { return this.registroForm.controls; }

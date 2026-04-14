@@ -98,9 +98,18 @@ export class PerfilUsuarioComponent implements OnInit {
   isAdmin = computed(() => this.authService.role() === 'ADMINISTRADOR');
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.cargarUsuario(Number(id));
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      // Ruta /usuario/:id  → carga ese perfil
+      this.cargarUsuario(Number(idParam));
+    } else {
+      // Ruta /mi-perfil → carga el perfil del usuario autenticado
+      const myId = this.authService.userId();
+      if (myId) {
+        this.cargarUsuario(myId);
+      } else {
+        this.router.navigate(['/login']);
+      }
     }
   }
 

@@ -53,7 +53,7 @@ import { InicioSesionDTO } from '../../../core/models/inicio-sesion.dto';
 
         <p class="text-center text-gray-600 mt-6 font-medium">
           ¿No tienes una cuenta? 
-          <a routerLink="/registro" class="text-secondary hover:underline">Regístrate aquí</a>
+          <a routerLink="/seleccion-registro" class="text-secondary hover:underline">Regístrate aquí</a>
         </p>
       </div>
     </div>
@@ -84,26 +84,43 @@ export class LoginComponent {
     this.authService.login(dto).subscribe({
       next: () => {
         this.isLoading = false;
-        this.router.navigate(['/resultados']);
+        this.handleSuccessfulLogin();
       },
       error: (err) => {
-        // Si el backend indica que es administrador, intentamos el login de admin
-        if (err.error?.message?.includes('administrador')) {
+        // Si el backend indica que es administrador, intentamos el fallback
+        if (err.error?.message?.includes('administrador') || (typeof err.error === 'string' && err.error.includes('administrador'))) {
            this.authService.loginAdmin(dto).subscribe({
               next: () => {
                 this.isLoading = false;
-                this.router.navigate(['/resultados']);
+                this.handleSuccessfulLogin();
               },
               error: () => {
                 this.isLoading = false;
-                this.notificationService.showError('Usuario o contraseña incorrectos');
+                // Dejamos que el errorInterceptor muestre el mensaje concreto
               }
            });
         } else {
           this.isLoading = false;
-          this.notificationService.showError('Usuario o contraseña incorrectos');
+          // Spring Security devuelve 403 vacio cuando las credenciales son erroneas al no tener un EntryPoint detallado 
+          if (err.status === 403 && !err.error?.message) {
+            this.notificationService.showError('Credenciales incorrectas o acceso denegado.');
+          }
+          // De lo demás se encarga el interceptor
         }
       }
     });
+  }
+
+  private handleSuccessfulLogin() {
+    this.notificationService.showSuccess('¡Inicio de sesión exitoso!');
+    const role = this.authService.getUserRole();
+    
+    if (role === 'ADMINISTRADOR') {
+      this.router.navigate(['/admin']);
+    } else if (role === 'OWNER') {
+      this.router.navigate(['/mi-piso']);
+    } else {
+      this.router.navigate(['/resultados']);
+    }
   }
 }

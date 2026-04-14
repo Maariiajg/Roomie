@@ -8,6 +8,9 @@ export interface PerfilUsuarioDTO {
   telefono: string;
   foto: string;
   mensajePresentacion: string;
+  // Campos adicionales para gestión admin (opcionales)
+  rol?: string;
+  bloqueado?: boolean;
 }
 
 export interface PisoDTO {

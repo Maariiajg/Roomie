@@ -34,7 +34,7 @@ export class RegistroAdminComponent {
   registroForm: FormGroup = this.fb.group({
     nombreUsuario: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
     repetirPassword: ['', Validators.required],
     nombre: ['', Validators.required],
     apellido1: ['', Validators.required],
@@ -42,7 +42,7 @@ export class RegistroAdminComponent {
     dni: ['', Validators.required],
     anioNacimiento: ['', Validators.required],
     genero: ['', Validators.required],
-    telefono: ['', Validators.required],
+    telefono: ['', [Validators.required, Validators.pattern('^[0-9]{9}$')]],
     foto: ['']
   }, { validators: passwordMatchValidator });
 
@@ -53,20 +53,37 @@ export class RegistroAdminComponent {
     }
 
     this.isLoading = true;
-    const dto = this.registroForm.value;
+    const formValue = this.registroForm.value;
+    
+    // Formatear la fecha
+    const dto = {
+      ...formValue,
+      anioNacimiento: formValue.anioNacimiento ? new Date(formValue.anioNacimiento).toISOString().split('T')[0] : null
+    };
 
     this.authService.registerAdmin(dto).subscribe({
       next: () => {
         this.isLoading = false;
-        this.notificationService.showSuccess('Cuenta de Administrador creada correctamente. ¡Inicia sesión!');
+        this.notificationService.showSuccess('Solicitud enviada. Tu cuenta debe ser aceptada por un administrador');
         this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isLoading = false;
-        const msg = err.error?.message || 'Error al registrar administrador. Revisa los datos.';
-        this.notificationService.showError(msg);
+        // Dependemos del interceptor de errores para el toast de error.
       }
     });
+  }
+
+  get avatarPreview(): string {
+    const foto = this.registroForm.get('foto')?.value;
+    if (foto) return foto;
+    
+    const nombreUsuario = this.registroForm.get('nombreUsuario')?.value;
+    if (nombreUsuario && nombreUsuario.trim().length > 0) {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nombreUsuario)}`;
+    }
+    
+    return '';
   }
 
   get f() { return this.registroForm.controls; }

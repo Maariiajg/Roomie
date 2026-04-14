@@ -3,16 +3,17 @@ import { inject } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from '../../shared/components/toast/notification.service';
 
-export const authGuard: CanActivateFn = (route, state) => {
+export const ownerGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const notificationService = inject(NotificationService);
 
-  if (authService.isLoggedIn()) {
+  const role = authService.getUserRole();
+
+  if (authService.isLoggedIn() && (role === 'OWNER' || role === 'ADMINISTRADOR')) {
     return true;
   }
 
-  // Si no está loqueado, mostrar mensaje y redirigir al login
-  notificationService.showError('Por favor, inicia sesión para acceder a esta página.');
-  return router.parseUrl('/login');
+  notificationService.showError('Acceso denegado: Se requieren permisos de Propietario.');
+  return router.parseUrl('/resultados');
 };
