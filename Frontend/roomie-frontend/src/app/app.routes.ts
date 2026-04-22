@@ -15,7 +15,8 @@ export const routes: Routes = [
   // Resultados / Buscador
   {
     path: 'resultados',
-    loadComponent: () => import('./features/pisos/pisos-feed.component').then(m => m.PisosFeedComponent)
+    loadComponent: () => import('./features/pisos/pisos-feed.component').then(m => m.PisosFeedComponent),
+    canActivate: [authGuard]
   },
 
   // Detalle de piso (sin layout global — se oculta en app.ts)

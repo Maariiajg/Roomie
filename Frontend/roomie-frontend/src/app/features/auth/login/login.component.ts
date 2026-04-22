@@ -118,7 +118,7 @@ export class LoginComponent {
     if (role === 'ADMINISTRADOR') {
       this.router.navigate(['/admin']);
     } else if (role === 'OWNER') {
-      this.router.navigate(['/mi-piso']);
+      this.router.navigate(['/resultados']);
     } else {
       this.router.navigate(['/resultados']);
     }

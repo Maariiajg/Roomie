@@ -70,7 +70,7 @@ public class SecurityConfig {
 	        	    .requestMatchers(HttpMethod.GET,  "/usuario").hasRole("ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/bloquear").hasRole("ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/desbloquear").hasRole("ADMINISTRADOR")
-
+ 
 	        	    .requestMatchers(HttpMethod.GET,  "/alquiler").hasRole("ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/{idAlquiler}").hasRole("ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.GET,  "/feedback/{idFeedback}").hasRole("ADMINISTRADOR")

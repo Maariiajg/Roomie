@@ -7,6 +7,7 @@ import { PisoDTO } from '../../core/models/piso.dto';
 import { SearchService } from '../../shared/services/search.service';
 import { FavoritoService } from '../../shared/services/favorito.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { FotoService } from '../../shared/services/foto.service';
 
 @Component({
   selector: 'app-pisos-feed',
@@ -54,20 +55,26 @@ import { AuthService } from '../../core/auth/auth.service';
                 <!-- Carrusel Mockup Area -->
                 <div class="relative h-64 overflow-hidden bg-gray-100">
                   <div class="absolute inset-0 transition-transform duration-700 ease-in-out flex transform" [style.transform]="'translateX(-' + (currentImageIndexes()[piso.id] || 0) * 100 + '%)'">
-                     <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600" class="w-full h-full object-cover shrink-0" alt="Piso">
-                     <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600" class="w-full h-full object-cover shrink-0" alt="Habitacion">
-                     <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600" class="w-full h-full object-cover shrink-0" alt="Salon">
+                     @if (fotosPisos()[piso.id] && fotosPisos()[piso.id].length > 0) {
+                       @for (foto of fotosPisos()[piso.id]; track foto) {
+                         <img [src]="foto" class="w-full h-full object-cover shrink-0" alt="Piso">
+                       }
+                     } @else {
+                       <img [src]="'https://api.dicebear.com/7.x/identicon/svg?seed=' + piso.owner.nombreUsuario" class="w-full h-full object-cover shrink-0" alt="Avatar Piso">
+                     }
                   </div>
                   
                   <!-- Controles Carrusel -->
-                  <div class="absolute inset-x-0 inset-y-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button (click)="$event.stopPropagation(); prevImage(piso.id)" class="bg-white/90 p-2.5 rounded-full shadow-lg hover:scale-110 transition-all active:scale-95">
-                      <svg class="w-4 h-4 text-textMain" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
-                    </button>
-                    <button (click)="$event.stopPropagation(); nextImage(piso.id)" class="bg-white/90 p-2.5 rounded-full shadow-lg hover:scale-110 transition-all active:scale-95">
-                      <svg class="w-4 h-4 text-textMain" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
-                    </button>
-                  </div>
+                  @if (fotosPisos()[piso.id] && fotosPisos()[piso.id].length > 1) {
+                    <div class="absolute inset-x-0 inset-y-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button (click)="$event.stopPropagation(); prevImage(piso.id)" class="bg-white/90 p-2.5 rounded-full shadow-lg hover:scale-110 transition-all active:scale-95">
+                        <svg class="w-4 h-4 text-textMain" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                      </button>
+                      <button (click)="$event.stopPropagation(); nextImage(piso.id)" class="bg-white/90 p-2.5 rounded-full shadow-lg hover:scale-110 transition-all active:scale-95">
+                        <svg class="w-4 h-4 text-textMain" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                      </button>
+                    </div>
+                  }
 
                   <!-- Botón Favoritos -->
                   <button (click)="$event.stopPropagation(); toggleFavorito(piso.id)" class="absolute top-4 right-4 z-10 p-3 rounded-full backdrop-blur-md transition-all active:scale-90" [ngClass]="isFavorito(piso.id) ? 'bg-red-50 text-red-500 shadow-xl' : 'bg-black/20 hover:bg-black/40 text-white'">
@@ -235,6 +242,7 @@ export class PisosFeedComponent implements OnInit {
   private pisoService = inject(PisoService);
   private favoritoService = inject(FavoritoService);
   private authService = inject(AuthService);
+  private fotoService = inject(FotoService);
   searchService = inject(SearchService);
 
   private pisos = signal<PisoDTO[]>([]);
@@ -243,6 +251,7 @@ export class PisosFeedComponent implements OnInit {
   
   favoritosIds = signal<number[]>([]);
   currentImageIndexes = signal<{[key: number]: number}>({});
+  fotosPisos = signal<{[key: number]: string[]}>({});
 
   filtros: {
     precioMin: number | null,
@@ -296,6 +305,14 @@ export class PisosFeedComponent implements OnInit {
 
   ngOnInit() {
     this.cargarPisos();
+    const userId = this.authService.userId();
+    if (userId) {
+      this.favoritoService.getFavoritosByUsuario(userId).subscribe({
+        next: (favs) => {
+          this.favoritosIds.set(favs.map(f => f.piso.id));
+        }
+      });
+    }
   }
 
   cargarPisos() {
@@ -303,9 +320,20 @@ export class PisosFeedComponent implements OnInit {
     this.pisoService.getLibres().subscribe({
       next: (data) => {
         this.pisos.set(data);
+        this.cargarFotosDePisos(data);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
+    });
+  }
+
+  private cargarFotosDePisos(pisosData: PisoDTO[]) {
+    pisosData.forEach(p => {
+      this.fotoService.getFotosByPiso(p.id).subscribe({
+        next: (fotos) => {
+          this.fotosPisos.update(map => ({...map, [p.id]: fotos.map(f => f.url)}));
+        }
+      });
     });
   }
 
@@ -320,6 +348,7 @@ export class PisosFeedComponent implements OnInit {
     this.pisoService.filtrar(this.filtros).subscribe({
       next: (data) => {
         this.pisos.set(data);
+        this.cargarFotosDePisos(data);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false)
@@ -344,21 +373,34 @@ export class PisosFeedComponent implements OnInit {
   }
 
   toggleFavorito(idPiso: number) {
+    const userId = this.authService.userId();
+    if (!userId) return; // Requiere login
+    
     const ids = this.favoritosIds();
     if (ids.includes(idPiso)) {
       this.favoritosIds.set(ids.filter(id => id !== idPiso));
+      this.favoritoService.eliminarFavorito(userId, idPiso).subscribe({
+        error: () => this.favoritosIds.set(ids) // Revert on error
+      });
     } else {
       this.favoritosIds.set([...ids, idPiso]);
+      this.favoritoService.anadirFavorito(userId, idPiso).subscribe({
+        error: () => this.favoritosIds.set(ids) // Revert on error
+      });
     }
   }
 
   nextImage(idPiso: number) {
+    const fotos = this.fotosPisos()[idPiso];
+    if (!fotos || fotos.length <= 1) return;
     const idx = this.currentImageIndexes()[idPiso] || 0;
-    this.currentImageIndexes.update(map => ({...map, [idPiso]: (idx + 1) % 3}));
+    this.currentImageIndexes.update(map => ({...map, [idPiso]: (idx + 1) % fotos.length}));
   }
 
   prevImage(idPiso: number) {
+    const fotos = this.fotosPisos()[idPiso];
+    if (!fotos || fotos.length <= 1) return;
     const idx = this.currentImageIndexes()[idPiso] || 0;
-    this.currentImageIndexes.update(map => ({...map, [idPiso]: (idx - 1 + 3) % 3}));
+    this.currentImageIndexes.update(map => ({...map, [idPiso]: (idx - 1 + fotos.length) % fotos.length}));
   }
 }
