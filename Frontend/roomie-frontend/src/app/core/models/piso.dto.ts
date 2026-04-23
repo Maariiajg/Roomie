@@ -8,7 +8,6 @@ export interface PerfilUsuarioDTO {
   telefono: string;
   foto: string;
   mensajePresentacion: string;
-  // Campos adicionales para gestión admin (opcionales)
   rol?: string;
   bloqueado?: boolean;
 }
@@ -16,6 +15,7 @@ export interface PerfilUsuarioDTO {
 export interface PisoDTO {
   id: number;
   direccion: string;
+  poblacion: string;
   descripcion: string;
   tamanio: number;
   precioMes: number;
@@ -26,6 +26,7 @@ export interface PisoDTO {
   animales: boolean;
   wifi: boolean;
   tabaco: boolean;
+  estadoPiso: 'LIBRE' | 'COMPLETO' | 'INACTIVO';
   precioMesPersona: number;
   plazasLibres: number;
   owner: PerfilUsuarioDTO;

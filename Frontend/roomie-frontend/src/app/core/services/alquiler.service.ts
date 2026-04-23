@@ -3,15 +3,27 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AlquilerDTO } from '../models/alquiler.dto';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AlquilerService {
-  private http = inject(HttpClient);
+  private http    = inject(HttpClient);
   private baseUrl = 'http://localhost:8081/alquiler';
 
-  getHistorialDeUsuario(idUsuario: number): Observable<AlquilerDTO[]> {
+  historialDeUsuario(idUsuario: number): Observable<AlquilerDTO[]> {
     return this.http.get<AlquilerDTO[]>(`${this.baseUrl}/usuario/${idUsuario}/historial`);
+  }
+
+  alquilerActual(idUsuario: number): Observable<AlquilerDTO> {
+    return this.http.get<AlquilerDTO>(`${this.baseUrl}/usuario/${idUsuario}/actual`);
+  }
+
+  solicitudesPendientes(idPiso: number): Observable<AlquilerDTO[]> {
+    return this.http.get<AlquilerDTO[]>(`${this.baseUrl}/piso/${idPiso}/solicitudes`);
+  }
+
+  resolverSolicitud(idAlquiler: number, idDueno: number, aceptar: boolean): Observable<AlquilerDTO> {
+    return this.http.put<AlquilerDTO>(
+      `${this.baseUrl}/${idAlquiler}/resolver?idDueno=${idDueno}&aceptar=${aceptar}`, {}
+    );
   }
 
   cancelarSolicitud(idAlquiler: number, idUsuario: number): Observable<AlquilerDTO> {
@@ -19,6 +31,8 @@ export class AlquilerService {
   }
 
   solicitar(idUsuario: number, idPiso: number, fInicio: string): Observable<AlquilerDTO> {
-    return this.http.post<AlquilerDTO>(`${this.baseUrl}/solicitar?idUsuario=${idUsuario}&idPiso=${idPiso}&fInicio=${fInicio}`, {});
+    return this.http.post<AlquilerDTO>(
+      `${this.baseUrl}/solicitar?idUsuario=${idUsuario}&idPiso=${idPiso}&fInicio=${fInicio}`, {}
+    );
   }
 }

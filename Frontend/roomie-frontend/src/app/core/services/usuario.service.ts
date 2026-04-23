@@ -20,6 +20,16 @@ export class UsuarioService {
     return this.http.get<PerfilUsuarioDTO>(`${this.backendUrl}/${id}`);
   }
 
+  // Actualizar perfil
+  actualizarPerfil(id: number, dto: any): Observable<PerfilUsuarioDTO> {
+    return this.http.put<PerfilUsuarioDTO>(`${this.backendUrl}/${id}/actualizar-perfil`, dto);
+  }
+
+  // Cambiar credenciales
+  cambiarCredenciales(id: number, dto: any): Observable<PerfilUsuarioDTO> {
+    return this.http.put<PerfilUsuarioDTO>(`${this.backendUrl}/${id}/credenciales`, dto);
+  }
+
   // Bloquear usuario (Banear)
   bloquearUsuario(id: number): Observable<PerfilUsuarioDTO> {
     return this.http.put<PerfilUsuarioDTO>(`${this.backendUrl}/${id}/bloquear`, {});

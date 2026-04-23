@@ -134,7 +134,7 @@ export class MisAlquileresComponent implements OnInit {
   cargarDatos() {
     const userId = this.authService.userId();
     if (userId) {
-      this.alquilerService.getHistorialDeUsuario(userId).subscribe({
+      this.alquilerService.historialDeUsuario(userId).subscribe({
         next: (data) => this.alquileres.set(data),
         error: () => this.notificationService.showError('Error al cargar tus alquileres')
       });

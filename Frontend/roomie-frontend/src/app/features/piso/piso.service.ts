@@ -18,6 +18,10 @@ export class PisoService {
     return this.http.get<PisoDTO>(`${this.backendUrl}/${id}`);
   }
 
+  getPisoResidenteById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.backendUrl}/${id}/residente`);
+  }
+
   getUsuariosInPiso(idPiso: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.backendUrl}/${idPiso}/usuarios`);
   }
@@ -51,7 +55,12 @@ export class PisoService {
   }
 
   getAlquileresDePiso(idPiso: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:8081/alquiler/piso/${idPiso}`);
+    // El backend no expone un endpoint público para ver los alquileres aceptados de un piso.
+    // Devolvemos un array vacío para evitar el error 403 AnyRequest DenyAll.
+    return new Observable(obs => {
+      obs.next([]);
+      obs.complete();
+    });
   }
 
   deletePiso(id: number): Observable<void> {
