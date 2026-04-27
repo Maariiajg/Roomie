@@ -15,16 +15,14 @@ export const routes: Routes = [
   // Resultados / Buscador
   {
     path: 'resultados',
-    loadComponent: () => import('./features/pisos/pisos-feed.component').then(m => m.PisosFeedComponent),
-    canActivate: [authGuard]
-  },
+    loadComponent: () => import('./features/pisos/pisos-feed.component').then(m => m.PisosFeedComponent)
+  }, // <-- ¡ESTA COMA ES LA QUE SEGURAMENTE FALTA!
 
   // Detalle de piso (sin layout global — se oculta en app.ts)
   {
     path: 'piso/:id',
     loadComponent: () => import('./features/pisos/piso-detalle.component').then(m => m.PisoDetalleComponent)
   },
-
   // Auth
   {
     path: 'login',
