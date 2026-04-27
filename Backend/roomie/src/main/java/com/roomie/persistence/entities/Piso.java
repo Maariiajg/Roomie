@@ -64,7 +64,7 @@ public class Piso {
     private List<Foto> fotos;
 
     // Relación 1:N con Alquiler (Solicitudes recibidas - relación "se pone" y "pide")
-    @OneToMany(mappedBy = "piso") 
+    @OneToMany(mappedBy = "piso", cascade = CascadeType.ALL, orphanRemoval = true) // <--- AÑADE EL CASCADE AQUÍ
     @JsonIgnore
     private List<Alquiler> alquileresSolicitados;
     

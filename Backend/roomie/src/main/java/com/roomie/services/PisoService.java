@@ -27,6 +27,8 @@ import com.roomie.services.mapper.FotoMapper;
 import com.roomie.services.mapper.PisoMapper;
 import com.roomie.services.mapper.UsuarioMapper;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class PisoService {
 
@@ -273,25 +275,34 @@ public class PisoService {
         return FotoMapper.toDTOList(piso.getFotos());
     }
 
-    // =========================================================================
-    // 7. ELIMINAR UN PISO
-    // =========================================================================
-    public void eliminarPiso(int idPiso) {
-        Piso piso = pisoRepository.findById(idPiso)
-            .orElseThrow(() -> new PisoNotFoundException("El piso no existe."));
+ // =========================================================================
+ // 7. ELIMINAR UN PISO
+ // =========================================================================
+ @Transactional // <--- MUY IMPORTANTE: Añade esta anotación
+ public void eliminarPiso(int idPiso) {
+     Piso piso = pisoRepository.findById(idPiso)
+         .orElseThrow(() -> new PisoNotFoundException("El piso no existe."));
 
-        // 1. Activar feedbacks entre residentes antes de que el piso desaparezca
-        alquilerService.activarFeedbacksEntreResidentes(idPiso);
+     // 1. Activar feedbacks entre residentes antes de que el piso desaparezca
+     alquilerService.activarFeedbacksEntreResidentes(idPiso);
 
-        // 2. Finalizar alquileres activos y cancelar solicitudes pendientes
-        alquilerService.finalizarAlquileresActivosDePiso(idPiso);
+     // 2. Finalizar alquileres activos y cancelar solicitudes pendientes
+     alquilerService.finalizarAlquileresActivosDePiso(idPiso);
 
-        // 3. Cambiar rol del owner a USUARIO
-        usuarioService.cambiarRol(piso.getOwner().getId(), Roles.USUARIO);
+     // 3. DESVINCULAR DEL OWNER (Esto evita el TransientObjectException)
+     Usuario owner = piso.getOwner();
+     if (owner != null) {
+         // Eliminamos el piso de la lista de pisos del usuario en memoria
+         owner.getPisosPuestos().remove(piso);
+         // Cambiamos su rol a USUARIO ya que se queda sin piso
+         usuarioService.cambiarRol(owner.getId(), Roles.USUARIO);
+     }
 
-        // 4. Eliminar el piso (las fotos y favoritos se eliminan en cascada)
-        pisoRepository.delete(piso);
-    }
+     // 4. Eliminar el piso
+     // Gracias al cascade=ALL en la entidad, se borrarán automáticamente 
+     // las fotos, los favoritos y ahora también los alquileres.
+     pisoRepository.delete(piso);
+ }
     
     /*=======================================
      * Sacar el piso de un owner para que pueda operar sobre él sin saber su ID
