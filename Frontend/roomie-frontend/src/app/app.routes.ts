@@ -68,8 +68,31 @@ export const routes: Routes = [
   // Panel de Administración (requiere rol ADMINISTRADOR)
   {
     path: 'admin',
-    loadComponent: () => import('./features/admin/admin-panel.component').then(m => m.AdminPanelComponent),
-    canActivate: [adminGuard]
+    loadComponent: () => import('./features/admin/admin-layout.component').then(m => m.AdminLayoutComponent),
+    canActivate: [adminGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+      // Rutas futuras de administración (placeholder)
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'pisos',
+        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'feedbacks',
+        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'administradores',
+        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+      },
+    ]
   },
 
   // Fallback

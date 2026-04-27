@@ -35,4 +35,9 @@ export class AlquilerService {
       `${this.baseUrl}/solicitar?idUsuario=${idUsuario}&idPiso=${idPiso}&fInicio=${fInicio}`, {}
     );
   }
+
+  // Admin: obtener todos los alquileres globales
+  getAllAlquileres(): Observable<AlquilerDTO[]> {
+    return this.http.get<AlquilerDTO[]>(this.baseUrl);
+  }
 }

@@ -28,6 +28,6 @@ export class App {
 
   showLayout = computed(() => {
     const url = this.currentUrl() || '';
-    return !url.includes('/piso/');
+    return !url.includes('/piso/') && !url.startsWith('/admin');
   });
 }
