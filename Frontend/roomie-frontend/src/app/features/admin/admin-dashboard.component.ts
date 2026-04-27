@@ -232,34 +232,31 @@ interface KpiCard {
                     @for (alquiler of recentAlquileres(); track alquiler.id) {
                       <tr class="hover:bg-bgMain/60 transition-colors">
 
-                        <!-- Usuario -->
                         <td class="px-6 py-4">
                           <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                               <span class="text-primary font-black text-xs uppercase">
-                                {{ (alquiler.usuario?.nombreUsuario || alquiler.usuario?.nombre || '?').charAt(0) }}
+                                {{ (alquiler.usuario.nombreUsuario || alquiler.usuario.nombre || '?').charAt(0) }}
                               </span>
                             </div>
                             <div>
                               <div class="font-bold text-textMain text-xs">
-                                {{ alquiler.usuario?.nombre }} {{ alquiler.usuario?.apellido1 }}
+                                {{ alquiler.usuario.nombre }} {{ alquiler.usuario.apellido1 }}
                               </div>
                               <div class="text-gray-400 text-[10px] font-mono">
-                                &#64;{{ alquiler.usuario?.nombreUsuario || ('ID: ' + alquiler.usuario?.id) }}
+                                &#64;{{ alquiler.usuario.nombreUsuario || ('ID: ' + alquiler.usuario.id) }}
                               </div>
                             </div>
                           </div>
                         </td>
 
-                        <!-- Piso -->
                         <td class="px-6 py-4">
                           <div class="font-bold text-textMain text-xs truncate max-w-[180px]">
-                            {{ alquiler.piso?.direccion || ('Piso #' + alquiler.pisoId) }}
+                            {{ alquiler.piso.direccion || ('Piso #' + alquiler.pisoId) }}
                           </div>
                           <div class="text-gray-400 text-[10px] font-mono">ID: {{ alquiler.pisoId }}</div>
                         </td>
 
-                        <!-- Estado -->
                         <td class="px-6 py-4">
                           <span class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-full"
                                 [ngClass]="getEstadoClasses(alquiler.estadoSolicitud)">
@@ -269,7 +266,6 @@ interface KpiCard {
                           </span>
                         </td>
 
-                        <!-- Fecha -->
                         <td class="px-6 py-4">
                           <div class="text-xs font-bold text-textMain">
                             {{ formatDate(alquiler.fSolicitud || alquiler.fechaInicio) }}
@@ -297,20 +293,20 @@ interface KpiCard {
 })
 export class AdminDashboardComponent implements OnInit {
   private usuarioService = inject(UsuarioService);
-  private adminService   = inject(AdminService);
+  private adminService = inject(AdminService);
   private alquilerService = inject(AlquilerService);
 
   // KPI Signals
-  totalUsuarios       = signal(0);
-  totalPisos          = signal(0);
-  pisosLibres         = signal(0);
+  totalUsuarios = signal(0);
+  totalPisos = signal(0);
+  pisosLibres = signal(0);
   solicitudesPendientes = signal(0);
 
   // Loading / error states
-  cargando      = signal(true);
-  errorCarga    = signal<string | null>(null);
+  cargando = signal(true);
+  errorCarga = signal<string | null>(null);
   cargandoAlquileres = signal(true);
-  errorAlquileres    = signal<string | null>(null);
+  errorAlquileres = signal<string | null>(null);
 
   // Recent rentals
   recentAlquileres = signal<AlquilerDTO[]>([]);
@@ -324,8 +320,8 @@ export class AdminDashboardComponent implements OnInit {
     this.errorCarga.set(null);
 
     forkJoin({
-      usuarios:    this.usuarioService.getUsuarios(),
-      pisos:       this.adminService.getTodosPisos(),
+      usuarios: this.usuarioService.getUsuarios(),
+      pisos: this.adminService.getTodosPisos(),
       pisosLibres: this.adminService.getPisosLibres(),
       solicitudes: this.adminService.getSolicitudesAdmin(),
     }).subscribe({
@@ -369,19 +365,19 @@ export class AdminDashboardComponent implements OnInit {
 
   getEstadoClasses(estado: string): Record<string, boolean> {
     return {
-      'bg-yellow-50 text-yellow-700':  estado === 'PENDIENTE',
-      'bg-green-50 text-green-700':    estado === 'ACEPTADA',
-      'bg-red-50 text-red-600':        estado === 'RECHAZADA' || estado === 'CANCELADA',
-      'bg-gray-100 text-gray-500':     estado === 'FINALIZADA',
+      'bg-yellow-50 text-yellow-700': estado === 'PENDIENTE',
+      'bg-green-50 text-green-700': estado === 'ACEPTADA',
+      'bg-red-50 text-red-600': estado === 'RECHAZADA' || estado === 'CANCELADA',
+      'bg-gray-100 text-gray-500': estado === 'FINALIZADA',
     };
   }
 
   getEstadoDotClass(estado: string): Record<string, boolean> {
     return {
       'bg-yellow-400': estado === 'PENDIENTE',
-      'bg-green-400':  estado === 'ACEPTADA',
-      'bg-red-400':    estado === 'RECHAZADA' || estado === 'CANCELADA',
-      'bg-gray-400':   estado === 'FINALIZADA',
+      'bg-green-400': estado === 'ACEPTADA',
+      'bg-red-400': estado === 'RECHAZADA' || estado === 'CANCELADA',
+      'bg-gray-400': estado === 'FINALIZADA',
     };
   }
 

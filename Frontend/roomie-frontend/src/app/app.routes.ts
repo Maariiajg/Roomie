@@ -75,22 +75,21 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
       },
-      // Rutas futuras de administración (placeholder)
       {
         path: 'usuarios',
-        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+        loadComponent: () => import('./features/admin/admin-usuarios.component').then(m => m.AdminUsuariosComponent)
       },
       {
         path: 'pisos',
-        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+        loadComponent: () => import('./features/admin/admin-pisos.component').then(m => m.AdminPisosComponent)
       },
       {
         path: 'feedbacks',
-        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+        loadComponent: () => import('./features/admin/admin-feedbacks.component').then(m => m.AdminFeedbacksComponent)
       },
       {
         path: 'administradores',
-        loadComponent: () => import('./features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+        loadComponent: () => import('./features/admin/admin-administradores.component').then(m => m.AdminAdministradoresComponent)
       },
     ]
   },

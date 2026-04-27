@@ -12,12 +12,8 @@ import { AdminService } from '../../core/services/admin.service';
   template: `
     <div class="flex min-h-screen bg-bgMain font-sans">
 
-      <!-- ══════════════════════════════════
-           SIDEBAR
-      ══════════════════════════════════ -->
       <aside class="fixed top-0 left-0 h-full w-64 bg-textMain flex flex-col z-40 shadow-2xl">
 
-        <!-- Logo -->
         <div class="flex items-center gap-3 px-6 py-6 border-b border-white/10">
           <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg">
             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,10 +27,8 @@ import { AdminService } from '../../core/services/admin.service';
           </span>
         </div>
 
-        <!-- Nav Items -->
         <nav class="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
 
-          <!-- Dashboard -->
           <a routerLink="/admin" routerLinkActive="bg-primary/20 text-primary"
              [routerLinkActiveOptions]="{ exact: true }"
              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all group cursor-pointer">
@@ -45,7 +39,6 @@ import { AdminService } from '../../core/services/admin.service';
             <span class="text-sm font-bold">Dashboard</span>
           </a>
 
-          <!-- Usuarios -->
           <a routerLink="/admin/usuarios" routerLinkActive="bg-primary/20 text-primary"
              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all group cursor-pointer">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,7 +48,6 @@ import { AdminService } from '../../core/services/admin.service';
             <span class="text-sm font-bold">Usuarios</span>
           </a>
 
-          <!-- Pisos -->
           <a routerLink="/admin/pisos" routerLinkActive="bg-primary/20 text-primary"
              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all group cursor-pointer">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +57,6 @@ import { AdminService } from '../../core/services/admin.service';
             <span class="text-sm font-bold">Pisos</span>
           </a>
 
-          <!-- Feedbacks -->
           <a routerLink="/admin/feedbacks" routerLinkActive="bg-primary/20 text-primary"
              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all group cursor-pointer">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,25 +66,23 @@ import { AdminService } from '../../core/services/admin.service';
             <span class="text-sm font-bold">Feedbacks</span>
           </a>
 
-          <!-- Administradores (con badge) -->
           <a routerLink="/admin/administradores" routerLinkActive="bg-primary/20 text-primary"
              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all group cursor-pointer">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
             <span class="text-sm font-bold flex-1">Administradores</span>
-            @if (pendingCount() > 0) {
+            
+            @if (adminService.pendingAdminsCount() > 0) {
               <span class="bg-red-500 text-white text-[10px] font-black min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center animate-pulse">
-                {{ pendingCount() }}
+                {{ adminService.pendingAdminsCount() }}
               </span>
             }
           </a>
 
-          <!-- Separador -->
           <div class="my-4 border-t border-white/10"></div>
 
-          <!-- Mi Perfil -->
           <a routerLink="/mi-perfil"
              class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all group cursor-pointer">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +94,6 @@ import { AdminService } from '../../core/services/admin.service';
 
         </nav>
 
-        <!-- User info + Logout -->
         <div class="px-3 py-4 border-t border-white/10">
           <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 mb-2">
             <div class="w-8 h-8 rounded-full bg-primary/30 flex items-center justify-center flex-shrink-0">
@@ -131,9 +119,6 @@ import { AdminService } from '../../core/services/admin.service';
 
       </aside>
 
-      <!-- ══════════════════════════════════
-           ÁREA DE CONTENIDO PRINCIPAL
-      ══════════════════════════════════ -->
       <main class="ml-64 flex-1 min-h-screen overflow-y-auto">
         <router-outlet></router-outlet>
       </main>
@@ -144,20 +129,12 @@ import { AdminService } from '../../core/services/admin.service';
 })
 export class AdminLayoutComponent implements OnInit {
   authService = inject(AuthService);
-  private adminService = inject(AdminService);
+  public adminService = inject(AdminService);
   private router = inject(Router);
 
-  pendingCount = signal(0);
-
   ngOnInit(): void {
-    this.loadPendingCount();
-  }
-
-  loadPendingCount(): void {
-    this.adminService.getSolicitudesAdmin().subscribe({
-      next: (solicitudes) => this.pendingCount.set(solicitudes.length),
-      error: () => this.pendingCount.set(0)
-    });
+    // Only fetch to update the initial count
+    this.adminService.getSolicitudesAdmin().subscribe();
   }
 
   logout(): void {
