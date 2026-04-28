@@ -23,6 +23,7 @@ export const routes: Routes = [
     path: 'piso/:id',
     loadComponent: () => import('./features/pisos/piso-detalle.component').then(m => m.PisoDetalleComponent)
   },
+
   // Auth
   {
     path: 'login',
@@ -60,6 +61,13 @@ export const routes: Routes = [
   {
     path: 'mis-alquileres',
     loadComponent: () => import('./features/usuario/mis-alquileres.component').then(m => m.MisAlquileresComponent),
+    canActivate: [authGuard]
+  },
+
+  //mis favoritos
+  {
+    path: 'mis-favoritos',
+    loadComponent: () => import('./features/usuario/mis-favoritos.component').then(m => m.MisFavoritosComponent),
     canActivate: [authGuard]
   },
 

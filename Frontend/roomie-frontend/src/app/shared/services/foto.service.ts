@@ -17,4 +17,12 @@ export class FotoService {
   getFotosByPiso(idPiso: number): Observable<FotoDTO[]> {
     return this.http.get<FotoDTO[]>(`${this.backendUrl}/${idPiso}/fotos`);
   }
+
+  anadirFoto(url: string, idPiso: number, idOwner: number): Observable<any> {
+    return this.http.post(`${this.backendUrl}?url=${url}&idPiso=${idPiso}&idOwner=${idOwner}`, {});
+  }
+
+  eliminarFoto(idFoto: number, idPiso: number, idOwner: number): Observable<any> {
+    return this.http.delete(`${this.backendUrl}/${idFoto}?idPiso=${idPiso}&idOwner=${idOwner}`);
+  }
 }

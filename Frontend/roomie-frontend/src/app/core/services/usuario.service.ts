@@ -39,4 +39,11 @@ export class UsuarioService {
   desbloquearUsuario(id: number): Observable<PerfilUsuarioDTO> {
     return this.http.put<PerfilUsuarioDTO>(`${this.backendUrl}/${id}/desbloquear`, {});
   }
+
+  // Cambiar estado de bloqueo (Solo Admin)
+  cambiarEstadoBloqueo(idUsuario: number, bloquear: boolean): Observable<any> {
+    // Según tus instrucciones, llamamos a /bloquear o /desbloquear
+    const accion = bloquear ? 'bloquear' : 'desbloquear';
+    return this.http.put(`${this.backendUrl}/${idUsuario}/${accion}`, {});
+  }
 }

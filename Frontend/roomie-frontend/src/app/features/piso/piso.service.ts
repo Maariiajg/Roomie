@@ -8,62 +8,91 @@ import { PisoDTO } from '../../core/models/piso.dto';
 })
 export class PisoService {
   private http = inject(HttpClient);
-  private backendUrl = 'http://localhost:8081/piso';
+  private baseUrl = 'http://localhost:8081/piso'; // Ajusta la ruta si en tu Controller es diferente
+
+  // ==========================================
+  // LECTURA DE PISOS (Buscador y Feed)
+  // ==========================================
 
   getAllPisos(): Observable<PisoDTO[]> {
-    return this.http.get<PisoDTO[]>(this.backendUrl);
+    return this.http.get<PisoDTO[]>(this.baseUrl);
   }
 
-  getPisoById(id: number): Observable<PisoDTO> {
-    return this.http.get<PisoDTO>(`${this.backendUrl}/${id}`);
-  }
-
-  getPisoResidenteById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.backendUrl}/${id}/residente`);
-  }
-
-  getUsuariosInPiso(idPiso: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.backendUrl}/${idPiso}/usuarios`);
+  getLibres(): Observable<PisoDTO[]> {
+    return this.http.get<PisoDTO[]>(`${this.baseUrl}/libres`);
   }
 
   filtrar(filtros: any): Observable<PisoDTO[]> {
     let params = new HttpParams();
-    
-    if (filtros.precioMin !== null && filtros.precioMin !== undefined) 
-      params = params.set('precioMin', filtros.precioMin.toString());
-      
-    if (filtros.precioMax !== null && filtros.precioMax !== undefined) 
-      params = params.set('precioMax', filtros.precioMax.toString());
-    
-    if (filtros.garaje !== null && filtros.garaje !== undefined) 
-      params = params.set('garaje', filtros.garaje.toString());
-    
-    if (filtros.animales !== null && filtros.animales !== undefined) 
-      params = params.set('animales', filtros.animales.toString());
-    
-    if (filtros.wifi !== null && filtros.wifi !== undefined) 
-      params = params.set('wifi', filtros.wifi.toString());
-    
-    if (filtros.tabaco !== null && filtros.tabaco !== undefined) 
-      params = params.set('tabaco', filtros.tabaco.toString());
 
-    return this.http.get<PisoDTO[]>(`${this.backendUrl}/filtrar`, { params });
+    if (filtros.precioMin !== null && filtros.precioMin !== undefined) {
+      params = params.set('precioMin', filtros.precioMin);
+    }
+    if (filtros.precioMax !== null && filtros.precioMax !== undefined) {
+      params = params.set('precioMax', filtros.precioMax);
+    }
+    if (filtros.garaje !== null && filtros.garaje !== undefined) {
+      params = params.set('garaje', filtros.garaje);
+    }
+    if (filtros.animales !== null && filtros.animales !== undefined) {
+      params = params.set('animales', filtros.animales);
+    }
+    if (filtros.wifi !== null && filtros.wifi !== undefined) {
+      params = params.set('wifi', filtros.wifi);
+    }
+    if (filtros.tabaco !== null && filtros.tabaco !== undefined) {
+      params = params.set('tabaco', filtros.tabaco);
+    }
+
+    return this.http.get<PisoDTO[]>(`${this.baseUrl}/filtrar`, { params });
   }
 
-  getLibres(): Observable<PisoDTO[]> {
-    return this.http.get<PisoDTO[]>(`${this.backendUrl}/libres`);
+  // ==========================================
+  // DETALLES DEL PISO Y DEPENDENCIAS
+  // ==========================================
+
+  getPisoById(idPiso: number): Observable<PisoDTO> {
+    return this.http.get<PisoDTO>(`${this.baseUrl}/${idPiso}`);
   }
 
-  getAlquileresDePiso(idPiso: number): Observable<any[]> {
-    // El backend no expone un endpoint público para ver los alquileres aceptados de un piso.
-    // Devolvemos un array vacío para evitar el error 403 AnyRequest DenyAll.
-    return new Observable(obs => {
-      obs.next([]);
-      obs.complete();
-    });
+  getPisoResidenteById(idPiso: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/${idPiso}/residente`);
   }
 
-  deletePiso(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.backendUrl}/${id}`);
+  getUsuariosInPiso(idPiso: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/${idPiso}/usuarios`);
+  }
+
+  // ==========================================
+  // GESTIÓN EXCLUSIVA DEL PROPIETARIO (OWNER)
+  // ==========================================
+
+  // Obtiene el piso del que es dueño el usuario
+  getPisoMio(idOwner: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/mio/${idOwner}`);
+  }
+
+  crearPiso(idUsuario: number, pisoData: any): Observable<PisoDTO> {
+    return this.http.post<PisoDTO>(`${this.baseUrl}?idUsuario=${idUsuario}`, pisoData);
+  }
+
+  actualizarPiso(idPiso: number, pisoData: any): Observable<PisoDTO> {
+    return this.http.put<PisoDTO>(`${this.baseUrl}/${idPiso}`, pisoData);
+  }
+
+  cederPiso(idPiso: number, datosCeder: { idOwnerActual: number; idNuevoOwner: number }): Observable<PisoDTO> {
+    return this.http.put<PisoDTO>(`${this.baseUrl}/${idPiso}/ceder`, datosCeder);
+  }
+
+  eliminarPiso(idPiso: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${idPiso}`);
+  }
+
+  // ==========================================
+  // GESTIÓN EXCLUSIVA DE ADMINISTRADOR
+  // ==========================================
+
+  deletePiso(idPiso: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${idPiso}`);
   }
 }

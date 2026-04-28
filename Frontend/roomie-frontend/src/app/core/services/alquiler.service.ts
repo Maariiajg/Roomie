@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AlquilerDTO } from '../models/alquiler.dto';
 
 @Injectable({ providedIn: 'root' })
 export class AlquilerService {
-  private http    = inject(HttpClient);
+  private http = inject(HttpClient);
   private baseUrl = 'http://localhost:8081/alquiler';
 
   historialDeUsuario(idUsuario: number): Observable<AlquilerDTO[]> {
@@ -31,12 +31,24 @@ export class AlquilerService {
   }
 
   solicitar(idUsuario: number, idPiso: number, fInicio: string): Observable<AlquilerDTO> {
-    return this.http.post<AlquilerDTO>(
-      `${this.baseUrl}/solicitar?idUsuario=${idUsuario}&idPiso=${idPiso}&fInicio=${fInicio}`, {}
-    );
+    const params = new HttpParams()
+      .set('idUsuario', idUsuario)
+      .set('idPiso', idPiso)
+      .set('fInicio', fInicio);
+
+    return this.http.post<AlquilerDTO>(`${this.baseUrl}/solicitar`, {}, { params });
   }
 
-  // Admin: obtener todos los alquileres globales
+  // Abandono VOLUNTARIO (El inquilino sale por su cuenta)
+  abandonarPiso(idPiso: number, idUsuario: number): Observable<any> {
+    return this.http.put(`${this.baseUrl}/piso/${idPiso}/salir?idUsuario=${idUsuario}`, {});
+  }
+
+  // EXPULSIÓN FORZADA (El owner expulsa al inquilino)
+  expulsarInquilino(idPiso: number, idInquilino: number, idOwner: number): Observable<any> {
+    return this.http.put(`${this.baseUrl}/piso/${idPiso}/salir?idUsuario=${idInquilino}&forzadoPorOwner=true&idOwner=${idOwner}`, {});
+  }
+
   getAllAlquileres(): Observable<AlquilerDTO[]> {
     return this.http.get<AlquilerDTO[]>(this.baseUrl);
   }
