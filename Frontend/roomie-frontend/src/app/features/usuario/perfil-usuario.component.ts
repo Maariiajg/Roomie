@@ -807,13 +807,17 @@ export class PerfilUsuarioComponent implements OnInit {
 
     this.pisoService.crearPiso(myId, this.pisoCrearForm).subscribe({
       next: () => {
-        this.notificationService.showSuccess('¡Piso creado con éxito! Ahora eres el propietario.');
+        this.notificationService.showSuccess('Exito al crear el piso');
         this.showCrearPisoModal.set(false);
-        // Como el rol en el backend ha cambiado, forzamos un redigir con recarga 
-        // para que Angular actualice los permisos en caso de que su token no se haya refrescado.
-        this.router.navigate(['/mi-piso']).then(() => {
-          window.location.reload();
-        });
+        this.activeTab.set('ALQUILERES');
+        this.cargarUsuario(myId);
+        
+        // Actualizar rol en localStorage si el usuario pasa a ser owner
+        const currentRol = localStorage.getItem('rol');
+        if (currentRol === 'USUARIO') {
+          localStorage.setItem('rol', 'OWNER');
+          localStorage.setItem('role', 'OWNER');
+        }
       },
       error: (err) => {
         const errorMsg = err?.error?.message || err?.error?.error || 'Error al intentar crear el piso.';
