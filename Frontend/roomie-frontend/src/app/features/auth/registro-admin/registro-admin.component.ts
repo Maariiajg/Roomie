@@ -64,8 +64,8 @@ export class RegistroAdminComponent {
     this.authService.registerAdmin(dto).subscribe({
       next: () => {
         this.isLoading = false;
-        this.notificationService.showSuccess('Registro correcto, ahora debes esperar a que otro administrador te acepte');
-        this.router.navigate(['/home']);
+        this.notificationService.showSuccess('Solicitud enviada. Tu cuenta debe ser aceptada por un administrador');
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isLoading = false;
