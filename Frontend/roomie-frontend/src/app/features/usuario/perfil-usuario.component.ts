@@ -806,16 +806,22 @@ export class PerfilUsuarioComponent implements OnInit {
     }
 
     this.pisoService.crearPiso(myId, this.pisoCrearForm).subscribe({
-      next: () => {
+      next: (respuestaBackend: any) => { // <-- Importante ver qué devuelve el backend
         this.notificationService.showSuccess('¡Piso creado con éxito! Ahora eres el propietario.');
         this.showCrearPisoModal.set(false);
-        // Como el rol en el backend ha cambiado, forzamos un redigir con recarga 
-        // para que Angular actualice los permisos en caso de que su token no se haya refrescado.
-        this.router.navigate(['/mi-piso']).then(() => {
+
+        // OPTATIVO: Si tu backend devuelve un nuevo JWT con el rol actualizado:
+        // if (respuestaBackend.token) {
+        //   this.authService.setToken(respuestaBackend.token); 
+        // }
+
+        // Redirigimos al perfil para recargar los datos (usamos la ruta que sí existe)
+        this.router.navigate(['/mi-perfil']).then(() => {
           window.location.reload();
         });
       },
       error: (err) => {
+        console.error("Error completo del backend:", err); // <-- Añade esto para depurar en consola
         const errorMsg = err?.error?.message || err?.error?.error || 'Error al intentar crear el piso.';
         this.notificationService.showError(errorMsg);
       }

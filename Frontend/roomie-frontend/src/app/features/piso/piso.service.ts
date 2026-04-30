@@ -73,7 +73,8 @@ export class PisoService {
   }
 
   crearPiso(idUsuario: number, pisoData: any): Observable<PisoDTO> {
-    return this.http.post<PisoDTO>(`${this.baseUrl}?idUsuario=${idUsuario}`, pisoData);
+    // Ahora envía a /piso/crear/30 en lugar de /piso?idUsuario=30
+    return this.http.post<PisoDTO>(`${this.baseUrl}/crear/${idUsuario}`, pisoData);
   }
 
   actualizarPiso(idPiso: number, pisoData: any): Observable<PisoDTO> {
