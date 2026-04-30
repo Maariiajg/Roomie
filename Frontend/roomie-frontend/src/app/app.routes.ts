@@ -16,7 +16,7 @@ export const routes: Routes = [
   {
     path: 'resultados',
     loadComponent: () => import('./features/pisos/pisos-feed.component').then(m => m.PisosFeedComponent)
-  }, // <-- ¡ESTA COMA ES LA QUE SEGURAMENTE FALTA!
+  },
 
   // Detalle de piso (sin layout global — se oculta en app.ts)
   {
@@ -50,7 +50,6 @@ export const routes: Routes = [
   },
 
   // Mi Perfil — alias que redirige al perfil del usuario autenticado
-  // La redirección dinámica se maneja dentro del componente, usando authService.userId()
   {
     path: 'mi-perfil',
     loadComponent: () => import('./features/usuario/perfil-usuario.component').then(m => m.PerfilUsuarioComponent),
@@ -64,10 +63,17 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
 
-  //mis favoritos
+  // Mis favoritos
   {
     path: 'mis-favoritos',
     loadComponent: () => import('./features/usuario/mis-favoritos.component').then(m => m.MisFavoritosComponent),
+    canActivate: [authGuard]
+  },
+
+  // GESTIÓN DE MI PISO (Solo Propietarios - NUEVA RUTA)
+  {
+    path: 'mi-piso',
+    loadComponent: () => import('./features/piso/mi-piso.component').then(m => m.MiPisoComponent),
     canActivate: [authGuard]
   },
 

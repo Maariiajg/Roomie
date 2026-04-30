@@ -435,20 +435,30 @@ export class MiPisoComponent implements OnInit {
   }
 
   cargarDependencias(idPiso: number) {
-    // Cargar Inquilinos
+    // 1. Cargar Inquilinos
     this.pisoService.getUsuariosInPiso(idPiso).subscribe({
-      next: (users) => this.inquilinos.set(users)
+      next: (users) => this.inquilinos.set(users),
+      error: (err) => console.error('Aviso: No se pudieron cargar los inquilinos', err)
     });
 
-    // Cargar Solicitudes
+    // 2. Cargar Solicitudes
     this.alquilerService.solicitudesPendientes(idPiso).subscribe({
-      next: (sols) => this.solicitudes.set(sols)
+      next: (sols) => this.solicitudes.set(sols),
+      error: (err) => console.error('Aviso: No se pudieron cargar las solicitudes', err)
     });
 
-    // Cargar Fotos
+    // 3. Cargar Fotos (La responsable de apagar el spinner)
     this.fotoService.getFotosByPiso(idPiso).subscribe({
       next: (f) => this.fotos.set(f),
-      complete: () => this.isLoading.set(false)
+      error: (err) => {
+        console.error('Aviso: Error cargando las fotos', err);
+        // ¡VITAL! Apagamos el spinner aunque falle
+        this.isLoading.set(false);
+      },
+      complete: () => {
+        // Apagamos el spinner si todo va bien
+        this.isLoading.set(false);
+      }
     });
   }
 
