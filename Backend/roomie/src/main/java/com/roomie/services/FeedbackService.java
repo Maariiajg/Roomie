@@ -60,28 +60,25 @@ public class FeedbackService {
                         idUsuario, EstadoFeedback.VALORADO));
     }
     
- // Solo para pruebas/admin — devuelve todos los feedbacks sin filtrar visibilidad
+    // =========================================================================
+    // TODOS LOS FEEDBACKS (PUESTOS Y RECIBIDOS) PARA EL PANEL DE USUARIO/ADMIN
+    // =========================================================================
     public List<FeedbackDTO> todosLosFeedbacksDeUsuario(int idUsuario) {
         usuarioService.findById(idUsuario);
-        return FeedbackMapper.toDTOList(
-                feedbackRepository.findByUsuarioRecibeId(idUsuario));
+        
+        // Obtenemos todos y filtramos en los que el usuario participa como emisor o receptor
+        List<Feedback> todos = feedbackRepository.findAll();
+        List<Feedback> filtrados = todos.stream()
+                .filter(f -> f.getUsuarioPone().getId() == idUsuario || f.getUsuarioRecibe().getId() == idUsuario)
+                .toList();
+                
+        return FeedbackMapper.toDTOList(filtrados);
     }
 
     // =========================================================================
     // 4. DEJAR FEEDBACK (VALORAR) — recibe solo calificacion y descripcion
     // =========================================================================
     public FeedbackDTO valorar(int idUsuarioPone, int idUsuarioRecibe, FeedbackDTO datos) {
-        /*if (datos.getId() != 0) {
-            throw new FeedbackException("No se puede introducir el ID manualmente.");
-        }
-
-        if (datos.getEstadoFeedback() != null) {
-            throw new FeedbackException("No se puede introducir el estado manualmente.");
-        }
-
-        if (!datos.isVisible()) {
-            throw new FeedbackException("No se puede modificar el campo visible.");
-        }*/
 
         if (datos.getCalificacion() < 1 || datos.getCalificacion() > 5) {
             throw new FeedbackException(

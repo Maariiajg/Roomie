@@ -19,7 +19,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
   template: `
     @if (piso()) {
       <div class="relative min-h-screen bg-black overflow-x-hidden font-sans">
-        
+       
         <div class="sticky top-0 h-[60vh] w-full z-0 overflow-hidden">
           <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out"
                [style.transform]="'translateX(-' + currentImageIndex() * 100 + '%)'">
@@ -57,7 +57,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
 
         <div class="relative z-10 w-full bg-bgMain mt-[-6vh] rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.4)] min-h-[60vh] pb-32">
           <div class="max-w-6xl mx-auto px-6 sm:px-12 py-14">
-            
+           
             <div class="mb-14">
               <h1 class="text-4xl sm:text-5xl font-black text-textMain uppercase tracking-tighter leading-none mb-8">
                 {{ piso()!.direccion }}
@@ -114,6 +114,8 @@ import { NotificationService } from '../../shared/components/toast/notification.
 
             <div class="mb-14">
               <h2 class="text-sm font-black text-textMain/50 uppercase tracking-[0.2em] mb-6 pl-2">Comodidades</h2>
+              
+              <!-- TIRA DE COMODIDADES UNIFICADA -->
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border" [ngClass]="piso()!.wifi ? 'bg-white shadow-sm border-gray-100' : 'bg-gray-50 border-transparent opacity-50 grayscale'">
                   <div [ngClass]="piso()!.wifi ? 'text-primary' : 'text-gray-400'">
@@ -121,24 +123,27 @@ import { NotificationService } from '../../shared/components/toast/notification.
                   </div>
                   <span class="text-xs font-black text-textMain uppercase tracking-wider">WiFi</span>
                 </div>
+                
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border" [ngClass]="piso()!.animales ? 'bg-white shadow-sm border-gray-100' : 'bg-gray-50 border-transparent opacity-50 grayscale'">
                   <div [ngClass]="piso()!.animales ? 'text-secondary' : 'text-gray-400'">
                     <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M10 5a2 2 0 100-4 2 2 0 000 4zm4.5 1.5a2 2 0 100-4 2 2 0 000 4zm-9 0a2 2 0 100-4 2 2 0 000 4zM2 9a2 2 0 100-4 2 2 0 000 4zm16 0a2 2 0 100-4 2 2 0 000 4zm-4.7 2.3c-.6-.4-1.3-.3-1.8.2l-1.5 1.5-1.5-1.5c-.5-.5-1.2-.6-1.8-.2-1.3.8-1.7 2.5-1 3.8.7 1.3 2.1 2.2 3.6 2.2h1.4c1.5 0 2.9-.9 3.6-2.2.7-1.3.3-3-1-3.8z"/></svg>
                   </div>
                   <span class="text-xs font-black text-textMain uppercase tracking-wider">Mascotas</span>
                 </div>
+                
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border" [ngClass]="piso()!.garaje ? 'bg-white shadow-sm border-gray-100' : 'bg-gray-50 border-transparent opacity-50 grayscale'">
                   <div [ngClass]="piso()!.garaje ? 'text-alert' : 'text-gray-400'">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 12 10s-6.7.6-8.5 1.1C2.7 11.3 2 12.1 2 13v3c0 .6.4 1 1 1h2m14 0a2 2 0 11-4 0 2 2 0 014 0zM8 17a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                   </div>
                   <span class="text-xs font-black text-textMain uppercase tracking-wider">Garaje</span>
                 </div>
+                
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border bg-white shadow-sm border-gray-100">
                   <div [ngClass]="piso()!.tabaco ? 'text-orange-400' : 'text-green-500'">
                     <div class="relative w-8 h-8">
                       <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2 14h13m-13 3h13m2-3v4m0-4h3v4h-3m1-10c.5-.5 1-1.5.5-2.5a3 3 0 013-3" /></svg>
                       @if (!piso()!.tabaco) {
-                        <svg class="w-full h-full absolute inset-0 text-red-500/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                        <svg class="w-full h-full absolute inset-0 text-red-500/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                       }
                     </div>
                   </div>
@@ -199,7 +204,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
                 }
               </div>
 
-              <button (click)="confirmarSolicitud()" [disabled]="!selectedDate() || isSubmitting()" 
+              <button (click)="confirmarSolicitud()" [disabled]="!selectedDate() || isSubmitting()"
                       class="mt-6 w-full py-5 rounded-full font-black uppercase tracking-widest text-sm transition-all flex justify-center items-center gap-2"
                       [ngClass]="selectedDate() && !isSubmitting() ? 'bg-primary text-white shadow-lg shadow-primary/30 hover:bg-hover hover:-translate-y-1' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
                 {{ isSubmitting() ? 'Enviando...' : 'Confirmar Solicitud' }}
@@ -211,28 +216,32 @@ import { NotificationService } from '../../shared/components/toast/notification.
         @if (showUserModal() && selectedUser()) {
           <div class="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-white rounded-[3rem] w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
-              
+             
               <div class="p-8 pb-6 bg-bgMain border-b border-gray-100 relative shrink-0">
                 <button (click)="cerrarModalUsuario()" class="absolute top-6 right-6 p-2 bg-white rounded-full text-gray-400 hover:text-textMain shadow-sm transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
-                
+               
                 <div class="flex items-center gap-5">
-                  <img [src]="selectedUser()!.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + selectedUser()!.nombreUsuario" 
+                  <img [src]="selectedUser()!.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + selectedUser()!.nombreUsuario"
                        class="w-24 h-24 rounded-[1.5rem] object-cover border-4 border-white shadow-md">
                   <div>
                     <h3 class="text-2xl font-black text-textMain tracking-tight">&#64;{{ selectedUser()!.nombreUsuario }}</h3>
                     <div class="flex items-center gap-1 text-alert mt-1">
                       <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                      <span class="font-bold text-sm text-textMain">{{ selectedUser()!.calificacionMedia || selectedUser()!.media || 'N/A' }}</span>
+                      <span class="font-bold text-sm text-textMain">
+                        {{ selectedUser()!.calificacionMedia ? (selectedUser()!.calificacionMedia | number:'1.1-1') : (selectedUser()!.media ? (selectedUser()!.media | number:'1.1-1') : 'N/A') }}
+                      </span>
                     </div>
                   </div>
                 </div>
-                
+               
                 <div class="mt-6 flex flex-col gap-1">
                   <p class="font-bold text-gray-800 text-sm">{{ selectedUser()!.nombre }} {{ selectedUser()!.apellido1 }}</p>
+                  
+                  <!-- CORRECCIÓN DE LA EDAD AQUÍ -->
                   <p class="text-[11px] font-black text-gray-400 uppercase tracking-[0.15em]">
-                    {{ calcularEdad(selectedUser()!.fechaNacimiento || selectedUser()!.fNacimiento) }} años
+                    {{ calcularEdad(selectedUser()!.anioNacimiento) }} años
                   </p>
                 </div>
 
@@ -246,7 +255,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
 
               <div class="flex-1 overflow-y-auto p-8 bg-white custom-scrollbar">
                 <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Valoraciones Recibidas</h4>
-                
+               
                 <div class="space-y-4">
                   @if (userFeedbacks().length === 0) {
                     <p class="text-sm font-medium text-gray-400 text-center py-6 bg-gray-50 rounded-3xl border border-gray-100 border-dashed">Aún no tiene valoraciones.</p>
@@ -290,8 +299,6 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
   private favoritoService = inject(FavoritoService);
   private alquilerService = inject(AlquilerService);
   private feedbackService = inject(FeedbackService);
-
-  // AÑADIDO: Inyectar el servicio de notificaciones
   private notificationService = inject(NotificationService);
 
   // Estados
@@ -345,7 +352,6 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
     return fotos[this.currentImageIndex()];
   });
 
-  // AÑADIDO: Reparación de la generación de fechas para evitar desfases de zona horaria (UTC)
   diasDisponibles = computed(() => {
     const dias = [];
     const hoy = new Date();
@@ -356,14 +362,13 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
       const fecha = new Date();
       fecha.setDate(hoy.getDate() + i);
 
-      // Extraemos el año, mes y día en zona horaria local, sin que intervenga el UTC
       const year = fecha.getFullYear();
       const month = String(fecha.getMonth() + 1).padStart(2, '0');
       const day = String(fecha.getDate()).padStart(2, '0');
       const fechaLocalExacta = `${year}-${month}-${day}`;
 
       dias.push({
-        fechaISO: fechaLocalExacta, // Pasamos el string directo "YYYY-MM-DD"
+        fechaISO: fechaLocalExacta,
         diaSemana: diasSemana[fecha.getDay()],
         numero: fecha.getDate(),
         mes: meses[fecha.getMonth()],
@@ -387,8 +392,6 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     document.body.classList.remove('hide-layout');
   }
-
-  // --- CARGA DE DATOS ---
 
   cargarPiso(id: number) {
     this.pisoService.getPisoById(id).subscribe({
@@ -424,8 +427,6 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
       });
     }
   }
-
-  // --- NAVEGACIÓN Y CARRUSEL ---
 
   goBack() {
     this.location.back();
@@ -472,12 +473,10 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
     }
   }
 
-  // --- BOTÓN OWNER ---
   gestionarPiso() {
     this.router.navigate(['/mi-piso']);
   }
 
-  // --- SOLICITUD ---
   intentarSolicitar() {
     if (!this.authService.userId()) {
       this.notificationService.showInfo('Inicia sesión para solicitar alquilar este piso.');
@@ -490,7 +489,7 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
   confirmarSolicitud() {
     const userId = this.authService.userId();
     const currentPiso = this.piso();
-    const fecha = this.selectedDate(); // Ya viene como string exacto 'YYYY-MM-DD'
+    const fecha = this.selectedDate();
 
     if (!userId || !currentPiso || !fecha) return;
 
@@ -505,14 +504,12 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        // AÑADIDO: Sacamos el error real desde Spring Boot
         const errorMsg = err?.error?.message || err?.error?.error || 'Hubo un error al enviar la solicitud.';
         this.notificationService.showError(errorMsg);
       }
     });
   }
 
-  // --- MODAL USUARIO ---
   abrirModalUsuario(user: any) {
     this.selectedUser.set(user);
     this.userFeedbacks.set([]);

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.roomie.persistence.entities.Usuario;
@@ -27,7 +28,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     Optional<Usuario> findByIdAndRol(int id, Roles rol);
     
     //calcular media de calificaciones del feedback
-    @Query("SELECT AVG(f.calificacion) FROM Feedback f WHERE f.usuarioRecibe.id = :idUsuario")
-    Double getCalificacionMedia(int idUsuario);
+    @Query("SELECT COALESCE(AVG(f.calificacion), 0.0) FROM Feedback f WHERE f.usuarioRecibe.id = :idUsuario AND f.estadoFeedback = 'VALORADO' AND f.visible = true")
+    Double getCalificacionMedia(@Param("idUsuario") int idUsuario);
 
 }

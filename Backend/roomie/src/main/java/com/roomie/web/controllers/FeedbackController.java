@@ -18,47 +18,47 @@ import com.roomie.services.dto.feedback.FeedbackDTO;
 @RestController
 @RequestMapping("/feedback")
 public class FeedbackController {
- 
+
     @Autowired
     private FeedbackService feedbackService;
- 
+
     /* =========================
        FIND BY ID
        ========================= */
     @GetMapping("/{idFeedback}")
     public ResponseEntity<FeedbackDTO> findById(
             @PathVariable int idFeedback) {
- 
+
         return ResponseEntity.ok(
                 feedbackService.findById(idFeedback)
         );
     }
- 
+
     /* =========================
        FIND VISIBLE BY ID
        ========================= */
     @GetMapping("/{idFeedback}/visible")
     public ResponseEntity<FeedbackDTO> findVisibleById(
             @PathVariable int idFeedback) {
- 
+
         return ResponseEntity.ok(
                 feedbackService.findVisibleById(idFeedback)
         );
     }
- 
+
     /* =========================
        FEEDBACKS VISIBLES DE UN USUARIO
        ========================= */
     @GetMapping("/usuario/{idUsuario}")
     public ResponseEntity<List<FeedbackDTO>> feedbacksVisiblesDeUsuario(
             @PathVariable int idUsuario) {
- 
+
         return ResponseEntity.ok(
                 feedbackService.feedbacksVisiblesDeUsuario(idUsuario)
         );
     }
     
-    //Feedbacks de un usuario para pruebas
+    // Feedbacks de un usuario para pruebas (Y para la pestaña de Mi Perfil)
     @GetMapping("/usuario/{idUsuario}/todos")
     public ResponseEntity<List<FeedbackDTO>> todosLosFeedbacksDeUsuario(
             @PathVariable int idUsuario) {
@@ -67,7 +67,7 @@ public class FeedbackController {
                 feedbackService.todosLosFeedbacksDeUsuario(idUsuario)
         );
     }
- 
+
     /* =========================
        VALORAR (dejar feedback)
        ========================= */
@@ -76,31 +76,31 @@ public class FeedbackController {
             @PathVariable int idUsuarioPone,
             @PathVariable int idUsuarioRecibe,
             @RequestBody FeedbackDTO datos) {
- 
+
         return ResponseEntity.ok(
                 feedbackService.valorar(idUsuarioPone, idUsuarioRecibe, datos)
         );
     }
- 
+
     /* =========================
        MEDIA DE CALIFICACIONES
        ========================= */
     @GetMapping("/media/{idUsuario}")
     public ResponseEntity<Double> mediaCalificaciones(
             @PathVariable int idUsuario) {
- 
+
         return ResponseEntity.ok(
                 feedbackService.mediaCalificaciones(idUsuario)
         );
     }
- 
+
     /* =========================
        TOGGLE VISIBLE (administrador)
        ========================= */
     @PutMapping("/{idFeedback}/toggle")
     public ResponseEntity<FeedbackDTO> toggleVisible(
             @PathVariable int idFeedback) {
- 
+
         return ResponseEntity.ok(
                 feedbackService.toggleVisible(idFeedback)
         );

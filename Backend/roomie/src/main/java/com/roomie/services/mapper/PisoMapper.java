@@ -64,8 +64,8 @@ public class PisoMapper {
  
         // Precio que pagaría el usuario si entrase ahora
         int futurosOcupantes = piso.getNumOcupantesActual() + 1;
-        dto.setPrecioMesPersona(futurosOcupantes > 0
-                ? piso.getPrecioMes() / futurosOcupantes
+        dto.setPrecioMesPersona(futurosOcupantes > 0 
+                ? piso.getPrecioMes() / (double) futurosOcupantes 
                 : 0.0);
  
         dto.setPlazasLibres(piso.getNumTotalHabitaciones() - piso.getNumOcupantesActual());
@@ -117,8 +117,8 @@ public class PisoMapper {
  
         // Precio que paga actualmente cada residente
         int ocupantes = piso.getNumOcupantesActual();
-        dto.setPrecioMesPersona(ocupantes > 0
-                ? piso.getPrecioMes() / ocupantes
+        dto.setPrecioMesPersona(ocupantes > 0 
+                ? piso.getPrecioMes() / (double) ocupantes 
                 : 0.0);
  
         dto.setPlazasLibres(piso.getNumTotalHabitaciones() - piso.getNumOcupantesActual());

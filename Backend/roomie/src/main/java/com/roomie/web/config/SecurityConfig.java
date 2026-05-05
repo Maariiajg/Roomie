@@ -74,7 +74,6 @@ public class SecurityConfig {
 	        	    .requestMatchers(HttpMethod.GET,  "/alquiler").hasRole("ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/{idAlquiler}").hasRole("ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.GET,  "/feedback/{idFeedback}").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{id}/todos").hasRole("ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.PUT,  "/feedback/{id}/toggle").hasRole("ADMINISTRADOR")
 
 	        	    // ── OWNER Y ADMINISTRADOR ─────────────────────────────────────
@@ -90,6 +89,7 @@ public class SecurityConfig {
 
 	        	    // ── CUALQUIER AUTENTICADO ─────────────────────────────────────
 	        	    .requestMatchers(HttpMethod.GET,  "/usuario/{idUsuario}").authenticated()
+	        	    .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{id}/todos").authenticated()
 	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/actualizar-perfil").authenticated()
 	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/credenciales").authenticated()
 	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/residente").authenticated()
@@ -122,6 +122,7 @@ public class SecurityConfig {
 
 	        	    // ── FEEDBACK (usuario y owner) ────────────────────────────────
 	        	    .requestMatchers(HttpMethod.POST, "/feedback/{idPone}/{idRecibe}").hasAnyRole("USUARIO","OWNER")
+	        	    
 
 	        	    // ── ADMIN: historial por cualquier usuario ────────────────────
 	        	    .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{id}/historial").hasAnyRole("USUARIO","OWNER","ADMINISTRADOR")

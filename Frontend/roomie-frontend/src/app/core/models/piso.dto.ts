@@ -30,4 +30,5 @@ export interface PisoDTO {
   precioMesPersona: number;
   plazasLibres: number;
   owner: PerfilUsuarioDTO;
+  fotos?: { id?: number, url: string }[];
 }

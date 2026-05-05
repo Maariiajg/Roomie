@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.roomie.persistence.entities.Feedback;
@@ -28,5 +30,8 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
     );
     
     List<Feedback> findByUsuarioRecibeId(int idUsuario);
+    
+    @Query("SELECT COALESCE(AVG(f.calificacion), 0.0) FROM Feedback f WHERE f.usuarioRecibe.id = :idUsuario AND f.estadoFeedback = :estado AND f.visible = true")
+    Double calcularMediaExacta(@Param("idUsuario") int idUsuario, @Param("estado") EstadoFeedback estado);
 
 }

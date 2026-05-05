@@ -40,7 +40,9 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                 
                 <div class="flex items-center gap-1 text-alert mt-4 bg-alert/10 px-4 py-2 rounded-2xl">
                   <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                  <span class="font-black text-lg text-alert">{{ usuario()!.calificacionMedia || 'N/A' }}</span>
+                  <span class="font-black text-lg text-alert">
+                    {{ usuario()!.calificacionMedia ? (usuario()!.calificacionMedia | number:'1.1-1') : 'N/A' }}
+                  </span>
                 </div>
 
                 @if (usuario()!.mensajePresentacion) {
@@ -95,8 +97,8 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                         </div>
 
                         <div>
-                          <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Año de Nacimiento</label>
-                          <input type="number" [(ngModel)]="perfilForm.anioNacimiento" name="anioNacimiento" class="w-full bg-bgMain border border-gray-100 rounded-2xl p-4 font-bold outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all">
+                          <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Fecha de Nacimiento</label>
+                          <input type="date" [(ngModel)]="perfilForm.anioNacimiento" name="anioNacimiento" class="w-full bg-bgMain border border-gray-100 rounded-2xl p-4 font-bold outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all">
                         </div>
 
                         <div>
@@ -168,49 +170,104 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
 
                   @if (activeTab() === 'FEEDBACKS') {
                     <h2 class="text-2xl font-black text-textMain mb-8 uppercase tracking-tighter">Mis Feedbacks</h2>
-                    @if (feedbacks().length === 0) {
-                      <div class="text-center py-12 bg-bgMain rounded-3xl border border-gray-100 border-dashed">
-                        <p class="text-gray-400 font-bold uppercase tracking-widest text-xs">No tienes feedbacks actualmente.</p>
-                      </div>
-                    } @else {
-                      <div class="space-y-6">
-                        @for (fb of feedbacks(); track fb.id) {
-                          <div class="bg-bgMain p-6 rounded-[2rem] border border-gray-100">
-                            <div class="flex justify-between items-start mb-4">
-                              <div class="flex items-center gap-3">
-                                <img [src]="fb.emisor?.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + (fb.emisor?.nombreUsuario || 'U')" class="w-10 h-10 rounded-full object-cover">
-                                <div>
-                                  <span class="font-black uppercase text-xs tracking-widest">{{ fb.emisor?.nombreUsuario || 'Usuario' }}</span>
-                                  <p class="text-[10px] font-bold text-gray-400 mt-0.5">{{ fb.fecha }}</p>
-                                </div>
+                   
+                    <!-- 1. POR VALORAR (Los que YO tengo que escribir) -->
+                    @if (feedbacksPorValorar().length > 0) {
+                      <h3 class="text-xs font-black text-alert uppercase tracking-widest mb-4 mt-8">Por Valorar</h3>
+                      <div class="space-y-4 mb-8">
+                        @for (fb of feedbacksPorValorar(); track fb.id) {
+                          <div class="bg-white p-6 rounded-[2rem] border border-alert/40 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-2 h-full bg-alert"></div>
+                           
+                            <div class="flex items-center gap-4 mb-4">
+                              <img [src]="'https://api.dicebear.com/7.x/initials/svg?seed=' + fb.nombreUsuarioRecibe" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">
+                              <div>
+                                <span class="font-black uppercase text-sm tracking-widest text-textMain">Valora a {{ fb.nombreUsuarioRecibe }}</span>
+                                <p class="text-[10px] font-bold text-gray-400 mt-0.5">Compañero de piso</p>
                               </div>
                             </div>
 
-                            @if (fb.estadoFeedback === 'PENDIENTE') {
-                              <div class="bg-white p-5 rounded-2xl border border-alert/20 shadow-sm">
-                                <p class="text-alert font-black text-[10px] uppercase tracking-[0.2em] mb-4">Requiere tu valoración</p>
-                                <div class="flex flex-col gap-3">
-                                  <input type="number" min="1" max="5" [(ngModel)]="fb.tempCalificacion" placeholder="Puntuación (1-5 Estrellas)" class="p-3 bg-bgMain rounded-xl font-bold outline-none focus:ring-2 focus:ring-alert">
-                                  <textarea [(ngModel)]="fb.tempDescripcion" placeholder="Escribe tu reseña..." rows="2" class="p-3 bg-bgMain rounded-xl font-bold outline-none focus:ring-2 focus:ring-alert resize-none"></textarea>
-                                  <button (click)="enviarValoracion(fb)" class="bg-alert text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs active:scale-95 transition-all shadow-md">
-                                    Enviar Valoración
-                                  </button>
-                                </div>
-                              </div>
-                            } @else {
-                              <div class="flex text-alert mb-3">
-                                @for (s of [1,2,3,4,5]; track s) {
-                                  <svg class="w-4 h-4" [attr.fill]="s <= fb.calificacion ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                  </svg>
-                                }
-                              </div>
-                              <p class="text-gray-600 font-medium italic">"{{ fb.descripcion }}"</p>
-                            }
+                            <div class="flex flex-col gap-3">
+                              <input type="number" min="1" max="5" [(ngModel)]="fb.tempCalificacion" placeholder="Puntuación (1-5 Estrellas)" class="p-4 bg-bgMain rounded-xl font-bold outline-none focus:ring-2 focus:ring-alert transition-all">
+                              <textarea [(ngModel)]="fb.tempDescripcion" placeholder="Escribe tu reseña sobre la convivencia..." rows="2" class="p-4 bg-bgMain rounded-xl font-bold outline-none focus:ring-2 focus:ring-alert resize-none transition-all"></textarea>
+                              <button (click)="enviarValoracion(fb)" class="bg-alert text-white py-4 rounded-xl font-black uppercase tracking-widest text-xs active:scale-95 transition-all shadow-lg hover:bg-amber-400 mt-2">
+                                Enviar Valoración
+                              </button>
+                            </div>
                           </div>
                         }
                       </div>
                     }
+
+                    <!-- 2. RECIBIDOS Y ESPERANDO (Los que me han escrito o me van a escribir) -->
+                    <h3 class="text-xs font-black text-primary uppercase tracking-widest mb-4 mt-8">Valoraciones Recibidas</h3>
+                    @if (feedbacksRecibidos().length === 0 && feedbacksEsperando().length === 0) {
+                      <div class="text-center py-10 bg-bgMain rounded-3xl border border-gray-100 border-dashed mb-8">
+                        <p class="text-gray-400 font-bold uppercase tracking-widest text-xs">Nadie te ha valorado aún.</p>
+                      </div>
+                    } @else {
+                      <div class="space-y-4 mb-8">
+                        <!-- Recibidos (Ya valorados) -->
+                        @for (fb of feedbacksRecibidos(); track fb.id) {
+                          <div class="bg-bgMain p-6 rounded-[2rem] border border-gray-100">
+                            <div class="flex justify-between items-start mb-4">
+                              <div class="flex items-center gap-3">
+                                <img [src]="fb.fotoUsuarioPone || 'https://api.dicebear.com/7.x/initials/svg?seed=' + fb.nombreUsuarioPone" class="w-10 h-10 rounded-full object-cover shadow-sm border border-white">
+                                <div>
+                                  <span class="font-black uppercase text-xs tracking-widest text-textMain">{{ fb.nombreUsuarioPone }}</span>
+                                  <p class="text-[10px] font-bold text-gray-400 mt-0.5">{{ fb.fecha }}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="flex text-alert mb-3">
+                              @for (s of [1,2,3,4,5]; track s) {
+                                <svg class="w-4 h-4" [attr.fill]="s <= fb.calificacion ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 20 20">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                              }
+                            </div>
+                            <p class="text-gray-600 font-medium italic text-sm">"{{ fb.descripcion }}"</p>
+                          </div>
+                        }
+                       
+                        <!-- Esperando (Pendientes de que el otro escriba) -->
+                        @for (fb of feedbacksEsperando(); track fb.id) {
+                          <div class="bg-gray-50 p-6 rounded-[2rem] border border-gray-100 border-dashed flex items-center gap-4 opacity-70">
+                            <img [src]="fb.fotoUsuarioPone || 'https://api.dicebear.com/7.x/initials/svg?seed=' + fb.nombreUsuarioPone" class="w-10 h-10 rounded-full object-cover grayscale opacity-50">
+                            <div>
+                              <span class="font-black uppercase text-xs tracking-widest text-gray-500">{{ fb.nombreUsuarioPone }}</span>
+                              <p class="text-[10px] font-bold text-gray-400 mt-0.5 italic">Esperando a que escriba su valoración...</p>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <!-- 3. ENVIADOS (Histórico de los que YO he escrito) -->
+                    @if (feedbacksEnviados().length > 0) {
+                      <h3 class="text-xs font-black text-secondary uppercase tracking-widest mb-4 mt-8">Valoraciones que has escrito</h3>
+                      <div class="space-y-4">
+                        @for (fb of feedbacksEnviados(); track fb.id) {
+                          <div class="bg-bgMain p-6 rounded-[2rem] border border-gray-100 opacity-80">
+                            <div class="flex justify-between items-start mb-4">
+                              <div class="flex items-center gap-3">
+                                <span class="font-black uppercase text-xs tracking-widest text-textMain">A: {{ fb.nombreUsuarioRecibe }}</span>
+                                <span class="text-[10px] font-bold text-gray-400">{{ fb.fecha }}</span>
+                              </div>
+                            </div>
+                            <div class="flex text-alert mb-3">
+                              @for (s of [1,2,3,4,5]; track s) {
+                                <svg class="w-3 h-3" [attr.fill]="s <= fb.calificacion ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 20 20">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                              }
+                            </div>
+                            <p class="text-gray-500 font-medium italic text-sm">"{{ fb.descripcion }}"</p>
+                          </div>
+                        }
+                      </div>
+                    }
+
                   }
 
                   @if (activeTab() === 'ALQUILERES') {
@@ -220,12 +277,42 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                       <h3 class="text-xs font-black uppercase tracking-widest mb-4 text-primary">Mi Piso Actual</h3>
                       @if (miEstancia() && pisoEstancia()) {
                         <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-md flex flex-col md:flex-row items-center gap-6">
-                          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80" class="w-full md:w-32 h-32 object-cover rounded-2xl">
+                          
+                          <a [routerLink]="['/piso', pisoEstancia()!.id]" class="shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80" class="w-full md:w-32 h-32 object-cover rounded-2xl">
+                          </a>
+                          
                           <div class="flex-grow text-center md:text-left">
-                            <h4 class="font-black text-lg text-textMain uppercase">{{ pisoEstancia()!.direccion }}</h4>
+                            <a [routerLink]="['/piso', pisoEstancia()!.id]" class="font-black text-lg text-textMain uppercase hover:text-primary transition-colors cursor-pointer">
+                              {{ pisoEstancia()!.direccion }}
+                            </a>
                             <p class="text-gray-500 font-bold text-xs mt-1 uppercase tracking-widest">Madrid</p>
-                            <p class="text-primary font-black mt-2 text-xl">{{ precioEstancia() | currency:'EUR':'symbol':'1.0-0' }}<span class="text-xs text-gray-400">/mes</span></p>
+                            
+                            <!-- Tira unificada de comodidades -->
+                            <div class="flex items-center justify-center md:justify-start gap-3 mt-3">
+                              <div [ngClass]="pisoEstancia()!.wifi ? 'text-primary' : 'text-gray-200'" title="WiFi">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
+                              </div>
+                              <div [ngClass]="pisoEstancia()!.animales ? 'text-secondary' : 'text-gray-200'" title="Mascotas">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 5a2 2 0 100-4 2 2 0 000 4zm4.5 1.5a2 2 0 100-4 2 2 0 000 4zm-9 0a2 2 0 100-4 2 2 0 000 4zM2 9a2 2 0 100-4 2 2 0 000 4zm16 0a2 2 0 100-4 2 2 0 000 4zm-4.7 2.3c-.6-.4-1.3-.3-1.8.2l-1.5 1.5-1.5-1.5c-.5-.5-1.2-.6-1.8-.2-1.3.8-1.7 2.5-1 3.8.7 1.3 2.1 2.2 3.6 2.2h1.4c1.5 0 2.9-.9 3.6-2.2.7-1.3.3-3-1-3.8z"/></svg>
+                              </div>
+                              <div [ngClass]="pisoEstancia()!.garaje ? 'text-alert' : 'text-gray-200'" title="Garaje">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 12 10s-6.7.6-8.5 1.1C2.7 11.3 2 12.1 2 13v3c0 .6.4 1 1 1h2m14 0a2 2 0 11-4 0 2 2 0 014 0zM8 17a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                              </div>
+                              <div [ngClass]="pisoEstancia()!.tabaco ? 'text-orange-400' : 'text-green-500'" title="Tabaco">
+                                <div class="relative w-5 h-5">
+                                  <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2 14h13m-13 3h13m2-3v4m0-4h3v4h-3m1-10c.5-.5 1-1.5.5-2.5a3 3 0 013-3" /></svg>
+                                  @if (!pisoEstancia()!.tabaco) {
+                                    <svg class="w-full h-full absolute inset-0 text-red-500/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <!-- USAMOS precioEstanciaCalculado() AQUÍ PARA ARREGLAR EL ERROR DE COMPILACIÓN -->
+                            <p class="text-primary font-black mt-3 text-xl">{{ precioEstanciaCalculado() | currency:'EUR':'symbol':'1.0-0' }}<span class="text-xs text-gray-400">/mes</span></p>
                           </div>
+                          
                           <button (click)="showAbandonarModal.set(true)" class="w-full md:w-auto bg-red-50 text-red-500 hover:bg-red-500 hover:text-white px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95">
                             Abandonar Piso
                           </button>
@@ -325,15 +412,15 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
 
                     <div>
                       <h3 class="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-textMain/50">Nuevas Valoraciones</h3>
-                      @if (feedbacks().length === 0) {
+                      @if (feedbacksRecibidos().length === 0) {
                         <p class="text-gray-400 font-bold text-sm bg-bgMain p-6 rounded-2xl">Nadie te ha valorado recientemente.</p>
                       } @else {
                         <div class="space-y-3">
-                          @for (fb of feedbacks().slice(0, 5); track fb.id) {
+                          @for (fb of feedbacksRecibidos().slice(0, 5); track fb.id) {
                             <div class="bg-white border-l-4 border-alert p-5 rounded-r-2xl shadow-sm flex justify-between items-center border-y border-r border-gray-100">
                               <div>
                                 <p class="text-sm font-medium text-gray-700">
-                                  <span class="font-black text-textMain uppercase">{{ fb.emisor?.nombreUsuario || 'Un compañero' }}</span> te ha valorado con <span class="font-black">{{ fb.calificacion }} estrellas</span>.
+                                  <span class="font-black text-textMain uppercase">{{ fb.nombreUsuarioPone || 'Un compañero' }}</span> te ha valorado con <span class="font-black">{{ fb.calificacion }} estrellas</span>.
                                 </p>
                               </div>
                               <button (click)="activeTab.set('FEEDBACKS')" class="text-alert font-black uppercase text-[10px] tracking-widest hover:underline ml-4">Ver</button>
@@ -345,6 +432,7 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                   }
                 </div>
               } @else {
+                <!-- VISTA DE PERFIL AJENO -->
                 <div class="space-y-6">
                   
                   @if (usuario()!.bloqueado) {
@@ -390,16 +478,16 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
 
                   <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-50">
                     <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Valoraciones Recibidas</h3>
-                    @if (feedbacks().length === 0) {
+                    @if (perfilAjenoFeedbacks().length === 0) {
                       <p class="text-gray-400 font-bold text-sm text-center py-6 border border-dashed border-gray-200 rounded-3xl">Aún no tiene valoraciones visibles.</p>
                     } @else {
                       <div class="space-y-4">
-                        @for (fb of feedbacks(); track fb.id) {
+                        @for (fb of perfilAjenoFeedbacks(); track fb.id) {
                           <div class="p-5 bg-bgMain rounded-[2rem] border border-gray-100 flex gap-4">
-                            <img [src]="fb.emisor?.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + (fb.emisor?.nombreUsuario || 'U')" class="w-12 h-12 rounded-full object-cover">
+                            <img [src]="fb.fotoUsuarioPone || 'https://api.dicebear.com/7.x/initials/svg?seed=' + fb.nombreUsuarioPone" class="w-12 h-12 rounded-full object-cover border border-white shadow-sm">
                             <div class="flex-1">
                               <div class="flex justify-between items-start mb-2">
-                                <span class="font-black uppercase text-xs tracking-widest text-textMain">{{ fb.emisor?.nombreUsuario || 'Usuario' }}</span>
+                                <span class="font-black uppercase text-xs tracking-widest text-textMain">{{ fb.nombreUsuarioPone }}</span>
                                 <div class="flex text-alert">
                                   @for (s of [1,2,3,4,5]; track s) {
                                     <svg class="w-3 h-3" [attr.fill]="s <= fb.calificacion ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 20 20">
@@ -526,6 +614,8 @@ export class PerfilUsuarioComponent implements OnInit {
   private alquilerService = inject(AlquilerService);
   private pisoService = inject(PisoService);
 
+  currentUserId = computed(() => this.authService.userId());
+
   usuario = signal<any | null>(null);
   activeTab = signal<Tab>('INFO');
 
@@ -546,19 +636,47 @@ export class PerfilUsuarioComponent implements OnInit {
     { id: 'NOTIFICACIONES' as Tab, label: 'Notificaciones' }
   ];
 
-  perfilForm = { dni: '', nombre: '', apellido1: '', apellido2: '', anioNacimiento: null as number | null, genero: '', telefono: '', email: '', foto: '', mensajePresentacion: '' };
+  perfilForm = { dni: '', nombre: '', apellido1: '', apellido2: '', anioNacimiento: null as string | null, genero: '', telefono: '', email: '', foto: '', mensajePresentacion: '' };
   passwordForm = { nombreUsuario: '', passwordActual: '', passwordNueva: '', repetirPasswordNueva: '' };
 
   feedbacks = signal<any[]>([]);
+
+  feedbacksPorValorar = computed(() =>
+    this.feedbacks().filter(fb => fb.estadoFeedback === 'PENDIENTE' && fb.idUsuarioPone === this.currentUserId())
+  );
+
+  feedbacksRecibidos = computed(() =>
+    this.feedbacks().filter(fb => fb.estadoFeedback === 'VALORADO' && fb.idUsuarioRecibe === this.currentUserId())
+  );
+
+  feedbacksEsperando = computed(() =>
+    this.feedbacks().filter(fb => fb.estadoFeedback === 'PENDIENTE' && fb.idUsuarioRecibe === this.currentUserId())
+  );
+
+  feedbacksEnviados = computed(() =>
+    this.feedbacks().filter(fb => fb.estadoFeedback === 'VALORADO' && fb.idUsuarioPone === this.currentUserId())
+  );
+
+  perfilAjenoFeedbacks = computed(() => {
+    const uId = this.usuario()?.id;
+    if (!uId) return [];
+    return this.feedbacks().filter(fb => fb.idUsuarioRecibe === uId && fb.estadoFeedback === 'VALORADO');
+  });
+
   misSolicitudesEnviadas = signal<any[]>([]);
   solicitudesRecibidas = signal<any[]>([]);
   miEstancia = signal<any>(null);
   pisoEstancia = signal<PisoDTO | null>(null);
-  precioEstancia = signal<number | null>(null);
+
+  // LA VARIABLE QUE HABÍAMOS CREADO PARA ARREGLAR LA MATEMÁTICA Y QUE CAUSÓ EL ERROR
+  precioEstanciaCalculado = computed(() => {
+    const p = this.pisoEstancia();
+    if (!p) return 0;
+    return p.precioMes / p.numOcupantesActual;
+  });
 
   showAbandonarModal = signal<boolean>(false);
 
-  // AÑADIDO: Formulario y estado del modal para Crear Piso
   showCrearPisoModal = signal<boolean>(false);
   pisoCrearForm: any = {
     direccion: '', descripcion: '', tamanio: null, precioMes: null,
@@ -582,7 +700,6 @@ export class PerfilUsuarioComponent implements OnInit {
       next: (u: any) => {
         this.usuario.set(u);
 
-        // Cargamos feedbacks tanto si es mi perfil como si es el de otro
         this.cargarFeedbacks(u.id);
 
         if (this.isMyProfile()) {
@@ -591,7 +708,8 @@ export class PerfilUsuarioComponent implements OnInit {
             nombre: u.nombre || '',
             apellido1: u.apellido1 || '',
             apellido2: u.apellido2 || '',
-            anioNacimiento: u.anioNacimiento || null,
+            // Se recoge como fecha para el input type="date"
+            anioNacimiento: u.anioNacimiento ? u.anioNacimiento.toString().split('T')[0] : null,
             genero: u.genero || 'PREFIERO_NO_DECIRLO',
             telefono: u.telefono || '',
             email: u.email || '',
@@ -609,9 +727,10 @@ export class PerfilUsuarioComponent implements OnInit {
   cargarFeedbacks(idUsuario: number) {
     this.feedbackService.getFeedbacksByUsuario(idUsuario).subscribe({
       next: (fbs) => {
-        const visibles = fbs.filter((fb: any) => fb.estadoFeedback !== 'PENDIENTE');
+        const visibles = fbs.filter((fb: any) => fb.estadoFeedback !== 'NO_DISPONIBLE');
         this.feedbacks.set(visibles);
-      }
+      },
+      error: (err) => console.error('Error al cargar feedbacks', err)
     });
   }
 
@@ -622,11 +741,8 @@ export class PerfilUsuarioComponent implements OnInit {
           this.miEstancia.set(alq);
           const pisoId = alq.pisoId ?? alq.piso?.id;
           if (pisoId) {
+            // Solo cargamos el piso. Nos ahorramos la otra llamada.
             this.pisoService.getPisoById(pisoId).subscribe(p => this.pisoEstancia.set(p));
-            this.pisoService.getPisoResidenteById(pisoId).subscribe({
-              next: pr => this.precioEstancia.set(pr.precioMesPersona),
-              error: () => this.precioEstancia.set(0)
-            });
 
             if (!this.isOwner()) {
               this.alquilerService.solicitudesPendientes(pisoId).subscribe(sols => {
@@ -717,7 +833,7 @@ export class PerfilUsuarioComponent implements OnInit {
 
   enviarValoracion(fb: any) {
     const myId = this.authService.userId();
-    const companeroId = fb.evaluado?.id || fb.usuarioReceptor?.id || fb.idUsuarioPone;
+    const companeroId = fb.idUsuarioRecibe;
 
     if (!myId || !companeroId) {
       this.notificationService.showError('No se pudo identificar al usuario a valorar');
@@ -733,7 +849,7 @@ export class PerfilUsuarioComponent implements OnInit {
     this.feedbackService.valorar(myId, companeroId, dto).subscribe({
       next: () => {
         this.notificationService.showSuccess('¡Valoración enviada!');
-        this.cargarFeedbacks(myId);
+        this.cargarFeedbacks(this.usuario().id);
       },
       error: () => this.notificationService.showError('Error al enviar la valoración')
     });
@@ -753,8 +869,21 @@ export class PerfilUsuarioComponent implements OnInit {
         this.solicitudesRecibidas.set([]);
         this.activeTab.set('INFO');
       },
-      error: () => {
-        this.notificationService.showError('Hubo un error al abandonar el piso.');
+      error: (err) => {
+        // DETECTOR MULTIFORMATO DEL ERROR DE JAVA
+        let errorMsg = 'Hubo un error al abandonar el piso.';
+
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            errorMsg = err.error; // Si Java envía texto plano
+          } else if (err.error.message) {
+            errorMsg = err.error.message; // Si Java envía JSON
+          } else if (err.error.error) {
+            errorMsg = err.error.error;
+          }
+        }
+
+        this.notificationService.showError(errorMsg);
         this.showAbandonarModal.set(false);
       }
     });
@@ -787,7 +916,6 @@ export class PerfilUsuarioComponent implements OnInit {
     });
   }
 
-  // AÑADIDO: Métodos para Crear Piso
   abrirModalCrearPiso() {
     this.pisoCrearForm = {
       direccion: '', descripcion: '', tamanio: null, precioMes: null,
@@ -806,22 +934,16 @@ export class PerfilUsuarioComponent implements OnInit {
     }
 
     this.pisoService.crearPiso(myId, this.pisoCrearForm).subscribe({
-      next: (respuestaBackend: any) => { // <-- Importante ver qué devuelve el backend
+      next: (respuestaBackend: any) => {
         this.notificationService.showSuccess('¡Piso creado con éxito! Ahora eres el propietario.');
         this.showCrearPisoModal.set(false);
 
-        // OPTATIVO: Si tu backend devuelve un nuevo JWT con el rol actualizado:
-        // if (respuestaBackend.token) {
-        //   this.authService.setToken(respuestaBackend.token); 
-        // }
-
-        // Redirigimos al perfil para recargar los datos (usamos la ruta que sí existe)
         this.router.navigate(['/mi-perfil']).then(() => {
           window.location.reload();
         });
       },
       error: (err) => {
-        console.error("Error completo del backend:", err); // <-- Añade esto para depurar en consola
+        console.error("Error completo del backend:", err);
         const errorMsg = err?.error?.message || err?.error?.error || 'Error al intentar crear el piso.';
         this.notificationService.showError(errorMsg);
       }
