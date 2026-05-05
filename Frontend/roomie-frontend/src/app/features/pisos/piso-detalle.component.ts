@@ -115,7 +115,6 @@ import { NotificationService } from '../../shared/components/toast/notification.
             <div class="mb-14">
               <h2 class="text-sm font-black text-textMain/50 uppercase tracking-[0.2em] mb-6 pl-2">Comodidades</h2>
               
-              <!-- TIRA DE COMODIDADES UNIFICADA -->
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border" [ngClass]="piso()!.wifi ? 'bg-white shadow-sm border-gray-100' : 'bg-gray-50 border-transparent opacity-50 grayscale'">
                   <div [ngClass]="piso()!.wifi ? 'text-primary' : 'text-gray-400'">
@@ -216,12 +215,10 @@ import { NotificationService } from '../../shared/components/toast/notification.
         @if (showUserModal() && selectedUser()) {
           <div class="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-white rounded-[3rem] w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
-             
               <div class="p-8 pb-6 bg-bgMain border-b border-gray-100 relative shrink-0">
                 <button (click)="cerrarModalUsuario()" class="absolute top-6 right-6 p-2 bg-white rounded-full text-gray-400 hover:text-textMain shadow-sm transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
-               
                 <div class="flex items-center gap-5">
                   <img [src]="selectedUser()!.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + selectedUser()!.nombreUsuario"
                        class="w-24 h-24 rounded-[1.5rem] object-cover border-4 border-white shadow-md">
@@ -229,48 +226,35 @@ import { NotificationService } from '../../shared/components/toast/notification.
                     <h3 class="text-2xl font-black text-textMain tracking-tight">&#64;{{ selectedUser()!.nombreUsuario }}</h3>
                     <div class="flex items-center gap-1 text-alert mt-1">
                       <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                      <span class="font-bold text-sm text-textMain">
-                        {{ selectedUser()!.calificacionMedia ? (selectedUser()!.calificacionMedia | number:'1.1-1') : (selectedUser()!.media ? (selectedUser()!.media | number:'1.1-1') : 'N/A') }}
-                      </span>
+                      <span class="font-bold text-sm text-textMain">{{ selectedUser()!.calificacionMedia || 'N/A' }}</span>
                     </div>
                   </div>
                 </div>
-               
+                
                 <div class="mt-6 flex flex-col gap-1">
                   <p class="font-bold text-gray-800 text-sm">{{ selectedUser()!.nombre }} {{ selectedUser()!.apellido1 }}</p>
                   
-                  <!-- CORRECCIÓN DE LA EDAD AQUÍ -->
+                  <!-- CORRECCIÓN DE LA EDAD AÑADIDA -->
                   <p class="text-[11px] font-black text-gray-400 uppercase tracking-[0.15em]">
                     {{ calcularEdad(selectedUser()!.anioNacimiento) }} años
                   </p>
                 </div>
-
-                @if (selectedUser()!.mensajePresentacion || selectedUser()!.presentacion) {
-                  <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100 relative">
-                    <div class="absolute -top-2 left-4 bg-primary text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">Sobre mí</div>
-                    <p class="text-sm text-gray-600 font-medium italic pt-1">"{{ selectedUser()!.mensajePresentacion || selectedUser()!.presentacion }}"</p>
+                
+                @if (selectedUser()!.mensajePresentacion) {
+                  <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100">
+                    <p class="text-sm text-gray-600 font-medium italic">"{{ selectedUser()!.mensajePresentacion }}"</p>
                   </div>
                 }
               </div>
-
               <div class="flex-1 overflow-y-auto p-8 bg-white custom-scrollbar">
                 <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Valoraciones Recibidas</h4>
-               
                 <div class="space-y-4">
                   @if (userFeedbacks().length === 0) {
                     <p class="text-sm font-medium text-gray-400 text-center py-6 bg-gray-50 rounded-3xl border border-gray-100 border-dashed">Aún no tiene valoraciones.</p>
                   } @else {
                     @for (fb of userFeedbacks(); track fb.id) {
-                      <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 flex gap-4">
-                        <img [src]="fb.emisor?.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + (fb.emisor?.nombreUsuario || 'U')" class="w-12 h-12 rounded-full object-cover border border-gray-100">
-                        <div>
-                          <div class="flex text-alert mb-2">
-                            @for (star of [1,2,3,4,5]; track star) {
-                              <svg class="w-4 h-4" [ngClass]="star <= fb.calificacion ? 'fill-current' : 'text-gray-200 fill-current opacity-30'" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            }
-                          </div>
-                          <p class="text-sm text-textMain/80 font-medium leading-snug">{{ fb.descripcion }}</p>
-                        </div>
+                      <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <p class="text-xs text-gray-600 font-medium leading-relaxed">"{{ fb.descripcion }}"</p>
                       </div>
                     }
                   }
@@ -279,7 +263,6 @@ import { NotificationService } from '../../shared/components/toast/notification.
             </div>
           </div>
         }
-
       </div>
     } @else {
       <div class="min-h-screen bg-bgMain flex flex-col items-center justify-center">
@@ -290,7 +273,6 @@ import { NotificationService } from '../../shared/components/toast/notification.
   `
 })
 export class PisoDetalleComponent implements OnInit, OnDestroy {
-  // Inyecciones
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private location = inject(Location);
@@ -301,24 +283,20 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
   private feedbackService = inject(FeedbackService);
   private notificationService = inject(NotificationService);
 
-  // Estados
   piso = signal<PisoDTO | null>(null);
   integrantes = signal<any[]>([]);
   isFav = signal<boolean>(false);
   currentImageIndex = signal<number>(0);
 
-  // Modales
   showCalendarModal = signal<boolean>(false);
   showUserModal = signal<boolean>(false);
   selectedUser = signal<any | null>(null);
   userFeedbacks = signal<any[]>([]);
 
-  // Reserva
   selectedDate = signal<string | null>(null);
   isSubmitting = signal<boolean>(false);
   hasActiveRent = signal<boolean>(false);
 
-  // Computados
   isOwner = computed(() => {
     const p = this.piso();
     const userId = this.authService.userId();
@@ -432,11 +410,14 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
+  // CORRECCIÓN FOTOS DINÁMICAS CARRUSEL AQUÍ
   getFotosSeguras(): string[] {
+    const fotosPiso = this.piso()?.fotos;
+    if (fotosPiso && fotosPiso.length > 0) {
+      return fotosPiso.map((f: any) => f.url);
+    }
     return [
-      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1502672260266-1c1de2d9d000?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=1200'
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=1200'
     ];
   }
 

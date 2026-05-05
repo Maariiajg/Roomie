@@ -48,7 +48,9 @@ public class PisoMapper {
             );
         }
         
+        // 1. PRIMERO CREAMOS EL DTO
         PisoDTO dto = new PisoDTO();
+        
         dto.setId(piso.getId());
         dto.setDireccion(piso.getDireccion());
         dto.setDescripcion(piso.getDescripcion());
@@ -62,6 +64,11 @@ public class PisoMapper {
         dto.setWifi(piso.isWifi());
         dto.setTabaco(piso.isTabaco());
  
+        // 2. LUEGO LE METEMOS LAS FOTOS (Si tiene)
+        if (piso.getFotos() != null) {
+            dto.setFotos(com.roomie.services.mapper.FotoMapper.toDTOList(piso.getFotos()));
+        }
+
         // Precio que pagaría el usuario si entrase ahora
         int futurosOcupantes = piso.getNumOcupantesActual() + 1;
         dto.setPrecioMesPersona(futurosOcupantes > 0 
@@ -115,6 +122,11 @@ public class PisoMapper {
         dto.setWifi(piso.isWifi());
         dto.setTabaco(piso.isTabaco());
  
+        // METEMOS LAS FOTOS AQUÍ TAMBIÉN
+        if (piso.getFotos() != null) {
+            dto.setFotos(com.roomie.services.mapper.FotoMapper.toDTOList(piso.getFotos()));
+        }
+
         // Precio que paga actualmente cada residente
         int ocupantes = piso.getNumOcupantesActual();
         dto.setPrecioMesPersona(ocupantes > 0 

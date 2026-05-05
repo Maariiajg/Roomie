@@ -18,7 +18,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
   template: `
     <div class="min-h-screen bg-bgMain py-12 px-4 lg:px-8 font-sans">
       <div class="max-w-7xl mx-auto">
-        
+       
         <div class="mb-12 flex justify-between items-end">
           <div>
             <h1 class="text-4xl font-black text-textMain uppercase tracking-tighter italic">Gestión de Mi Piso</h1>
@@ -39,9 +39,9 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
             <p class="text-gray-500 font-medium">Parece que no eres propietario de ningún piso actualmente.</p>
           </div>
         } @else {
-          
+         
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-            
+           
             <div class="lg:col-span-4">
               <div class="bg-white rounded-[3rem] overflow-hidden shadow-sm border border-gray-50 lg:sticky lg:top-8 flex flex-col">
                 <div class="h-48 bg-gray-200 relative">
@@ -73,7 +73,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
             </div>
 
             <div class="lg:col-span-8">
-              
+             
               <div class="flex flex-wrap gap-2 mb-8 bg-white p-2 rounded-3xl shadow-sm border border-gray-50">
                 @for (tab of tabs; track tab.id) {
                   <button (click)="activeTab.set(tab.id)"
@@ -91,7 +91,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
 
                 @if (activeTab() === 'INFO') {
                   <h2 class="text-2xl font-black text-textMain mb-8 uppercase tracking-tighter">Editar Información</h2>
-                  
+                 
                   <form (ngSubmit)="guardarCambiosPiso()" class="space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div class="md:col-span-2">
@@ -149,10 +149,12 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
 
                   <div class="mt-12 pt-12 border-t border-gray-100">
                     <h3 class="text-lg font-black text-textMain mb-6 uppercase tracking-tighter">Galería de Fotos</h3>
-                    
+                   
                     <div class="flex gap-4 mb-6">
                       <input [(ngModel)]="nuevaFotoUrl" placeholder="URL de la nueva foto (https://...)" class="flex-grow bg-bgMain border border-gray-100 rounded-xl p-4 font-bold outline-none focus:ring-2 focus:ring-primary text-sm">
-                      <button (click)="anadirFoto()" class="bg-textMain text-white px-8 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all">Añadir</button>
+                      <button (click)="anadirFoto()" [disabled]="isSubmittingFoto" class="bg-textMain text-white px-8 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-black transition-all disabled:opacity-50">
+                        {{ isSubmittingFoto ? 'Añadiendo...' : 'Añadir' }}
+                      </button>
                     </div>
 
                     @if (fotos().length === 0) {
@@ -160,10 +162,10 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                     } @else {
                       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                         @for (f of fotos(); track f.id) {
-                          <div class="relative group rounded-2xl overflow-hidden aspect-video">
+                          <div class="relative group rounded-2xl overflow-hidden aspect-video shadow-sm border border-gray-100">
                             <img [src]="f.url" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <button (click)="eliminarFoto(f.id)" class="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition-colors active:scale-90">
+                              <button (click)="eliminarFoto(f.id)" class="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition-colors active:scale-90 shadow-lg">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                               </button>
                             </div>
@@ -184,7 +186,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                     <div class="space-y-4">
                       @for (sol of solicitudes(); track sol.id) {
                         <div class="bg-bgMain p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                          
+                         
                           <div class="flex items-center gap-4">
                             <img [src]="sol.usuario?.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + sol.usuario?.nombreUsuario" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm">
                             <div>
@@ -232,7 +234,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                             <svg class="w-3 h-3 text-alert fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                             {{ inq.calificacionMedia || 'N/A' }}
                           </span>
-                          
+                         
                           <div class="flex gap-2 w-full mt-auto">
                             <button (click)="abrirPerfilModal(inq)" class="flex-1 py-2 bg-white text-textMain rounded-lg font-black uppercase text-[9px] tracking-widest shadow-sm hover:bg-gray-50 border border-gray-100">
                               Perfil
@@ -254,7 +256,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
 
                 @if (activeTab() === 'AVANZADA') {
                   <h2 class="text-2xl font-black text-textMain mb-8 uppercase tracking-tighter">Gestión Avanzada</h2>
-                  
+                 
                   <div class="bg-amber-50 border border-amber-200 rounded-[2.5rem] p-8 mb-8 relative overflow-hidden">
                     <div class="absolute -right-4 -top-4 text-amber-200/50">
                       <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
@@ -262,7 +264,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                     <div class="relative z-10">
                       <h3 class="text-amber-800 font-black uppercase tracking-widest text-sm mb-2">Ceder Propiedad</h3>
                       <p class="text-amber-700/80 font-medium text-sm mb-6 max-w-md">Traspasa los derechos de propietario a otro inquilino actual. Una vez cedido, pasarás a ser un usuario estándar.</p>
-                      
+                     
                       <div class="flex flex-col sm:flex-row gap-4">
                         <select [(ngModel)]="nuevoOwnerId" class="flex-grow bg-white border border-amber-200 rounded-xl p-4 font-bold outline-none focus:ring-2 focus:ring-amber-500 text-amber-900 cursor-pointer">
                           <option [ngValue]="null">Selecciona un inquilino...</option>
@@ -272,7 +274,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                             }
                           }
                         </select>
-                        <button (click)="confirmarCeder()" [disabled]="!nuevoOwnerId" 
+                        <button (click)="confirmarCeder()" [disabled]="!nuevoOwnerId"
                                 class="px-8 py-4 bg-amber-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-amber-500/30 hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                           Ceder Piso
                         </button>
@@ -304,7 +306,7 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
             <div class="flex items-center gap-5">
-              <img [src]="selectedUser()!.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + selectedUser()!.nombreUsuario" 
+              <img [src]="selectedUser()!.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + selectedUser()!.nombreUsuario"
                    class="w-24 h-24 rounded-[1.5rem] object-cover border-4 border-white shadow-md">
               <div>
                 <h3 class="text-2xl font-black text-textMain tracking-tight">&#64;{{ selectedUser()!.nombreUsuario }}</h3>
@@ -314,9 +316,16 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                 </div>
               </div>
             </div>
+            
             <div class="mt-6 flex flex-col gap-1">
               <p class="font-bold text-gray-800 text-sm">{{ selectedUser()!.nombre }} {{ selectedUser()!.apellido1 }}</p>
+              
+              <!-- CORRECCIÓN DE LA EDAD AÑADIDA -->
+              <p class="text-[11px] font-black text-gray-400 uppercase tracking-[0.15em]">
+                {{ calcularEdad(selectedUser()!.anioNacimiento) }} años
+              </p>
             </div>
+
             @if (selectedUser()!.mensajePresentacion) {
               <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100">
                 <p class="text-sm text-gray-600 font-medium italic">"{{ selectedUser()!.mensajePresentacion }}"</p>
@@ -389,6 +398,7 @@ export class MiPisoComponent implements OnInit {
   pisoForm: any = {};
   nuevaFotoUrl = '';
   nuevoOwnerId: number | null = null;
+  isSubmittingFoto = false;
 
   // Modales
   showUserModal = signal(false);
@@ -412,7 +422,6 @@ export class MiPisoComponent implements OnInit {
     this.pisoService.getPisoMio(idOwner).subscribe({
       next: (p) => {
         this.piso.set(p);
-        // Inicializar formulario
         this.pisoForm = {
           direccion: p.direccion,
           poblacion: p.poblacion || '',
@@ -435,34 +444,28 @@ export class MiPisoComponent implements OnInit {
   }
 
   cargarDependencias(idPiso: number) {
-    // 1. Cargar Inquilinos
     this.pisoService.getUsuariosInPiso(idPiso).subscribe({
       next: (users) => this.inquilinos.set(users),
       error: (err) => console.error('Aviso: No se pudieron cargar los inquilinos', err)
     });
 
-    // 2. Cargar Solicitudes
     this.alquilerService.solicitudesPendientes(idPiso).subscribe({
       next: (sols) => this.solicitudes.set(sols),
       error: (err) => console.error('Aviso: No se pudieron cargar las solicitudes', err)
     });
 
-    // 3. Cargar Fotos (La responsable de apagar el spinner)
     this.fotoService.getFotosByPiso(idPiso).subscribe({
-      next: (f) => this.fotos.set(f),
-      error: (err) => {
-        console.error('Aviso: Error cargando las fotos', err);
-        // ¡VITAL! Apagamos el spinner aunque falle
+      next: (f) => {
+        this.fotos.set(f);
         this.isLoading.set(false);
       },
-      complete: () => {
-        // Apagamos el spinner si todo va bien
+      error: (err) => {
+        console.error('Aviso: Error cargando las fotos', err);
         this.isLoading.set(false);
       }
     });
   }
 
-  // --- TAB 1: INFORMACIÓN Y FOTOS ---
   guardarCambiosPiso() {
     const pId = this.piso()?.id;
     if (!pId) return;
@@ -477,36 +480,53 @@ export class MiPisoComponent implements OnInit {
 
   anadirFoto() {
     const pId = this.piso()?.id;
-    const myId = this.myId(); // El ID del Owner logueado
+    const myId = this.myId();
     if (!pId || !myId || !this.nuevaFotoUrl.trim()) return;
+
+    this.isSubmittingFoto = true;
 
     this.fotoService.anadirFoto(this.nuevaFotoUrl, pId, myId).subscribe({
       next: () => {
-        this.notificationService.showSuccess('Foto añadida.');
+        this.notificationService.showSuccess('Foto añadida a la galería.');
         this.nuevaFotoUrl = '';
+        this.isSubmittingFoto = false;
         this.cargarDependencias(pId);
       },
-      error: () => this.notificationService.showError('Error al añadir la foto.')
+      error: (err) => {
+        this.isSubmittingFoto = false;
+        let errorMsg = 'Error al añadir la foto.';
+        if (err.error) {
+          if (typeof err.error === 'string') errorMsg = err.error;
+          else if (err.error.message) errorMsg = err.error.message;
+        }
+        this.notificationService.showError(errorMsg);
+      }
     });
   }
 
   eliminarFoto(idFoto: number) {
     const pId = this.piso()?.id;
-    const myId = this.myId(); // El ID del Owner logueado
+    const myId = this.myId();
     if (!pId || !myId) return;
 
-    if (confirm('¿Eliminar esta foto?')) {
+    if (confirm('¿Seguro que quieres eliminar esta foto de la galería?')) {
       this.fotoService.eliminarFoto(idFoto, pId, myId).subscribe({
         next: () => {
-          this.notificationService.showSuccess('Foto eliminada.');
+          this.notificationService.showSuccess('Foto eliminada correctamente.');
           this.cargarDependencias(pId);
         },
-        error: () => this.notificationService.showError('Error al eliminar la foto.')
+        error: (err) => {
+          let errorMsg = 'Error al eliminar la foto.';
+          if (err.error) {
+            if (typeof err.error === 'string') errorMsg = err.error;
+            else if (err.error.message) errorMsg = err.error.message;
+          }
+          this.notificationService.showError(errorMsg);
+        }
       });
     }
   }
 
-  // --- TAB 2: SOLICITUDES ---
   resolver(idAlquiler: number, aceptar: boolean) {
     const ownerId = this.myId();
     if (!ownerId) return;
@@ -514,14 +534,12 @@ export class MiPisoComponent implements OnInit {
       next: () => {
         this.notificationService.showSuccess(`Solicitud ${aceptar ? 'aceptada' : 'rechazada'}.`);
         this.solicitudes.update(list => list.filter(s => s.id !== idAlquiler));
-        // Si acepta, la lista de inquilinos cambiará, recargamos dependencias
         if (aceptar) this.cargarDependencias(this.piso().id);
       },
       error: () => this.notificationService.showError('Error al procesar la solicitud.')
     });
   }
 
-  // --- TAB 3: INQUILINOS (EXPULSAR) ---
   prepararExpulsion(user: any) {
     this.userToExpulsar.set(user);
     this.showExpulsarModal.set(true);
@@ -538,7 +556,7 @@ export class MiPisoComponent implements OnInit {
       next: () => {
         this.notificationService.showSuccess('Inquilino expulsado del piso.');
         this.showExpulsarModal.set(false);
-        this.cargarDependencias(pId); // Recargar lista
+        this.cargarDependencias(pId);
       },
       error: () => {
         this.notificationService.showError('Error al intentar expulsar al inquilino.');
@@ -547,7 +565,6 @@ export class MiPisoComponent implements OnInit {
     });
   }
 
-  // --- TAB 4: GESTIÓN AVANZADA (CEDER) ---
   confirmarCeder() {
     const pId = this.piso()?.id;
     const ownerId = this.myId();
@@ -558,16 +575,13 @@ export class MiPisoComponent implements OnInit {
       this.pisoService.cederPiso(pId, dto).subscribe({
         next: () => {
           this.notificationService.showSuccess('Piso cedido correctamente. Ya no eres propietario.');
-          // Según requisito, el rol baja, así que debe volver a iniciar sesión o ir a mis-alquileres
           this.router.navigate(['/mis-alquileres']);
-          // Idealmente aquí forzarías logout o actualizarías el token local
         },
         error: () => this.notificationService.showError('Error al ceder el piso.')
       });
     }
   }
 
-  // --- HELPERS PARA MODAL ---
   abrirPerfilModal(usuario: any) {
     this.selectedUser.set(usuario);
     this.showUserModal.set(true);
@@ -578,5 +592,18 @@ export class MiPisoComponent implements OnInit {
 
   cerrarModalUsuario() {
     this.showUserModal.set(false);
+  }
+
+  // ¡ESTA ES LA FUNCIÓN QUE FALTABA PARA EVITAR EL ERROR DE COMPILACIÓN!
+  calcularEdad(fechaString: string | undefined): string | number {
+    if (!fechaString) return '?';
+    const birth = new Date(fechaString);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
   }
 }

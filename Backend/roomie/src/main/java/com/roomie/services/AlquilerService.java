@@ -84,16 +84,17 @@ public class AlquilerService {
     // =========================================================================
     public AlquilerDTO alquilerActual(int idUsuario) {
         usuarioService.findById(idUsuario);
- 
+
         List<Alquiler> aceptados = alquilerRepository
                 .findByUsuarioIdAndEstadoSolicitud(
                         idUsuario, AlquilerEstadoSolicitud.ACEPTADA);
- 
+
         if (aceptados.isEmpty()) {
-            throw new AlquilerNotFoundException(
-                    "El usuario no vive actualmente en ningún piso.");
+            // SUSTITUYEMOS EL THROW EXCEPTION POR RETURN NULL
+            // Así el interceptor de Angular no se asusta y no saca la alerta naranja.
+            return null; 
         }
- 
+
         return toDTO(aceptados.get(0));
     }
  

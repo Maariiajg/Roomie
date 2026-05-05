@@ -50,7 +50,7 @@ public class SecurityConfig {
 	        	    .requestMatchers(HttpMethod.GET,  "/piso/filtrar").permitAll()
 	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}").permitAll()
 	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/fotos").permitAll()
-	        	    .requestMatchers(HttpMethod.GET,  "/foto/{idFoto}").permitAll()
+	        	    .requestMatchers(HttpMethod.GET,  "/foto/**").permitAll()
 
 	        	    // Reputación pública
 	        	    .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{idUsuario}").permitAll()
@@ -81,8 +81,8 @@ public class SecurityConfig {
 	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/{idAlquiler}/resolver").hasAnyRole("OWNER","ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}/ceder").hasAnyRole("OWNER","ADMINISTRADOR")
 	        	    .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}").hasAnyRole("OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.POST, "/foto").hasAnyRole("OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.DELETE, "/foto/{idFoto}").hasAnyRole("OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.POST, "/foto/**").hasAnyRole("OWNER","ADMINISTRADOR")
+	        	    .requestMatchers(HttpMethod.DELETE, "/foto/**").hasAnyRole("OWNER","ADMINISTRADOR")
 
 	        	    // Expulsar usuario del piso (owner forzado)
 	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/piso/{idPiso}/salir").hasAnyRole("USUARIO","OWNER")

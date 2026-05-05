@@ -1,7 +1,9 @@
 package com.roomie.services.dto.piso;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import com.roomie.services.dto.foto.FotoDTO;
 import com.roomie.services.dto.usuario.PerfilUsuarioDTO;
 
 import lombok.Getter;
@@ -39,5 +41,7 @@ public class PisoDTO {
 
     // Owner como DTO, no como entidad completa
     private PerfilUsuarioDTO owner;
+    
+    private List<FotoDTO> fotos;
 }
 

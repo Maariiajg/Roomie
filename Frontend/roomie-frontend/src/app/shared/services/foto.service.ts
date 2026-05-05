@@ -19,7 +19,8 @@ export class FotoService {
   }
 
   anadirFoto(url: string, idPiso: number, idOwner: number): Observable<any> {
-    return this.http.post(`${this.backendUrl}?url=${url}&idPiso=${idPiso}&idOwner=${idOwner}`, {});
+    const urlSegura = encodeURIComponent(url);
+    return this.http.post(`${this.backendUrl}?url=${urlSegura}&idPiso=${idPiso}&idOwner=${idOwner}`, {});
   }
 
   eliminarFoto(idFoto: number, idPiso: number, idOwner: number): Observable<any> {

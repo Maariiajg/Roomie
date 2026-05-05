@@ -278,8 +278,9 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                       @if (miEstancia() && pisoEstancia()) {
                         <div class="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-md flex flex-col md:flex-row items-center gap-6">
                           
+                          <!-- AÑADIDA LÓGICA DE FOTO DINÁMICA AQUÍ -->
                           <a [routerLink]="['/piso', pisoEstancia()!.id]" class="shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80" class="w-full md:w-32 h-32 object-cover rounded-2xl">
+                            <img [src]="pisoEstancia()!.fotos?.[0]?.url || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80'" class="w-full md:w-32 h-32 object-cover rounded-2xl">
                           </a>
                           
                           <div class="flex-grow text-center md:text-left">
@@ -309,7 +310,7 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                               </div>
                             </div>
                             
-                            <!-- USAMOS precioEstanciaCalculado() AQUÍ PARA ARREGLAR EL ERROR DE COMPILACIÓN -->
+                            <!-- CORREGIDO EL NOMBRE DE LA VARIABLE PRECIO -->
                             <p class="text-primary font-black mt-3 text-xl">{{ precioEstanciaCalculado() | currency:'EUR':'symbol':'1.0-0' }}<span class="text-xs text-gray-400">/mes</span></p>
                           </div>
                           
@@ -668,7 +669,7 @@ export class PerfilUsuarioComponent implements OnInit {
   miEstancia = signal<any>(null);
   pisoEstancia = signal<PisoDTO | null>(null);
 
-  // LA VARIABLE QUE HABÍAMOS CREADO PARA ARREGLAR LA MATEMÁTICA Y QUE CAUSÓ EL ERROR
+  // LA VARIABLE CORREGIDA PARA ARREGLAR LA MATEMÁTICA Y EL ERROR DE COMPILACIÓN
   precioEstanciaCalculado = computed(() => {
     const p = this.pisoEstancia();
     if (!p) return 0;
@@ -708,7 +709,6 @@ export class PerfilUsuarioComponent implements OnInit {
             nombre: u.nombre || '',
             apellido1: u.apellido1 || '',
             apellido2: u.apellido2 || '',
-            // Se recoge como fecha para el input type="date"
             anioNacimiento: u.anioNacimiento ? u.anioNacimiento.toString().split('T')[0] : null,
             genero: u.genero || 'PREFIERO_NO_DECIRLO',
             telefono: u.telefono || '',
@@ -741,7 +741,6 @@ export class PerfilUsuarioComponent implements OnInit {
           this.miEstancia.set(alq);
           const pisoId = alq.pisoId ?? alq.piso?.id;
           if (pisoId) {
-            // Solo cargamos el piso. Nos ahorramos la otra llamada.
             this.pisoService.getPisoById(pisoId).subscribe(p => this.pisoEstancia.set(p));
 
             if (!this.isOwner()) {
@@ -870,19 +869,16 @@ export class PerfilUsuarioComponent implements OnInit {
         this.activeTab.set('INFO');
       },
       error: (err) => {
-        // DETECTOR MULTIFORMATO DEL ERROR DE JAVA
         let errorMsg = 'Hubo un error al abandonar el piso.';
-
         if (err.error) {
           if (typeof err.error === 'string') {
-            errorMsg = err.error; // Si Java envía texto plano
+            errorMsg = err.error;
           } else if (err.error.message) {
-            errorMsg = err.error.message; // Si Java envía JSON
+            errorMsg = err.error.message;
           } else if (err.error.error) {
             errorMsg = err.error.error;
           }
         }
-
         this.notificationService.showError(errorMsg);
         this.showAbandonarModal.set(false);
       }
