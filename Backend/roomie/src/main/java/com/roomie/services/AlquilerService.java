@@ -129,8 +129,13 @@ public class AlquilerService {
                 idUsuario, AlquilerEstadoSolicitud.ACEPTADA)) {
             throw new AlquilerException("Ya estás viviendo en un piso.");
         }
-        if (alquilerRepository.existsByUsuarioIdAndPisoId(idUsuario, idPiso)) {
-            throw new AlquilerException("Ya has enviado una solicitud a este piso.");
+        boolean tieneSolicitudActiva = alquilerRepository.findByUsuarioIdAndPisoId(idUsuario, idPiso)
+                .stream()
+                .anyMatch(a -> a.getEstadoSolicitud() == AlquilerEstadoSolicitud.PENDIENTE || 
+                               a.getEstadoSolicitud() == AlquilerEstadoSolicitud.ACEPTADA);
+
+        if (tieneSolicitudActiva) {
+            throw new AlquilerException("Ya tienes una solicitud pendiente o activa en este piso.");
         }
         //los owners no pueden solicitar un alquiler
         if (usuario.getRol() == Roles.OWNER) {

@@ -3,7 +3,6 @@ import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-// Modelos y Servicios
 import { PisoDTO } from '../../core/models/piso.dto';
 import { PisoService } from '../piso/piso.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -20,6 +19,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
     @if (piso()) {
       <div class="relative min-h-screen bg-black overflow-x-hidden font-sans">
        
+        <!-- =================== GALERÍA / CARRUSEL =================== -->
         <div class="sticky top-0 h-[60vh] w-full z-0 overflow-hidden">
           <div class="absolute inset-0 flex transition-transform duration-700 ease-in-out"
                [style.transform]="'translateX(-' + currentImageIndex() * 100 + '%)'">
@@ -28,17 +28,14 @@ import { NotificationService } from '../../shared/components/toast/notification.
             }
           </div>
           <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/30"></div>
-
           <button (click)="goBack()" class="absolute top-8 left-8 z-20 p-4 rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white/30 hover:scale-105 transition-all shadow-lg border border-white/20">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg>
           </button>
-
           <button (click)="toggleFavorito()" class="absolute top-8 right-8 z-20 p-4 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/30 hover:scale-105 transition-all shadow-lg border border-white/20">
             <svg class="w-6 h-6 transition-colors" [ngClass]="isFav() ? 'text-red-500 fill-current' : 'text-white stroke-current fill-none'" viewBox="0 0 24 24" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </button>
-
           @if (getFotosSeguras().length > 1) {
             <button (click)="prevImage()" class="absolute left-8 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/40 text-white hover:bg-black/70 backdrop-blur-md z-10 transition-all border border-white/10">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -47,7 +44,6 @@ import { NotificationService } from '../../shared/components/toast/notification.
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
           }
-
           <div class="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-3 z-10">
             @for (foto of getFotosSeguras(); track $index) {
               <div class="w-2.5 h-2.5 rounded-full transition-all duration-300" [ngClass]="$index === currentImageIndex() ? 'bg-white scale-150 shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'bg-white/40 cursor-pointer'"></div>
@@ -55,6 +51,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
           </div>
         </div>
 
+        <!-- =================== INFO PRINCIPAL =================== -->
         <div class="relative z-10 w-full bg-bgMain mt-[-6vh] rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.4)] min-h-[60vh] pb-32">
           <div class="max-w-6xl mx-auto px-6 sm:px-12 py-14">
            
@@ -90,6 +87,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
               </div>
             </div>
 
+            <!-- =================== INQUILINOS =================== -->
             @if (integrantes().length > 0) {
               <div class="mb-14">
                 <h2 class="text-sm font-black text-textMain/50 uppercase tracking-[0.2em] mb-6 pl-2">Compañeros de Piso</h2>
@@ -112,9 +110,9 @@ import { NotificationService } from '../../shared/components/toast/notification.
               <p class="text-textMain/80 italic leading-loose text-lg font-medium">"{{ piso()!.descripcion || 'El propietario aún no ha añadido una descripción detallada.' }}"</p>
             </div>
 
+            <!-- =================== BOOLEANOS (COMODIDADES) =================== -->
             <div class="mb-14">
               <h2 class="text-sm font-black text-textMain/50 uppercase tracking-[0.2em] mb-6 pl-2">Comodidades</h2>
-              
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border" [ngClass]="piso()!.wifi ? 'bg-white shadow-sm border-gray-100' : 'bg-gray-50 border-transparent opacity-50 grayscale'">
                   <div [ngClass]="piso()!.wifi ? 'text-primary' : 'text-gray-400'">
@@ -122,21 +120,18 @@ import { NotificationService } from '../../shared/components/toast/notification.
                   </div>
                   <span class="text-xs font-black text-textMain uppercase tracking-wider">WiFi</span>
                 </div>
-                
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border" [ngClass]="piso()!.animales ? 'bg-white shadow-sm border-gray-100' : 'bg-gray-50 border-transparent opacity-50 grayscale'">
                   <div [ngClass]="piso()!.animales ? 'text-secondary' : 'text-gray-400'">
                     <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M10 5a2 2 0 100-4 2 2 0 000 4zm4.5 1.5a2 2 0 100-4 2 2 0 000 4zm-9 0a2 2 0 100-4 2 2 0 000 4zM2 9a2 2 0 100-4 2 2 0 000 4zm16 0a2 2 0 100-4 2 2 0 000 4zm-4.7 2.3c-.6-.4-1.3-.3-1.8.2l-1.5 1.5-1.5-1.5c-.5-.5-1.2-.6-1.8-.2-1.3.8-1.7 2.5-1 3.8.7 1.3 2.1 2.2 3.6 2.2h1.4c1.5 0 2.9-.9 3.6-2.2.7-1.3.3-3-1-3.8z"/></svg>
                   </div>
                   <span class="text-xs font-black text-textMain uppercase tracking-wider">Mascotas</span>
                 </div>
-                
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border" [ngClass]="piso()!.garaje ? 'bg-white shadow-sm border-gray-100' : 'bg-gray-50 border-transparent opacity-50 grayscale'">
                   <div [ngClass]="piso()!.garaje ? 'text-alert' : 'text-gray-400'">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 12 10s-6.7.6-8.5 1.1C2.7 11.3 2 12.1 2 13v3c0 .6.4 1 1 1h2m14 0a2 2 0 11-4 0 2 2 0 014 0zM8 17a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                   </div>
                   <span class="text-xs font-black text-textMain uppercase tracking-wider">Garaje</span>
                 </div>
-                
                 <div class="py-6 px-4 rounded-[2rem] flex flex-col items-center gap-3 transition-all border bg-white shadow-sm border-gray-100">
                   <div [ngClass]="piso()!.tabaco ? 'text-orange-400' : 'text-green-500'">
                     <div class="relative w-8 h-8">
@@ -151,6 +146,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
               </div>
             </div>
 
+            <!-- =================== PRECIO INTELIGENTE =================== -->
             <div class="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-[2rem] p-8 sm:p-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 shadow-sm">
               <div>
                 <p class="text-xs font-black text-primary uppercase tracking-[0.2em] mb-2">{{ isResidente() ? 'Tu cuota exacta' : 'Cuota estimada' }}</p>
@@ -212,6 +208,7 @@ import { NotificationService } from '../../shared/components/toast/notification.
           </div>
         }
 
+        <!-- =================== MODAL DE USUARIO (FEEDBACKS) =================== -->
         @if (showUserModal() && selectedUser()) {
           <div class="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div class="bg-white rounded-[3rem] w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
@@ -231,15 +228,17 @@ import { NotificationService } from '../../shared/components/toast/notification.
                   </div>
                 </div>
                 
-                <div class="mt-6 flex flex-col gap-1">
+                <div class="mt-6 flex flex-col gap-2">
                   <p class="font-bold text-gray-800 text-sm">{{ selectedUser()!.nombre }} {{ selectedUser()!.apellido1 }}</p>
-                  
-                  <!-- CORRECCIÓN DE LA EDAD AÑADIDA -->
                   <p class="text-[11px] font-black text-gray-400 uppercase tracking-[0.15em]">
                     {{ calcularEdad(selectedUser()!.anioNacimiento) }} años
                   </p>
+                  <!-- ENLACE AL PERFIL DEL USUARIO -->
+                  <a [routerLink]="['/perfil', selectedUser()!.id]" (click)="cerrarModalUsuario()" class="text-primary font-bold text-xs uppercase tracking-widest hover:underline w-max">
+                    Ver perfil completo →
+                  </a>
                 </div>
-                
+
                 @if (selectedUser()!.mensajePresentacion) {
                   <div class="mt-4 p-4 bg-white rounded-2xl border border-gray-100">
                     <p class="text-sm text-gray-600 font-medium italic">"{{ selectedUser()!.mensajePresentacion }}"</p>
@@ -309,13 +308,16 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
     return this.integrantes().some(u => u.id === userId);
   });
 
+  // CORRECCIÓN PRECIOS: Divide entre ocupantes (mínimo 1) si eres residente/owner, o ocupantes + 1 si eres visitante.
   precioCalculado = computed(() => {
     const p = this.piso();
     if (!p) return 0;
-    if (this.isResidente() && p.precioMesPersona) {
-      return p.precioMesPersona;
+    const ocupantes = Math.max(p.numOcupantesActual, 0);
+
+    if (this.isResidente() || this.isOwner()) {
+      return p.precioMes / (ocupantes > 0 ? ocupantes : 1);
     }
-    return p.precioMes / (p.numOcupantesActual + 1);
+    return p.precioMes / (ocupantes + 1);
   });
 
   mostrarBotonSolicitar = computed(() => {
@@ -410,7 +412,6 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  // CORRECCIÓN FOTOS DINÁMICAS CARRUSEL AQUÍ
   getFotosSeguras(): string[] {
     const fotosPiso = this.piso()?.fotos;
     if (fotosPiso && fotosPiso.length > 0) {
@@ -491,6 +492,7 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
+  // CORRECCIÓN FEEDBACKS: Filtro estricto de valoraciones recibidas
   abrirModalUsuario(user: any) {
     this.selectedUser.set(user);
     this.userFeedbacks.set([]);
@@ -498,8 +500,12 @@ export class PisoDetalleComponent implements OnInit, OnDestroy {
 
     this.feedbackService.getFeedbacksByUsuario(user.id).subscribe({
       next: (feedbacks) => {
-        const visibles = feedbacks.filter((f: any) => f.visible !== false);
-        this.userFeedbacks.set(visibles);
+        // Solo las valoraciones RECIBIDAS por este usuario y ya VALORADAS
+        const validos = feedbacks.filter((f: any) =>
+          f.estadoFeedback === 'VALORADO' &&
+          (f.idUsuarioRecibe === user.id || f.usuarioRecibe?.id === user.id)
+        );
+        this.userFeedbacks.set(validos);
       }
     });
   }
