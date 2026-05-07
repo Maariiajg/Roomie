@@ -14,9 +14,9 @@ import { RouterModule } from '@angular/router';
           
           <!-- Columna 1: Branding -->
           <div class="flex flex-col items-center md:items-start space-y-4">
-             <img src="/imagenes/logo.jpg" alt="Roomie Logo" class="h-8 brightness-0 invert opacity-90">
+          <img src="/imagenes/logo.jpg" alt="Roomie Logo" class="h-20 w-auto rounded opacity-90">
              <p class="text-sm font-bold text-white/80 italic text-center md:text-left">
-                "Encuentra a tu compañero ideal"
+                  "Encuentra a tu compañero ideal"
              </p>
           </div>
 

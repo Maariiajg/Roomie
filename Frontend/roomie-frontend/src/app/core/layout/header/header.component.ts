@@ -23,7 +23,7 @@ import { NotificationService } from '../../../shared/components/toast/notificati
             class="flex-shrink-0 flex items-center cursor-pointer transition-transform hover:scale-105 active:scale-95"
             (click)="onLogoClick()"
             title="Ir al inicio">
-            <img src="/imagenes/logo.jpg" alt="Roomie Logo" class="h-10 w-auto">
+            <img src="/imagenes/logo.jpg" alt="Roomie Logo" class="h-14 w-auto">
           </div>
 
           <!-- ═══════════════════════════════════════

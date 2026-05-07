@@ -14,6 +14,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
+      if (error.status === 403) {
+        return throwError(() => error);
+      }
+
       // 401 is handled by auth.interceptor specifically
       if (error.status && error.status !== 401) {
         // Fallback standard error messages
