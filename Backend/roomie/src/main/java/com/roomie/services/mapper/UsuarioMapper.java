@@ -39,6 +39,8 @@ public class UsuarioMapper {
         dto.setFoto(usuario.getFoto());
         dto.setMensajePresentacion(usuario.getMensajePresentacion());
         dto.setRol(usuario.getRol());
+        dto.setBloqueado(usuario.isBloqueado()); 
+        
         // Si calificacionMedia es null se devuelve 0.0
         dto.setCalificacionMedia(calificacionMedia != null ? calificacionMedia : 0.0);
  

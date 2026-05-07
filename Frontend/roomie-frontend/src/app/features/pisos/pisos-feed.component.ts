@@ -23,7 +23,7 @@ import { PisoCardComponent } from './components/piso-card.component';
             {{ pisosFiltrados().length }} resultados encontrados
           </p>
         </div>
-        <button (click)="toggleFiltros()" 
+        <button (click)="toggleFiltros()"
                 class="flex items-center gap-2 bg-textMain px-8 py-4 rounded-2xl shadow-xl font-black text-white hover:bg-black transition-all active:scale-95 text-xs uppercase tracking-widest">
           <svg class="w-4 h-4 text-alert" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -90,11 +90,11 @@ import { PisoCardComponent } from './components/piso-card.component';
           </div>
 
           <div class="grid grid-cols-2 gap-3 mt-10">
-            <button (click)="resetFiltros()" 
+            <button (click)="resetFiltros()"
                     class="py-5 bg-textMain/10 text-textMain rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-textMain/20 transition-all">
               Limpiar
             </button>
-            <button (click)="aplicarFiltros()" 
+            <button (click)="aplicarFiltros()"
                     class="py-5 bg-textMain text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl hover:bg-black transition-all">
               Ver Resultados
             </button>
@@ -178,17 +178,31 @@ export class PisosFeedComponent implements OnInit {
 
   toggleFiltros() { this.showFiltros.update(v => !v); }
 
+  // CORRECCIÓN: Quitamos valor !== '' para evitar el error TS2367 de TypeScript
   aplicarFiltros() {
     this.showFiltros.set(false);
     this.isLoading.set(true);
-    // Llamada al endpoint de filtrado del backend (sin precioMax porque se hace local para precisión)
-    const { precioMax, ...params } = this.filtros;
-    this.pisoService.filtrar(params).subscribe({
+
+    // Separar precioMax y coger el resto
+    const { precioMax, ...rawParams } = this.filtros;
+
+    // Objeto limpio sin "null" ni "undefined"
+    const paramsLimpios: any = {};
+    Object.entries(rawParams).forEach(([key, valor]) => {
+      if (valor !== null && valor !== undefined) {
+        paramsLimpios[key] = valor;
+      }
+    });
+
+    this.pisoService.filtrar(paramsLimpios).subscribe({
       next: (data) => {
         this.pisos.set(data);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: (err) => {
+        console.error('Error al filtrar:', err);
+        this.isLoading.set(false);
+      }
     });
   }
 

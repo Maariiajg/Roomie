@@ -901,14 +901,29 @@ export class PerfilUsuarioComponent implements OnInit {
     const targetUser = this.usuario();
     if (!targetUser) return;
 
-    const action = targetUser.bloqueado ? 'desbloquear' : 'bloquear';
+    // Usamos las funciones correctas del servicio, igual que en el panel de admin
+    const accion$ = targetUser.bloqueado
+      ? this.usuarioService.desbloquearUsuario(targetUser.id)
+      : this.usuarioService.bloquearUsuario(targetUser.id);
 
-    this.usuarioService.cambiarEstadoBloqueo(targetUser.id, !targetUser.bloqueado).subscribe({
-      next: (userActualizado) => {
-        this.usuario.set(userActualizado);
-        this.notificationService.showSuccess(`Usuario ${targetUser.bloqueado ? 'desbloqueado' : 'bloqueado'} con éxito`);
+    accion$.subscribe({
+      next: () => {
+        // Actualizamos el estado visual en Angular al instante
+        this.usuario.update(u => ({ ...u, bloqueado: !targetUser.bloqueado }));
+        this.notificationService.showSuccess(
+          `Usuario ${targetUser.bloqueado ? 'desbloqueado' : 'bloqueado'} con éxito`
+        );
       },
-      error: () => this.notificationService.showError(`Error al ${action} al usuario`)
+      error: (err) => {
+        // Atrapamos el error de Java (ej: "No puedes bloquear al owner...")
+        let errorMsg = 'Error al cambiar el estado del usuario.';
+        if (err.error) {
+          if (typeof err.error === 'string') errorMsg = err.error;
+          else if (err.error.message) errorMsg = err.error.message;
+          else if (err.error.error) errorMsg = err.error.error;
+        }
+        this.notificationService.showError(errorMsg);
+      }
     });
   }
 

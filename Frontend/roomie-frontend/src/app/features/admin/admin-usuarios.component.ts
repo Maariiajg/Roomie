@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UsuarioService } from '../../core/services/usuario.service';
-// import { NotificationService } from '../../core/services/notification.service';
+import { NotificationService } from '../../shared/components/toast/notification.service';
 
 @Component({
   selector: 'app-admin-usuarios',
@@ -29,11 +29,11 @@ import { UsuarioService } from '../../core/services/usuario.service';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
           </div>
-          <input 
-            type="text" 
-            [ngModel]="searchTerm()" 
+          <input
+            type="text"
+            [ngModel]="searchTerm()"
             (ngModelChange)="searchTerm.set($event)"
-            placeholder="Buscar por nombre, @usuario o email..." 
+            placeholder="Buscar por nombre, @usuario o email..."
             class="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm transition-all"
           >
         </div>
@@ -64,7 +64,7 @@ import { UsuarioService } from '../../core/services/usuario.service';
 
       @if (!cargando() && !errorCarga()) {
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          
+         
           @if (filteredUsuarios().length === 0) {
             <div class="flex flex-col items-center py-20 text-gray-300">
               <svg class="w-16 h-16 mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,11 +88,11 @@ import { UsuarioService } from '../../core/services/usuario.service';
                 <tbody class="divide-y divide-gray-50">
                   @for (user of filteredUsuarios(); track user.id) {
                     <tr class="hover:bg-bgMain/40 transition-colors" [class.opacity-50]="user.id === procesandoId()">
-                      
+                     
                       <td class="px-6 py-4">
                         <a [routerLink]="['/perfil', user.id]" class="flex items-center gap-4 group cursor-pointer">
-                          <img [src]="user.foto || getDiceBearAvatar(user.nombreUsuario)" 
-                               alt="Avatar" 
+                          <img [src]="user.foto || getDiceBearAvatar(user.nombreUsuario)"
+                               alt="Avatar"
                                class="w-10 h-10 rounded-full border border-gray-100 object-cover shadow-sm group-hover:ring-2 ring-primary/50 transition-all">
                           <div>
                             <div class="font-bold text-textMain text-sm group-hover:text-primary transition-colors">{{ user.nombre }} {{ user.apellido1 }}</div>
@@ -131,7 +131,7 @@ import { UsuarioService } from '../../core/services/usuario.service';
 
                       <td class="px-6 py-4 text-right">
                         <div class="flex items-center justify-end gap-2">
-                          <a [routerLink]="['/perfil', user.id]" 
+                          <a [routerLink]="['/perfil', user.id]"
                              class="p-2 text-gray-400 hover:text-secondary hover:bg-secondary/10 rounded-xl transition-colors cursor-pointer"
                              title="Ver perfil completo">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +145,7 @@ import { UsuarioService } from '../../core/services/usuario.service';
                                   class="p-2 rounded-xl transition-colors"
                                   [ngClass]="user.bloqueado ? 'text-green-500 hover:bg-green-50' : 'text-red-400 hover:bg-red-50'"
                                   [title]="user.bloqueado ? 'Desbloquear usuario' : 'Bloquear usuario'">
-                            
+                           
                             @if (procesandoId() === user.id) {
                               <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -173,19 +173,37 @@ import { UsuarioService } from '../../core/services/usuario.service';
           }
         </div>
       }
+      
+      @if (alertaError()) {
+        <div class="fixed inset-0 z-[600] flex items-center justify-center bg-textMain/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl text-center animate-in zoom-in-95 duration-200">
+            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-black text-textMain mb-2">Acción no permitida</h3>
+            <p class="text-gray-500 text-sm mb-8 leading-relaxed">{{ alertaError() }}</p>
+            <button (click)="alertaError.set(null)" class="w-full py-4 bg-textMain text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-black transition-all active:scale-95 shadow-lg">
+              De acuerdo
+            </button>
+          </div>
+        </div>
+      }
 
     </div>
   `
 })
 export class AdminUsuariosComponent implements OnInit {
   private usuarioService = inject(UsuarioService);
-  // private notificationService = inject(NotificationService);
+  private notificationService = inject(NotificationService);
 
   usuarios = signal<any[]>([]);
   cargando = signal<boolean>(true);
   errorCarga = signal<string | null>(null);
   searchTerm = signal<string>('');
   procesandoId = signal<number | null>(null);
+  alertaError = signal<string | null>(null); // ¡Esta es la que faltaba!
 
   filteredUsuarios = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
@@ -236,10 +254,20 @@ export class AdminUsuariosComponent implements OnInit {
         this.usuarios.update(current =>
           current.map(u => u.id === user.id ? { ...u, bloqueado: !u.bloqueado } : u)
         );
+        this.notificationService.showSuccess(user.bloqueado ? 'Usuario desbloqueado' : 'Usuario bloqueado');
         this.procesandoId.set(null);
       },
       error: (err) => {
-        console.error('Error al cambiar estado del usuario', err);
+        // DETECTOR DEL ERROR MULTIFORMATO PARA EL "OWNER"
+        let errorMsg = 'Error al cambiar estado del usuario';
+        if (err.error) {
+          if (typeof err.error === 'string') errorMsg = err.error;
+          else if (err.error.message) errorMsg = err.error.message;
+          else if (err.error.error) errorMsg = err.error.error;
+        }
+
+        // ¡Usamos la señal del modal en lugar del notificationService!
+        this.alertaError.set(errorMsg);
         this.procesandoId.set(null);
       }
     });

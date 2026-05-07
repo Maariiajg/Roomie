@@ -16,4 +16,8 @@ export class FeedbackService {
   valorar(idUsuarioPone: number, idUsuarioRecibe: number, dto: any): Observable<any> {
     return this.http.post<any>(`${this.backendUrl}/${idUsuarioPone}/${idUsuarioRecibe}`, dto);
   }
+
+  toggleVisibilidad(idFeedback: number) {
+    return this.http.put(`${this.backendUrl}/${idFeedback}/toggle`, {});
+  }
 }

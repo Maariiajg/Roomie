@@ -49,6 +49,13 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
 
+  // Alias para perfiles de usuario
+  {
+    path: 'perfil/:id',
+    loadComponent: () => import('./features/usuario/perfil-usuario.component').then(m => m.PerfilUsuarioComponent),
+    canActivate: [authGuard]
+  },
+
   // Mi Perfil — alias que redirige al perfil del usuario autenticado
   {
     path: 'mi-perfil',

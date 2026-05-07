@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -13,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.roomie.persistence.entities.Usuario;
 import com.roomie.persistence.entities.enums.Roles;
@@ -203,18 +205,14 @@ public class UsuarioService implements UserDetailsService{
     // BLOQUEAR / DESBLOQUEAR (solo administrador)
     // =========================================================================
     public PerfilUsuarioDTO cambiarEstadoBloqueo(int idUsuario, boolean bloquear) {
-        /*if (datos.getId() != idUsuario) {
-            throw new UsuarioException(
-                    String.format(
-                            "El id del body (%d) y el id del path (%d) no coinciden",
-                            datos.getId(),
-                            idUsuario
-                    )
-            );
-        } */
+        
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
-
+        
+        if (bloquear && "OWNER".equals(usuario.getRol().name())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario que intentas bloquear es el owner. Antes debes cambiar el owner del piso.");
+        }
+        
         usuario.setBloqueado(bloquear);
         Usuario guardado = usuarioRepository.save(usuario);
 

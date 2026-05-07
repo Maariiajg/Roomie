@@ -4,7 +4,9 @@ import { RouterModule } from '@angular/router';
 import { FavoritoService } from '../../shared/services/favorito.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { PisoCardComponent } from '../pisos/components/piso-card.component';
-import { PisoDTO } from '../../core/models/piso.dto';
+import { PisoService } from '../piso/piso.service';
+import { forkJoin, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 
 @Component({
     selector: 'app-mis-favoritos',
@@ -40,8 +42,8 @@ import { PisoDTO } from '../../core/models/piso.dto';
           </div>
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            @for (piso of favoritos(); track piso.id) {
-              <app-piso-card [piso]="piso" [isFavoritoInit]="true"></app-piso-card>
+            @for (fav of favoritos(); track fav.id) {
+              <app-piso-card [piso]="fav.piso" [isFavoritoInit]="true"></app-piso-card>
             }
           </div>
         }
@@ -53,19 +55,29 @@ import { PisoDTO } from '../../core/models/piso.dto';
 export class MisFavoritosComponent implements OnInit {
     private favoritoService = inject(FavoritoService);
     private authService = inject(AuthService);
+    private pisoService = inject(PisoService);
 
-    favoritos = signal<PisoDTO[]>([]);
+    favoritos = signal<any[]>([]);
     isLoading = signal(true);
 
     ngOnInit() {
         const userId = this.authService.userId();
         if (userId) {
-            this.favoritoService.getFavoritosByUsuario(userId).subscribe({
-                next: (favs) => {
-                    // El endpoint GET /favorito devuelve { id, piso: {...}, usuario: {...} }
-                    // Mapeamos para sacar solo el objeto 'piso' que es el que necesita la tarjeta
-                    const pisosExtraidos = favs.map(f => f.piso);
-                    this.favoritos.set(pisosExtraidos);
+            this.favoritoService.getFavoritosByUsuario(userId).pipe(
+                switchMap(favs => {
+                    if (favs.length === 0) return of([]);
+                    // Dado que el backend devuelve un PisoResumenDTO, pedimos el PisoDTO completo por ID
+                    const requests = favs.map(fav => 
+                        this.pisoService.getPisoById(fav.piso.id).pipe(
+                            map(fullPiso => ({ ...fav, piso: fullPiso })),
+                            catchError(() => of(fav)) // Fallback si falla la petición individual
+                        )
+                    );
+                    return forkJoin(requests);
+                })
+            ).subscribe({
+                next: (favsCompletos) => {
+                    this.favoritos.set(favsCompletos);
                     this.isLoading.set(false);
                 },
                 error: () => {

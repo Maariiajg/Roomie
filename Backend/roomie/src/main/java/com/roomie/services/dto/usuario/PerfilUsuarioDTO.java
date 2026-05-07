@@ -31,4 +31,5 @@ public class PerfilUsuarioDTO {
     private String mensajePresentacion;
     private Roles rol;
     private Double calificacionMedia;  // media de feedbacks VALORADO y visibles
+    private boolean bloqueado;
 }

@@ -12,8 +12,9 @@ import { AlquilerService } from '../../../core/services/alquiler.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="bg-white rounded-[2rem] p-5 shadow-sm border border-gray-100 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all group">
+    <div class="bg-white rounded-[2rem] p-5 shadow-sm border border-gray-100 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all group relative">
       
+      <!-- Contenedor de la imagen -->
       <div class="relative w-full h-48 mb-5 rounded-2xl overflow-hidden cursor-pointer" [routerLink]="['/piso', piso.id]">
         <img [src]="piso.fotos?.[0]?.url || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&q=80'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
@@ -22,14 +23,19 @@ import { AlquilerService } from '../../../core/services/alquiler.service';
         </div>
       </div>
       
-      <button (click)="toggleFavorito($event)" class="absolute top-9 right-9 z-20 p-2.5 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 hover:scale-110 transition-all shadow-md">
-        <svg class="w-5 h-5 transition-colors" [ngClass]="isFavorito() ? 'text-red-500 fill-current' : 'text-white stroke-current fill-none'" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+      <!-- BOTÓN FAVORITO: Siempre visible con fondo blanco sólido -->
+      <button (click)="toggleFavorito($event)" class="absolute top-9 right-9 z-20 p-2.5 rounded-full bg-white hover:bg-gray-50 hover:scale-110 transition-all shadow-md flex items-center justify-center">
+        <!-- Corazón: Rojo si es favorito, Gris si no lo es -->
+        <svg class="w-5 h-5 transition-colors" [ngClass]="isFavorito() ? 'text-red-500 fill-current' : 'text-gray-300 stroke-current fill-none'" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
       </button>
 
       <div class="flex flex-col flex-grow">
         <a [routerLink]="['/piso', piso.id]" class="font-black text-lg text-textMain uppercase leading-tight hover:text-primary transition-colors line-clamp-1">{{ piso.direccion }}</a>
         <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Madrid</p>
 
+        <!-- Comodidades booleanas -->
         <div class="flex items-center gap-3 mt-4 mb-2">
           <div [ngClass]="piso.wifi ? 'text-primary' : 'text-gray-200'" title="WiFi"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg></div>
           <div [ngClass]="piso.animales ? 'text-secondary' : 'text-gray-200'" title="Mascotas"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 5a2 2 0 100-4 2 2 0 000 4zm4.5 1.5a2 2 0 100-4 2 2 0 000 4zm-9 0a2 2 0 100-4 2 2 0 000 4zM2 9a2 2 0 100-4 2 2 0 000 4zm16 0a2 2 0 100-4 2 2 0 000 4zm-4.7 2.3c-.6-.4-1.3-.3-1.8.2l-1.5 1.5-1.5-1.5c-.5-.5-1.2-.6-1.8-.2-1.3.8-1.7 2.5-1 3.8.7 1.3 2.1 2.2 3.6 2.2h1.4c1.5 0 2.9-.9 3.6-2.2.7-1.3.3-3-1-3.8z"/></svg></div>

@@ -8,8 +8,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+
+      // Dejamos que el componente (AdminUsuarios) maneje su propio modal
+      if (req.url.includes('/bloquear') || req.url.includes('/desbloquear')) {
+        return throwError(() => error);
+      }
+
       // 401 is handled by auth.interceptor specifically
-      if (error.status && error.status !== 401) { 
+      if (error.status && error.status !== 401) {
         // Fallback standard error messages
         let errorMsg = 'Ha ocurrido un error inesperado.';
 
