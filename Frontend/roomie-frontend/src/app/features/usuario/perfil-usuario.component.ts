@@ -104,10 +104,8 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                         <div>
                           <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Género</label>
                           <select [(ngModel)]="perfilForm.genero" name="genero" class="w-full bg-bgMain border border-gray-100 rounded-2xl p-4 font-bold outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all appearance-none cursor-pointer">
-                            <option value="MASCULINO">Masculino</option>
-                            <option value="FEMENINO">Femenino</option>
-                            <option value="OTRO">Otro</option>
-                            <option value="PREFIERO_NO_DECIRLO">Prefiero no decirlo</option>
+                            <option value="MUJER">Mujer</option>
+                            <option value="HOMBRE">Hombre</option>
                           </select>
                         </div>
 
