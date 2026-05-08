@@ -16,8 +16,9 @@ export class AlquilerService {
     return this.http.get<AlquilerDTO>(`${this.baseUrl}/usuario/${idUsuario}/actual`);
   }
 
-  solicitudesPendientes(idPiso: number): Observable<AlquilerDTO[]> {
-    return this.http.get<AlquilerDTO[]>(`${this.baseUrl}/piso/${idPiso}/solicitudes`);
+  // Añade el parámetro idUsuario y mándalo en la URL
+  solicitudesPendientes(idPiso: number, idUsuario: number): Observable<AlquilerDTO[]> {
+    return this.http.get<AlquilerDTO[]>(`${this.baseUrl}/piso/${idPiso}/solicitudes?idUsuario=${idUsuario}`);
   }
 
   resolverSolicitud(idAlquiler: number, idDueno: number, aceptar: boolean): Observable<AlquilerDTO> {
@@ -52,4 +53,5 @@ export class AlquilerService {
   getAllAlquileres(): Observable<AlquilerDTO[]> {
     return this.http.get<AlquilerDTO[]>(this.baseUrl);
   }
+
 }

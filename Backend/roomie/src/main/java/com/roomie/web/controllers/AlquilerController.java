@@ -64,9 +64,11 @@ public class AlquilerController {
        ========================= */
     @GetMapping("/piso/{idPiso}/solicitudes")
     public ResponseEntity<List<AlquilerDTO>> solicitudesPendientes(
-            @PathVariable int idPiso) {
- 
-        return ResponseEntity.ok(alquilerService.solicitudesPendientes(idPiso));
+            @PathVariable int idPiso,
+            @RequestParam int idUsuario) {
+
+        // Le pasamos los dos datos al servicio
+        return ResponseEntity.ok(alquilerService.solicitudesPendientes(idPiso, idUsuario));
     }
  
     /* =========================

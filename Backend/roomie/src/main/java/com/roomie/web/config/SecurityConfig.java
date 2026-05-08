@@ -39,102 +39,90 @@ public class SecurityConfig {
 	        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	        .authorizeHttpRequests(auth -> auth
 
-	        	    // ── RUTAS COMPLETAMENTE PÚBLICAS ─────────────────────────────
-	        	    .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-	        	    .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-	        	    .requestMatchers(HttpMethod.POST, "/auth/register-admin").permitAll()
-	        	    .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+	            // ── RUTAS COMPLETAMENTE PÚBLICAS ─────────────────────────────
+	            .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+	            .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+	            .requestMatchers(HttpMethod.POST, "/auth/register-admin").permitAll()
+	            .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
 
-	        	    // Ver pisos libres/filtrados (sin token)
-	        	    .requestMatchers(HttpMethod.GET,  "/piso/libres").permitAll()
-	        	    .requestMatchers(HttpMethod.GET,  "/piso/filtrar").permitAll()
-	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}").permitAll()
-	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/fotos").permitAll()
-	        	    .requestMatchers(HttpMethod.GET,  "/foto/**").permitAll()
+	            // Ver pisos libres/filtrados (sin token)
+	            .requestMatchers(HttpMethod.GET,  "/piso/libres").permitAll()
+	            .requestMatchers(HttpMethod.GET,  "/piso/filtrar").permitAll()
+	            .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}").permitAll()
+	            .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/fotos").permitAll()
+	            .requestMatchers(HttpMethod.GET,  "/foto/**").permitAll()
 
-	        	    // Reputación pública
-	        	    .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{idUsuario}").permitAll()
-	        	    .requestMatchers(HttpMethod.GET,  "/feedback/media/{idUsuario}").permitAll()
+	            // Reputación pública
+	            .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{idUsuario}").permitAll()
+	            .requestMatchers(HttpMethod.GET,  "/feedback/media/{idUsuario}").permitAll()
 
-	        	    // ── SOLO ADMINISTRADOR ────────────────────────────────────────
-	        	    .requestMatchers(HttpMethod.GET,  "/administrador").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET,  "/administrador/{id}").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET,  "/administrador/solicitudes").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET,  "/administrador/solicitudes/count").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.PUT,  "/administrador/{id}/aceptar").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET, "/administrador/perfil/{id}").hasRole("ADMINISTRADOR")
+	            // ── SOLO ADMINISTRADOR ────────────────────────────────────────
+	            .requestMatchers(HttpMethod.GET,  "/administrador").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/administrador/{id}").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/administrador/solicitudes").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/administrador/solicitudes/count").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.PUT,  "/administrador/{id}/aceptar").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET, "/administrador/perfil/{id}").hasRole("ADMINISTRADOR")
 
-	        	    .requestMatchers(HttpMethod.GET,  "/piso").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.DELETE, "/piso/{idPiso}").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/piso").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.DELETE, "/piso/{idPiso}").hasRole("ADMINISTRADOR")
 
-	        	    .requestMatchers(HttpMethod.GET,  "/usuario").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/bloquear").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/desbloquear").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/usuario").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/bloquear").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/desbloquear").hasRole("ADMINISTRADOR")
  
-	        	    .requestMatchers(HttpMethod.GET,  "/alquiler").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/{idAlquiler}").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET,  "/feedback/{idFeedback}").hasRole("ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.PUT,  "/feedback/{id}/toggle").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/alquiler").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/alquiler/{idAlquiler}").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/feedback/{idFeedback}").hasRole("ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.PUT,  "/feedback/{id}/toggle").hasRole("ADMINISTRADOR")
 
-	        	    // ── OWNER Y ADMINISTRADOR ─────────────────────────────────────
-	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/piso/{idPiso}/solicitudes").hasAnyRole("OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/{idAlquiler}/resolver").hasAnyRole("OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}/ceder").hasAnyRole("OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}").hasAnyRole("OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.POST, "/foto/**").hasAnyRole("OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.DELETE, "/foto/**").hasAnyRole("OWNER","ADMINISTRADOR")
+	            // ── REGLA UNIFICADA: SOLICITUDES DE ALQUILER ──────────────────
+	            // Permitimos la entrada a los 3 roles. El Service filtrará si el Usuario vive allí o no.
+	            .requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes").hasAnyRole("USUARIO", "OWNER", "ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes/count").hasAnyRole("USUARIO", "OWNER", "ADMINISTRADOR")
+	            
+	            // Solo el dueño o admin puede aceptar/rechazar
+	            .requestMatchers(HttpMethod.PUT, "/alquiler/{idAlquiler}/resolver").hasAnyRole("OWNER", "ADMINISTRADOR")
 
-	        	    // Expulsar usuario del piso (owner forzado)
-	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/piso/{idPiso}/salir").hasAnyRole("USUARIO","OWNER")
+	            // ── CONFIGURACIÓN DE PROPIEDAD Y PISOS ───────────────────────
+	            .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}/ceder").hasAnyRole("OWNER","ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.PUT,  "/piso/{idPiso}").hasAnyRole("OWNER","ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.POST, "/foto/**").hasAnyRole("OWNER","ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.DELETE, "/foto/**").hasAnyRole("OWNER","ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET, "/piso/mio/{idOwner}").hasRole("OWNER")
+	            .requestMatchers(HttpMethod.POST, "/piso/crear/{idUsuario}").hasRole("USUARIO")
 
-	        	    // ── CUALQUIER AUTENTICADO ─────────────────────────────────────
-	        	    .requestMatchers(HttpMethod.GET,  "/usuario/{idUsuario}").authenticated()
-	        	    .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{id}/todos").authenticated()
-	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/actualizar-perfil").authenticated()
-	        	    .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/credenciales").authenticated()
-	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/residente").authenticated()
-	        	    .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/usuarios").authenticated()
-	        	    .requestMatchers(HttpMethod.POST, "/usuario/cerrar-sesion").authenticated()
-	        	    //.requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes/count").hasAnyRole() //NO ES DEFINITIVO, HAY Q CAMBIARLO
+	            // Salir del piso (inquilino o expulsión)
+	            .requestMatchers(HttpMethod.PUT,  "/alquiler/piso/{idPiso}/salir").hasAnyRole("USUARIO","OWNER")
 
-	        	    // ── USUARIO Y OWNER (no administrador) ───────────────────────
-	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/historial").hasAnyRole("USUARIO","OWNER")
-	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/actual").hasAnyRole("USUARIO","OWNER")
-	        	    .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/companeros").hasAnyRole("USUARIO","OWNER")
-	        	    .requestMatchers(HttpMethod.POST, "/alquiler/solicitar").hasRole("USUARIO")
-	        	    .requestMatchers(HttpMethod.PUT,  "/alquiler/{id}/cancelar").hasAnyRole("USUARIO","OWNER")
+	            // ── CUALQUIER AUTENTICADO ─────────────────────────────────────
+	            .requestMatchers(HttpMethod.GET,  "/usuario/{idUsuario}").authenticated()
+	            .requestMatchers(HttpMethod.GET,  "/feedback/usuario/{id}/todos").authenticated()
+	            .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/actualizar-perfil").authenticated()
+	            .requestMatchers(HttpMethod.PUT,  "/usuario/{id}/credenciales").authenticated()
+	            .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/residente").authenticated()
+	            .requestMatchers(HttpMethod.GET,  "/piso/{idPiso}/usuarios").authenticated()
+	            .requestMatchers(HttpMethod.POST, "/usuario/cerrar-sesion").authenticated()
 
-	        	    //--- Solicitudes de alquiler -visible usuarios y solo owners resuelven
-	        	    .requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes").hasAnyRole("USUARIO", "OWNER")
-	        	    .requestMatchers(HttpMethod.GET, "/alquiler/piso/{idPiso}/solicitudes/count").hasAnyRole("USUARIO", "OWNER")
-	        	    .requestMatchers(HttpMethod.PUT, "/alquiler/{idAlquiler}/resolver").hasAnyRole("OWNER", "ADMINISTRADOR")  // Admin también por si necesita intervenir
-	        	    //-- OWNER---------------------
-	        	    .requestMatchers(HttpMethod.GET, "/piso/mio/{idOwner}").hasRole("OWNER")
-	        	    
-	        	    // ── SOLO USUARIO (no owner) ───────────────────────────────────
-	        	    .requestMatchers(HttpMethod.POST, "/piso/crear/{idUsuario}").hasRole("USUARIO")
+	            // ── HISTORIALES Y COMPAÑEROS ──────────────────────────────────
+	            .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/historial").hasAnyRole("USUARIO","OWNER","ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/actual").hasAnyRole("USUARIO","OWNER","ADMINISTRADOR")
+	            .requestMatchers(HttpMethod.GET,  "/alquiler/usuario/{id}/companeros").hasAnyRole("USUARIO","OWNER")
+	            .requestMatchers(HttpMethod.POST, "/alquiler/solicitar").hasRole("USUARIO")
+	            .requestMatchers(HttpMethod.PUT,  "/alquiler/{id}/cancelar").hasAnyRole("USUARIO","OWNER")
 
-	        	    // ── FAVORITOS (usuario y owner) ───────────────────────────────
-	        	    .requestMatchers(HttpMethod.GET,    "/favorito").hasAnyRole("USUARIO","OWNER")
-	        	    .requestMatchers(HttpMethod.GET,    "/favorito/{id}").hasAnyRole("USUARIO","OWNER")
-	        	    .requestMatchers(HttpMethod.POST,   "/favorito").hasAnyRole("USUARIO","OWNER")
-	        	    .requestMatchers(HttpMethod.DELETE, "/favorito").hasAnyRole("USUARIO","OWNER")
+	            // ── FAVORITOS Y FEEDBACKS ─────────────────────────────────────
+	            .requestMatchers(HttpMethod.GET,    "/favorito/**").hasAnyRole("USUARIO","OWNER")
+	            .requestMatchers(HttpMethod.POST,   "/favorito").hasAnyRole("USUARIO","OWNER")
+	            .requestMatchers(HttpMethod.DELETE, "/favorito").hasAnyRole("USUARIO","OWNER")
+	            .requestMatchers(HttpMethod.POST, "/feedback/{idPone}/{idRecibe}").hasAnyRole("USUARIO","OWNER")
 
-	        	    // ── FEEDBACK (usuario y owner) ────────────────────────────────
-	        	    .requestMatchers(HttpMethod.POST, "/feedback/{idPone}/{idRecibe}").hasAnyRole("USUARIO","OWNER")
-	        	    
-
-	        	    // ── ADMIN: historial por cualquier usuario ────────────────────
-	        	    .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{id}/historial").hasAnyRole("USUARIO","OWNER","ADMINISTRADOR")
-	        	    .requestMatchers(HttpMethod.GET, "/alquiler/usuario/{id}/actual").hasAnyRole("USUARIO","OWNER","ADMINISTRADOR")
-
-	        	    .anyRequest().denyAll()
-	        	)
+	            .anyRequest().denyAll()
+	        )
 	        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 	    return http.build();
 	}
-	
 	
 	@Bean
 	PasswordEncoder passwordEncoder() {
@@ -144,11 +132,9 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Divide la cadena por comas y elimina espacios en blanco
         List<String> allowedOrigins = Arrays.stream(frontendUrls.split(","))
-                                            .map(String::trim)
-                                            .toList();
-//        List<String> allowedOrigins = Arrays.asList("http://localhost:4200");
+                                             .map(String::trim)
+                                             .toList();
         configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
@@ -164,6 +150,4 @@ public class SecurityConfig {
     AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-	
-
 }

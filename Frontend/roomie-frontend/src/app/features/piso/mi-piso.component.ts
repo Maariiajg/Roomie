@@ -89,7 +89,6 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
 
               <div class="bg-white rounded-[3rem] p-8 md:p-12 shadow-sm border border-gray-50">
 
-                <!-- =================== PESTAÑA INFORMACIÓN =================== -->
                 @if (activeTab() === 'INFO') {
                   <h2 class="text-2xl font-black text-textMain mb-8 uppercase tracking-tighter">Editar Información</h2>
                  
@@ -177,7 +176,6 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                   </div>
                 }
 
-                <!-- =================== PESTAÑA SOLICITUDES =================== -->
                 @if (activeTab() === 'SOLICITUDES') {
                   <h2 class="text-2xl font-black text-textMain mb-8 uppercase tracking-tighter">Solicitudes Pendientes</h2>
                   @if (solicitudes().length === 0) {
@@ -190,12 +188,10 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                         <div class="bg-bgMain p-6 rounded-[2rem] border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                          
                           <div class="flex items-center gap-4">
-                            <!-- ENLACE AL PERFIL EN LA FOTO -->
                             <a [routerLink]="['/perfil', sol.usuario?.id]" class="shrink-0 hover:opacity-80 transition-opacity">
                               <img [src]="sol.usuario?.foto || 'https://api.dicebear.com/7.x/initials/svg?seed=' + sol.usuario?.nombreUsuario" class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm">
                             </a>
                             <div>
-                              <!-- ENLACE AL PERFIL EN EL NOMBRE -->
                               <a [routerLink]="['/perfil', sol.usuario?.id]" class="font-black text-lg text-textMain uppercase hover:text-primary transition-colors text-left cursor-pointer">
                                 {{ sol.usuario?.nombre }} {{ sol.usuario?.apellido1 }}
                               </a>
@@ -226,7 +222,6 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                   }
                 }
 
-                <!-- =================== PESTAÑA INQUILINOS =================== -->
                 @if (activeTab() === 'INQUILINOS') {
                   <h2 class="text-2xl font-black text-textMain mb-8 uppercase tracking-tighter">Inquilinos Actuales</h2>
                   @if (inquilinos().length === 0) {
@@ -261,7 +256,6 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                   }
                 }
 
-                <!-- =================== PESTAÑA GESTIÓN AVANZADA =================== -->
                 @if (activeTab() === 'AVANZADA') {
                   <h2 class="text-2xl font-black text-textMain mb-8 uppercase tracking-tighter">Gestión Avanzada</h2>
                  
@@ -306,7 +300,6 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
       </div>
     </div>
 
-    <!-- =================== MODAL USUARIO =================== -->
     @if (showUserModal() && selectedUser()) {
       <div class="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
         <div class="bg-white rounded-[3rem] w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
@@ -325,15 +318,14 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
                 </div>
               </div>
             </div>
-            
+           
             <div class="mt-6 flex flex-col gap-2">
               <p class="font-bold text-gray-800 text-sm">{{ selectedUser()!.nombre }} {{ selectedUser()!.apellido1 }}</p>
-              
+             
               <p class="text-[11px] font-black text-gray-400 uppercase tracking-[0.15em]">
                 {{ calcularEdad(selectedUser()!.anioNacimiento) }} años
               </p>
 
-              <!-- ENLACE DIRECTO AL PERFIL DEL COMPAÑERO -->
               <a [routerLink]="['/perfil', selectedUser()!.id]" (click)="cerrarModalUsuario()" class="text-primary font-bold text-xs uppercase tracking-widest hover:underline w-max">
                 Ver perfil completo →
               </a>
@@ -363,7 +355,6 @@ type Tab = 'INFO' | 'SOLICITUDES' | 'INQUILINOS' | 'AVANZADA';
       </div>
     }
 
-    <!-- =================== MODAL EXPULSAR =================== -->
     @if (showExpulsarModal() && userToExpulsar()) {
       <div class="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
         <div class="bg-white rounded-[3rem] w-full max-w-md p-10 text-center shadow-2xl animate-in zoom-in-95 duration-200">
@@ -463,7 +454,8 @@ export class MiPisoComponent implements OnInit {
       error: (err) => console.error('Aviso: No se pudieron cargar los inquilinos', err)
     });
 
-    this.alquilerService.solicitudesPendientes(idPiso).subscribe({
+    // ✅ AQUÍ ESTÁ LA CORRECCIÓN: SE AÑADE this.myId()! COMO SEGUNDO PARÁMETRO
+    this.alquilerService.solicitudesPendientes(idPiso, this.myId()!).subscribe({
       next: (sols) => this.solicitudes.set(sols),
       error: (err) => console.error('Aviso: No se pudieron cargar las solicitudes', err)
     });

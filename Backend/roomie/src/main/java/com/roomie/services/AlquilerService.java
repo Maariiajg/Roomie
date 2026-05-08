@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.roomie.persistence.entities.Alquiler;
 import com.roomie.persistence.entities.Piso;
@@ -101,8 +103,24 @@ public class AlquilerService {
     // =========================================================================
     // 5. VER SOLICITUDES PENDIENTES DE UN PISO
     // =========================================================================
-    public List<AlquilerDTO> solicitudesPendientes(int idPiso) {
-        pisoService.findById(idPiso);
+    public List<AlquilerDTO> solicitudesPendientes(int idPiso, int idUsuarioAutenticado) {
+        Piso piso = pisoService.findById(idPiso);
+        Usuario usuarioLogueado = usuarioService.findById(idUsuarioAutenticado);
+        
+        boolean isOwner = piso.getOwner().getId() == idUsuarioAutenticado;
+        boolean isAdmin = usuarioLogueado.getRol() == Roles.ADMINISTRADOR;
+        
+        // Usamos el método que YA TIENES en tu repository (devuelve Optional):
+        boolean isResidente = alquilerRepository.findByPisoIdAndUsuarioIdAndEstadoSolicitud(
+                idPiso, idUsuarioAutenticado, AlquilerEstadoSolicitud.ACEPTADA
+        ).isPresent();
+
+        // Si no eres el dueño, ni admin, ni vives ahí... ¡Bloqueado!
+        if (!isOwner && !isAdmin && !isResidente) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "No tienes permiso para ver las solicitudes de este piso.");
+        }
+
         return alquilerRepository
                 .findByPisoIdAndEstadoSolicitud(idPiso, AlquilerEstadoSolicitud.PENDIENTE)
                 .stream()

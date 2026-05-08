@@ -735,37 +735,50 @@ export class PerfilUsuarioComponent implements OnInit {
   }
 
   cargarDatosExtra(myId: number) {
+    // 1. Historial de solicitudes enviadas a otros pisos
+    this.alquilerService.historialDeUsuario(myId).subscribe({
+      next: (als) => this.misSolicitudesEnviadas.set(als)
+    });
+
+    // 2. Piso donde resido actualmente (Inquilino o Dueño)
     this.alquilerService.alquilerActual(myId).subscribe({
       next: (alq) => {
         if (alq?.id) {
           this.miEstancia.set(alq);
-          const pisoId = alq.pisoId ?? alq.piso?.id;
+          const pisoId = alq.piso?.id || alq.pisoId || (typeof alq.piso === 'number' ? alq.piso : null);
           if (pisoId) {
             this.pisoService.getPisoById(pisoId).subscribe(p => this.pisoEstancia.set(p));
 
-            if (!this.isOwner()) {
-              this.alquilerService.solicitudesPendientes(pisoId).subscribe(sols => {
-                this.solicitudesRecibidas.update(curr => [...curr, ...sols]);
+            // ✅ AQUÍ ESTABA BIEN (tiene pisoId y myId)
+            this.alquilerService.solicitudesPendientes(pisoId, myId).subscribe(sols => {
+              const marcadas = sols.map((s: any) => ({ ...s, _isMyResidence: true }));
+              this.solicitudesRecibidas.update(curr => {
+                const nuevos = marcadas.filter(m => !curr.some(c => c.id === m.id));
+                return [...curr, ...nuevos];
               });
-            }
+            });
           }
         }
       },
       error: () => { }
     });
 
-    this.alquilerService.historialDeUsuario(myId).subscribe({
-      next: (als) => this.misSolicitudesEnviadas.set(als)
-    });
-
-    if (this.isOwner()) {
+    // 3. Pisos que son míos en PROPIEDAD (Owner o Admin)
+    if (this.isOwner() || this.isAdmin()) {
       this.pisoService.getLibres().subscribe(pisos => {
-        const misPisos = pisos.filter(p => p.owner.id === myId);
-        misPisos.forEach(p => {
-          this.alquilerService.solicitudesPendientes(p.id).subscribe(sols => {
+        const misPisos = pisos.filter((p: any) => p.owner?.id === myId || p.idOwner === myId);
+
+        misPisos.forEach((p: any) => {
+          // ❌ AQUÍ ESTABA EL ERROR: Le faltaba el ", myId"
+          this.alquilerService.solicitudesPendientes(p.id, myId).subscribe(sols => {
+            const marcadas = sols.map((s: any) => ({ ...s, _isMyProperty: true }));
             this.solicitudesRecibidas.update(curr => {
-              const nuevos = sols.filter(s => !curr.some(c => c.id === s.id));
-              return [...curr, ...nuevos];
+              let updated = curr.map(c => {
+                const found = marcadas.find(m => m.id === c.id);
+                return found ? { ...c, _isMyProperty: true } : c;
+              });
+              const nuevos = marcadas.filter(m => !updated.some(u => u.id === m.id));
+              return [...updated, ...nuevos];
             });
           });
         });
