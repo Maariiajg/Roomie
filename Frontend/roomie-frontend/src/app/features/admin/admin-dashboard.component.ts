@@ -23,7 +23,6 @@ interface KpiCard {
   template: `
     <div class="p-8 min-h-screen bg-bgMain">
 
-      <!-- ─── Page Header ─── -->
       <div class="mb-8">
         <div class="flex items-center gap-3 mb-1">
           <span class="text-[10px] bg-primary/10 text-primary font-black uppercase tracking-widest px-3 py-1 rounded-full">
@@ -34,7 +33,6 @@ interface KpiCard {
         <p class="text-gray-400 text-sm mt-1 font-medium">Vista general de la plataforma Roomie</p>
       </div>
 
-      <!-- ─── Loading Global ─── -->
       @if (cargando()) {
         <div class="flex flex-col items-center justify-center py-32 gap-4">
           <div class="relative">
@@ -45,7 +43,6 @@ interface KpiCard {
         </div>
       }
 
-      <!-- ─── Error Global ─── -->
       @if (!cargando() && errorCarga()) {
         <div class="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start gap-4 mb-8">
           <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -67,12 +64,8 @@ interface KpiCard {
 
       @if (!cargando()) {
 
-        <!-- ═══════════════════════════════════════════════
-             SECCIÓN A: KPI CARDS
-        ═══════════════════════════════════════════════ -->
         <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-10">
 
-          <!-- Total Usuarios -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-start justify-between mb-4 relative">
@@ -91,7 +84,6 @@ interface KpiCard {
             <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-hover rounded-b-2xl"></div>
           </div>
 
-          <!-- Total Pisos -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-start justify-between mb-4 relative">
@@ -110,7 +102,6 @@ interface KpiCard {
             <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-secondary to-blue-400 rounded-b-2xl"></div>
           </div>
 
-          <!-- Pisos Libres -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-start justify-between mb-4 relative">
@@ -129,7 +120,6 @@ interface KpiCard {
             <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-emerald-400 rounded-b-2xl"></div>
           </div>
 
-          <!-- Solicitudes Admin Pendientes -->
           <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group relative overflow-hidden"
                [class.border-red-200]="solicitudesPendientes() > 0"
                [class.bg-red-50]="solicitudesPendientes() > 0">
@@ -169,12 +159,8 @@ interface KpiCard {
 
         </section>
 
-        <!-- ═══════════════════════════════════════════════
-             SECCIÓN B: ACTIVIDAD RECIENTE
-        ═══════════════════════════════════════════════ -->
         <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-          <!-- Header de sección -->
           <div class="px-6 py-5 border-b border-gray-50 flex items-center justify-between">
             <div>
               <h2 class="text-base font-black text-textMain">Actividad Reciente</h2>
@@ -188,7 +174,6 @@ interface KpiCard {
             </div>
           </div>
 
-          <!-- Loading alquileres -->
           @if (cargandoAlquileres()) {
             <div class="flex items-center justify-center py-16 gap-3">
               <div class="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin"></div>
@@ -196,7 +181,6 @@ interface KpiCard {
             </div>
           }
 
-          <!-- Error alquileres -->
           @if (!cargandoAlquileres() && errorAlquileres()) {
             <div class="flex items-center gap-3 px-6 py-8 text-red-400">
               <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,7 +191,6 @@ interface KpiCard {
             </div>
           }
 
-          <!-- Tabla alquileres -->
           @if (!cargandoAlquileres() && !errorAlquileres()) {
             @if (recentAlquileres().length === 0) {
               <div class="flex flex-col items-center py-16 text-gray-300">
@@ -252,7 +235,7 @@ interface KpiCard {
 
                         <td class="px-6 py-4">
                           <div class="font-bold text-textMain text-xs truncate max-w-[180px]">
-                            {{ alquiler.piso.direccion || ('Piso #' + alquiler.pisoId) }}
+                            {{ alquiler.piso?.direccion || ('Piso #' + alquiler.pisoId) }}
                           </div>
                           <div class="text-gray-400 text-[10px] font-mono">ID: {{ alquiler.pisoId }}</div>
                         </td>
@@ -268,10 +251,10 @@ interface KpiCard {
 
                         <td class="px-6 py-4">
                           <div class="text-xs font-bold text-textMain">
-                            {{ formatDate(alquiler.fSolicitud || alquiler.fechaInicio) }}
+                            {{ formatDate($any(alquiler).fsolicitud || $any(alquiler).fSolicitud || $any(alquiler).fInicio) }}
                           </div>
-                          <div class="text-[10px] text-gray-400 font-mono">
-                            {{ alquiler.fSolicitud || alquiler.fechaInicio }}
+                          <div class="text-[10px] text-gray-400 font-mono mt-0.5">
+                            {{ $any(alquiler).fsolicitud || $any(alquiler).fSolicitud || $any(alquiler).fInicio }}
                           </div>
                         </td>
 
@@ -309,7 +292,7 @@ export class AdminDashboardComponent implements OnInit {
   errorAlquileres = signal<string | null>(null);
 
   // Recent rentals
-  recentAlquileres = signal<AlquilerDTO[]>([]);
+  recentAlquileres = signal<any[]>([]); // Cambiado a any[] para evitar errores de DTO estricto
 
   ngOnInit(): void {
     this.cargarTodo();
@@ -347,10 +330,10 @@ export class AdminDashboardComponent implements OnInit {
 
     this.alquilerService.getAllAlquileres().subscribe({
       next: (alquileres) => {
-        // Ordenar por fecha descendente y tomar los 5 más recientes
-        const sorted = [...alquileres].sort((a, b) => {
-          const fechaA = new Date(a.fSolicitud || a.fechaInicio || '').getTime();
-          const fechaB = new Date(b.fSolicitud || b.fechaInicio || '').getTime();
+        // Al poner (a: any, b: any) evitamos que salte el error de compilación
+        const sorted = [...alquileres].sort((a: any, b: any) => {
+          const fechaA = new Date(a.fsolicitud || a.fSolicitud || a.fInicio || '').getTime();
+          const fechaB = new Date(b.fsolicitud || b.fSolicitud || b.fInicio || '').getTime();
           return fechaB - fechaA;
         });
         this.recentAlquileres.set(sorted.slice(0, 5));

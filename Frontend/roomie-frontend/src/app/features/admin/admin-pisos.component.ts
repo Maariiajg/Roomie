@@ -6,10 +6,10 @@ import { PisoDTO } from '../../core/models/piso.dto';
 import { PisoService } from '../piso/piso.service';
 
 @Component({
-    selector: 'app-admin-pisos',
-    standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule],
-    template: `
+  selector: 'app-admin-pisos',
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule],
+  template: `
     <div class="p-8 min-h-screen bg-bgMain relative">
 
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
@@ -95,10 +95,10 @@ import { PisoService } from '../piso/piso.service';
 
                       <td class="px-6 py-4 text-center">
                         <div class="text-xs font-bold font-mono">
-                          <span [ngClass]="(piso.numOcupantesActual || 0) >= 4 ? 'text-red-500' : 'text-textMain'">
+                          <span [ngClass]="(piso.numOcupantesActual || 0) >= piso.numTotalHabitaciones ? 'text-red-500' : 'text-textMain'">
                             {{ piso.numOcupantesActual || 0 }}
                           </span> 
-                          <span class="text-gray-400">/ 4</span>
+                          <span class="text-gray-400">/ {{ piso.numTotalHabitaciones }}</span>
                         </div>
                       </td>
 
@@ -107,7 +107,7 @@ import { PisoService } from '../piso/piso.service';
                       </td>
 
                       <td class="px-6 py-4 text-center">
-                        @if ((piso.numOcupantesActual || 0) < 4) {
+                        @if ((piso.numOcupantesActual || 0) < piso.numTotalHabitaciones) {
                           <span class="inline-flex items-center gap-1.5 bg-green-50 text-green-600 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider">
                             <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> Con Plazas
                           </span>
@@ -173,77 +173,77 @@ import { PisoService } from '../piso/piso.service';
   `
 })
 export class AdminPisosComponent implements OnInit {
-    private pisoService = inject(PisoService);
-    // private notificationService = inject(NotificationService);
+  private pisoService = inject(PisoService);
+  // private notificationService = inject(NotificationService);
 
-    pisos = signal<PisoDTO[]>([]);
-    cargando = signal(true);
-    errorCarga = signal<string | null>(null);
+  pisos = signal<PisoDTO[]>([]);
+  cargando = signal(true);
+  errorCarga = signal<string | null>(null);
 
-    // Añadido para el buscador
-    searchTerm = signal<string>('');
+  // Añadido para el buscador
+  searchTerm = signal<string>('');
 
-    // Computed Signal para filtrar los pisos en tiempo real
-    filteredPisos = computed(() => {
-        const term = this.searchTerm().toLowerCase().trim();
-        if (!term) return this.pisos();
+  // Computed Signal para filtrar los pisos en tiempo real
+  filteredPisos = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    if (!term) return this.pisos();
 
-        return this.pisos().filter(p =>
-            (p.direccion?.toLowerCase() || '').includes(term) ||
-            (p.owner?.nombreUsuario?.toLowerCase() || '').includes(term) ||
-            (p.id?.toString() || '').includes(term)
-        );
+    return this.pisos().filter(p =>
+      (p.direccion?.toLowerCase() || '').includes(term) ||
+      (p.owner?.nombreUsuario?.toLowerCase() || '').includes(term) ||
+      (p.id?.toString() || '').includes(term)
+    );
+  });
+
+  // Modal State
+  modalAbierto = signal(false);
+  pisoSeleccionado = signal<PisoDTO | null>(null);
+  procesando = signal(false);
+
+  ngOnInit() {
+    this.loadPisos();
+  }
+
+  loadPisos() {
+    this.cargando.set(true);
+    this.pisoService.getAllPisos().subscribe({
+      next: (data) => {
+        this.pisos.set(data);
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.errorCarga.set('No se pudieron cargar los pisos del servidor.');
+        this.cargando.set(false);
+      }
     });
+  }
 
-    // Modal State
-    modalAbierto = signal(false);
-    pisoSeleccionado = signal<PisoDTO | null>(null);
-    procesando = signal(false);
+  abrirModalEliminar(piso: PisoDTO) {
+    this.pisoSeleccionado.set(piso);
+    this.modalAbierto.set(true);
+  }
 
-    ngOnInit() {
+  cerrarModal() {
+    this.modalAbierto.set(false);
+    this.pisoSeleccionado.set(null);
+  }
+
+  confirmarEliminacion() {
+    const id = this.pisoSeleccionado()?.id;
+    if (!id) return;
+
+    this.procesando.set(true);
+    this.pisoService.deletePiso(id).subscribe({
+      next: () => {
+        // this.notificationService.showSuccess('Piso eliminado con éxito.');
+        this.cerrarModal();
+        this.procesando.set(false);
         this.loadPisos();
-    }
-
-    loadPisos() {
-        this.cargando.set(true);
-        this.pisoService.getAllPisos().subscribe({
-            next: (data) => {
-                this.pisos.set(data);
-                this.cargando.set(false);
-            },
-            error: () => {
-                this.errorCarga.set('No se pudieron cargar los pisos del servidor.');
-                this.cargando.set(false);
-            }
-        });
-    }
-
-    abrirModalEliminar(piso: PisoDTO) {
-        this.pisoSeleccionado.set(piso);
-        this.modalAbierto.set(true);
-    }
-
-    cerrarModal() {
-        this.modalAbierto.set(false);
-        this.pisoSeleccionado.set(null);
-    }
-
-    confirmarEliminacion() {
-        const id = this.pisoSeleccionado()?.id;
-        if (!id) return;
-
-        this.procesando.set(true);
-        this.pisoService.deletePiso(id).subscribe({
-            next: () => {
-                // this.notificationService.showSuccess('Piso eliminado con éxito.');
-                this.cerrarModal();
-                this.procesando.set(false);
-                this.loadPisos();
-            },
-            error: () => {
-                // this.notificationService.showError('Error al eliminar el piso.');
-                this.procesando.set(false);
-            }
-        });
-    }
+      },
+      error: () => {
+        // this.notificationService.showError('Error al eliminar el piso.');
+        this.procesando.set(false);
+      }
+    });
+  }
 }
