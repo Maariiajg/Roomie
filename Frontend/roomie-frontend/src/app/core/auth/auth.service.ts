@@ -99,7 +99,7 @@ export class AuthService {
   }
 
   registerAdmin(dto: any): Observable<any> {
-    return this.http.post<any>(`${this.backendUrl}/auth/register-admin`, dto);
+    return this.http.post(`${this.backendUrl}/auth/register-admin`, dto, { responseType: 'text' });
   }
 
   setAuthState(accessToken: string, refreshToken: string, rol: UserRole, nombreUsuario: string, idUsuario: number) {

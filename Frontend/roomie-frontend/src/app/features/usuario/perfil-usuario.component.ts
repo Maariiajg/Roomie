@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UsuarioService } from '../../core/services/usuario.service';
@@ -21,6 +21,12 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
       <div class="max-w-7xl mx-auto">
 
         @if (usuario()) {
+          @if (isAdmin() && !isMyProfile()) {
+            <button (click)="goBack()" class="mb-6 bg-white border border-gray-100 hover:bg-gray-50 text-textMain px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2 w-fit transition-all shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+              Volver
+            </button>
+          }
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
             
             <div class="lg:col-span-4">
@@ -612,6 +618,7 @@ export class PerfilUsuarioComponent implements OnInit {
   private feedbackService = inject(FeedbackService);
   private alquilerService = inject(AlquilerService);
   private pisoService = inject(PisoService);
+  private location = inject(Location);
 
   currentUserId = computed(() => this.authService.userId());
 
@@ -725,7 +732,7 @@ export class PerfilUsuarioComponent implements OnInit {
   cargarFeedbacks(idUsuario: number) {
     this.feedbackService.getFeedbacksByUsuario(idUsuario).subscribe({
       next: (fbs) => {
-        const visibles = fbs.filter((fb: any) => fb.estadoFeedback !== 'NO_DISPONIBLE');
+        const visibles = fbs.filter((fb: any) => fb.estadoFeedback !== 'NO_DISPONIBLE' && fb.visible !== false);
         this.feedbacks.set(visibles);
       },
       error: (err) => console.error('Error al cargar feedbacks', err)
@@ -970,5 +977,9 @@ export class PerfilUsuarioComponent implements OnInit {
         this.notificationService.showError(errorMsg);
       }
     });
+  }
+
+  goBack() {
+    this.location.back();
   }
 }

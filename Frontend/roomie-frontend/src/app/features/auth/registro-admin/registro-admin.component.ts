@@ -65,7 +65,7 @@ export class RegistroAdminComponent {
       next: () => {
         this.isLoading = false;
         // 1. Aquí está el cartel que bloquea la pantalla
-        alert('Tu perfil ha sido creado con éxito, ahora debes esperar a ser aceptado por un administrador activo');
+        alert('Tu usuario ha sido creado correctamente. Espera a que un administrador te acepte la solicitud.');
         // 2. Aquí está la redirección al home
         this.router.navigate(['/home']);
       },

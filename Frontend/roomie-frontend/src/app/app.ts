@@ -6,6 +6,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 import { HeaderComponent } from './core/layout/header/header.component';
 import { FooterComponent } from './core/layout/footer/footer.component';
 import { CommonModule } from '@angular/common';
+import { AuthService } from './core/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +18,7 @@ import { CommonModule } from '@angular/common';
 
 export class App {
   private router = inject(Router);
+  private authService = inject(AuthService);
   
   // Detecta cambios de ruta para ocultar el layout en el detalle del piso
   currentUrl = toSignal(
@@ -28,6 +30,14 @@ export class App {
 
   showLayout = computed(() => {
     const url = this.currentUrl() || '';
-    return !url.includes('/piso/') && !url.startsWith('/admin');
+    if (url.includes('/piso/')) return false;
+    if (url.startsWith('/admin')) return false;
+    
+    // Ocultar layout si un administrador está viendo un perfil
+    if ((url.includes('/usuario/') || url.includes('/perfil/')) && this.authService.role() === 'ADMINISTRADOR') {
+      return false;
+    }
+    
+    return true;
   });
 }
