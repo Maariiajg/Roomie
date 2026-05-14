@@ -441,9 +441,9 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                 <div class="space-y-6">
                   
                   @if (usuario()!.bloqueado) {
-                    <div class="bg-red-100 border border-red-200 text-red-600 p-6 rounded-[2rem] flex items-center justify-between shadow-sm">
-                      <div class="flex items-center gap-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <div class="bg-red-100 border border-red-200 text-red-600 p-6 rounded-[2rem] shadow-sm">
+                      <div class="flex flex-col sm:flex-row items-center text-center sm:text-left gap-4">
+                        <svg class="w-8 h-8 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         <div>
                           <h4 class="font-black uppercase tracking-widest text-sm">Usuario Bloqueado</h4>
                           <p class="font-bold text-xs mt-1">Este perfil ha sido suspendido por un administrador.</p>
@@ -453,10 +453,10 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                   }
 
                   @if (isAdmin()) {
-                    <div class="bg-gray-800 p-6 rounded-[2rem] flex items-center justify-between shadow-sm">
+                    <div class="bg-gray-800 p-6 rounded-[2rem] flex flex-col sm:flex-row items-center sm:justify-between gap-4 shadow-sm text-center sm:text-left">
                       <span class="text-white font-black uppercase tracking-widest text-[10px]">Panel de Administración</span>
                       <button (click)="toggleBloqueoUsuario()" 
-                              class="px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95"
+                              class="w-full sm:w-auto px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95"
                               [ngClass]="usuario()!.bloqueado ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'">
                         {{ usuario()!.bloqueado ? 'Desbloquear Usuario' : 'Bloquear Usuario' }}
                       </button>
@@ -488,10 +488,10 @@ type Tab = 'INFO' | 'SEGURIDAD' | 'FEEDBACKS' | 'ALQUILERES' | 'NOTIFICACIONES';
                     } @else {
                       <div class="space-y-4">
                         @for (fb of perfilAjenoFeedbacks(); track fb.id) {
-                          <div class="p-5 bg-bgMain rounded-[2rem] border border-gray-100 flex gap-4">
-                            <img [src]="fb.fotoUsuarioPone || 'https://api.dicebear.com/7.x/initials/svg?seed=' + fb.nombreUsuarioPone" class="w-12 h-12 rounded-full object-cover border border-white shadow-sm">
-                            <div class="flex-1">
-                              <div class="flex justify-between items-start mb-2">
+                          <div class="p-5 bg-bgMain rounded-[2rem] border border-gray-100 flex flex-col sm:flex-row gap-4 items-center sm:items-start text-center sm:text-left">
+                            <img [src]="fb.fotoUsuarioPone || 'https://api.dicebear.com/7.x/initials/svg?seed=' + fb.nombreUsuarioPone" class="w-12 h-12 rounded-full object-cover border border-white shadow-sm shrink-0">
+                            <div class="flex-1 w-full">
+                              <div class="flex flex-col sm:flex-row sm:justify-between items-center sm:items-start gap-2 mb-2">
                                 <span class="font-black uppercase text-xs tracking-widest text-textMain">{{ fb.nombreUsuarioPone }}</span>
                                 <div class="flex text-alert">
                                   @for (s of [1,2,3,4,5]; track s) {

@@ -16,7 +16,7 @@ import { PisoCardComponent } from './components/piso-card.component';
   template: `
     <div class="min-h-screen bg-bgMain pb-12 overflow-x-hidden">
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 flex justify-between items-end">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
         <div>
           <h2 class="text-3xl font-black text-textMain tracking-tighter uppercase italic">Explorar Pisos</h2>
           <p class="text-primary font-bold text-xs uppercase tracking-[0.2em] mt-1">
