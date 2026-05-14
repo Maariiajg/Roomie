@@ -54,7 +54,7 @@ export class RegistroAdminComponent {
 
     this.isLoading = true;
     const formValue = this.registroForm.value;
-    
+
     // Formatear la fecha
     const dto = {
       ...formValue,
@@ -64,8 +64,10 @@ export class RegistroAdminComponent {
     this.authService.registerAdmin(dto).subscribe({
       next: () => {
         this.isLoading = false;
-        this.notificationService.showSuccess('Solicitud enviada. Tu cuenta debe ser aceptada por un administrador');
-        this.router.navigate(['/login']);
+        // 1. Aquí está el cartel que bloquea la pantalla
+        alert('Tu perfil ha sido creado con éxito, ahora debes esperar a ser aceptado por un administrador activo');
+        // 2. Aquí está la redirección al home
+        this.router.navigate(['/home']);
       },
       error: (err) => {
         this.isLoading = false;
@@ -77,12 +79,12 @@ export class RegistroAdminComponent {
   get avatarPreview(): string {
     const foto = this.registroForm.get('foto')?.value;
     if (foto) return foto;
-    
+
     const nombreUsuario = this.registroForm.get('nombreUsuario')?.value;
     if (nombreUsuario && nombreUsuario.trim().length > 0) {
       return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(nombreUsuario)}`;
     }
-    
+
     return '';
   }
 
