@@ -1,0 +1,55 @@
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MYSQL_ROOT_PASSWORD: secreta
+      MYSQL_DATABASE: daw
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: secreta
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql/data
+    restart: always
+    
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      MYSQL_ROOT_PASSWORD: secreta
+    restart: always
+    ports:
+      - 8091:80
+    depends_on:
+      - db
+
+  backend:
+    image: vricheb973/daw-task-backend:latest
+    restart: always
+    environment:
+      PERFIL_ACTIVO: prod
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/daw-task?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: secreta
+      FRONTEND_URL: http://217.160.115.67
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  frontend:
+    image: vricheb973/daw-task-frontend:latest
+    restart: always
+    environment:
+      # Si usas ngx-env o similar para parametrizar el frontend
+      API_URL: http://backend:8080/dawtask
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+volumes:
+  dbdata:
