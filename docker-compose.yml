@@ -28,25 +28,25 @@ services:
       - db
 
   backend:
-    image: vricheb973/daw-task-backend:latest
+    image: maariiajg/roomie-backend:latest
     restart: always
     environment:
       PERFIL_ACTIVO: prod
-      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/daw-task?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/roomie?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: secreta
-      FRONTEND_URL: http://217.160.115.67
+      FRONTEND_URL: http://192.168.15.227
     ports:
       - "8080:8080"
     depends_on:
       - db
 
   frontend:
-    image: vricheb973/daw-task-frontend:latest
+    image: maariiajg/roomie-frontend:latest
     restart: always
     environment:
       # Si usas ngx-env o similar para parametrizar el frontend
-      API_URL: http://backend:8080/dawtask
+      API_URL: http://192.168.15.227:8080
     ports:
       - "80:80"
     depends_on:
