@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface FotoDTO {
   id: number;
@@ -12,7 +13,7 @@ export interface FotoDTO {
 })
 export class FotoService {
   private http = inject(HttpClient);
-  private backendUrl = 'http://localhost:8081/foto';
+  private backendUrl = `${environment.apiUrl}/foto`;
 
   getFotosByPiso(idPiso: number): Observable<FotoDTO[]> {
     return this.http.get<FotoDTO[]>(`${this.backendUrl}/${idPiso}/fotos`);

@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from '../../shared/components/toast/notification.service';
+import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -28,7 +29,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       // Manejar el 401 (Unauthorized) intentando refrescar el token
       if (error.status === 401 && authService.refreshToken()) {
-        const backendUrl = ''; // proxy
+        const backendUrl = environment.apiUrl; 
         const refreshReq = { refresh: authService.refreshToken() };
 
         return http.post<any>(`${backendUrl}/auth/refresh`, refreshReq).pipe(

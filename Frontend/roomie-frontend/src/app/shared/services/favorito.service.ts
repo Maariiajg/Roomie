@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FavoritoService {
   private http = inject(HttpClient);
-  private backendUrl = 'http://localhost:8081/favorito';
+  private backendUrl = `${environment.apiUrl}/favorito`;
 
   // Obtener favoritos de un usuario
   getFavoritosByUsuario(idUsuario: number): Observable<any[]> {

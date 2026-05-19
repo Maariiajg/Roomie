@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PisoDTO } from '../../core/models/piso.dto';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PisoService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8081/piso'; // Ajusta la ruta si en tu Controller es diferente
+  private baseUrl = `${environment.apiUrl}/piso`; // Ajusta la ruta si en tu Controller es diferente
 
   // ==========================================
   // LECTURA DE PISOS (Buscador y Feed)

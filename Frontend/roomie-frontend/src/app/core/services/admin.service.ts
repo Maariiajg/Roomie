@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { PisoDTO } from '../models/piso.dto';
+import { environment } from '../../../environments/environment';
 
 export interface AdminSolicitudDTO {
   id: number;
@@ -21,7 +22,7 @@ export interface AdminSolicitudDTO {
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8081';
+  private baseUrl = environment.apiUrl;
 
   // 🌟 ESTADO COMPARTIDO: Contador global para el Badge
   public pendingAdminsCount = signal<number>(0);
