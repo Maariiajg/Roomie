@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: '' // Or leave blank if your proxy is configured for root
+  apiUrl: (window as any)['env']?.API_URL || 'http://192.168.15.227:8080'
 };

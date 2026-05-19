@@ -42,24 +42,25 @@ export class AuthService {
   readonly refreshToken = computed(() => this.state().refreshToken);
   readonly getUserRole = computed(() => this.state().rol);
   // Alias de backward compatibility para no romper Header/Guards inmediatamente si ya lo usaban
-  readonly role = computed(() => this.state().rol); 
+  readonly role = computed(() => this.state().rol);
   readonly isLoggedIn = computed(() => this.state().isLoggedIn);
   readonly username = computed(() => this.state().nombreUsuario);
   readonly userId = computed(() => this.state().idUsuario);
 
-  constructor() {}
+  constructor() { }
 
   login(dto: InicioSesionDTO): Observable<AuthResponseDTO> {
+    console.log(this.backendUrl);
     return this.http.post<AuthResponseDTO>(`${this.backendUrl}/auth/login`, dto, {
       headers: { 'Content-Type': 'application/json' }
     })
       .pipe(
         tap(response => {
           this.setAuthState(
-            response.accessToken, 
+            response.accessToken,
             response.refreshToken,
-            response.rol as UserRole, 
-            response.nombreUsuario, 
+            response.rol as UserRole,
+            response.nombreUsuario,
             response.idUsuario
           );
         })
@@ -72,12 +73,12 @@ export class AuthService {
     }).pipe(
       tap(response => {
         this.setAuthState(
-            response.accessToken, 
-            response.refreshToken,
-            response.rol as UserRole, 
-            response.nombreUsuario, 
-            response.idUsuario
-          );
+          response.accessToken,
+          response.refreshToken,
+          response.rol as UserRole,
+          response.nombreUsuario,
+          response.idUsuario
+        );
       })
     );
   }
@@ -85,12 +86,12 @@ export class AuthService {
   register(dto: UsuarioRegistroDTO): Observable<any> {
     return this.http.post<any>(`${this.backendUrl}/auth/register`, dto).pipe(
       tap(response => {
-        if(response.accessToken) {
+        if (response.accessToken) {
           this.setAuthState(
-            response.accessToken, 
+            response.accessToken,
             response.refreshToken,
-            response.rol as UserRole, 
-            response.nombreUsuario, 
+            response.rol as UserRole,
+            response.nombreUsuario,
             response.idUsuario
           );
         }
@@ -104,16 +105,16 @@ export class AuthService {
 
   setAuthState(accessToken: string, refreshToken: string, rol: UserRole, nombreUsuario: string, idUsuario: number) {
     localStorage.setItem('accessToken', accessToken);
-    if(refreshToken) {
+    if (refreshToken) {
       localStorage.setItem('refreshToken', refreshToken);
     }
     localStorage.setItem('rol', rol || '');
     localStorage.setItem('nombreUsuario', nombreUsuario);
-    
+
     if (idUsuario !== undefined && idUsuario !== null) {
       localStorage.setItem('idUsuario', idUsuario.toString());
     }
-    
+
     this.state.set({
       accessToken,
       refreshToken: refreshToken || null,
