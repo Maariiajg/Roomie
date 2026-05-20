@@ -31,6 +31,7 @@ export class RegistroComponent {
   private notificationService = inject(NotificationService);
 
   isLoading = false;
+  errorMessage: string | null = null;
   generos = Object.values(Genero);
 
   registroForm: FormGroup = this.fb.group({
@@ -56,6 +57,7 @@ export class RegistroComponent {
     }
 
     this.isLoading = true;
+    this.errorMessage = null;
     const formValue = this.registroForm.value;
     
     // Formatear fecha a yyyy-MM-dd para el backend
@@ -77,11 +79,7 @@ export class RegistroComponent {
       },
       error: (err) => {
         this.isLoading = false;
-        // Let the error interceptor handle standard errors as per user prompt, but we can fallback here
-        const msg = err.error?.message || 'Error al registrar el usuario. Revisa los datos.';
-        // Notification is automatic from interceptor usually, but leaving it if interceptor only targets specific errors.
-        // Wait! The user prompt: "usa el errorInterceptor para manejar credenciales". 
-        // We will remove the explicit showError so it doesn't double toast.
+        this.errorMessage = err.error?.message || 'Error al registrar. Revisa los datos o puede que el DNI/Email ya exista.';
       }
     });
   }

@@ -29,6 +29,7 @@ export class RegistroAdminComponent {
   private notificationService = inject(NotificationService);
 
   isLoading = false;
+  errorMessage: string | null = null;
   generos = Object.values(Genero);
 
   registroForm: FormGroup = this.fb.group({
@@ -53,6 +54,7 @@ export class RegistroAdminComponent {
     }
 
     this.isLoading = true;
+    this.errorMessage = null;
     const formValue = this.registroForm.value;
 
     // Formatear la fecha
@@ -71,7 +73,7 @@ export class RegistroAdminComponent {
       },
       error: (err) => {
         this.isLoading = false;
-        // Dependemos del interceptor de errores para el toast de error.
+        this.errorMessage = err.error?.message || 'Error al registrar. Revisa los datos o puede que el DNI/Email ya exista.';
       }
     });
   }
